@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Calendar Test</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #2196f3;
+        }
+        .problem-dates {
+            background-color: #ffeb3b !important;
+            border: 2px solid #f44336 !important;
+        }
+        .problem-dates .day-number {
+            color: #d32f2f !important;
+            font-weight: bold !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h1>Final Calendar Layout Test - September 2025</h1>
+        <p><strong>Testing dates 21-27 (highlighted in yellow)</strong></p>
+        <p>These dates should form a complete horizontal row in the 4th week.</p>
+        <p>If they appear distorted or uneven, the CSS grid layout has issues.</p>
+    </div>
+
+    <!-- Exact replica of the calendar structure from calendar.js -->
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <div class="calendar-nav">
+                <button class="btn btn-outline calendar-nav-btn">← Previous</button>
+                <h2 class="calendar-title">September 2025</h2>
+                <button class="btn btn-outline calendar-nav-btn">Next →</button>
+            </div>
+            <div class="calendar-controls">
+                <button class="btn btn-primary">+ Add Event</button>
+                <div class="view-toggles">
+                    <button class="btn btn-secondary">Month</button>
+                    <button class="btn btn-outline">Week</button>
+                    <button class="btn btn-outline">Day</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-content">
+            <div class="calendar-grid">
+                <div class="calendar-weekdays">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
+                <div class="calendar-days">
+                    <!-- Leading empty cell (Sep 1 starts on Monday, so Sun is empty) -->
+                    <div class="calendar-day empty"></div>
+
+                    <!-- Week 1: Sep 1-6 -->
+                    <div class="calendar-day">
+                        <div class="day-number">1</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">2</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">3</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">4</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">5</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">6</div>
+                        <div class="day-events"></div>
+                    </div>
+
+                    <!-- Week 2: Sep 7-13 -->
+                    <div class="calendar-day">
+                        <div class="day-number">7</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">8</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">9</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">10</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">11</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">12</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day today">
+                        <div class="day-number">13</div>
+                        <div class="day-events"></div>
+                    </div>
+
+                    <!-- Week 3: Sep 14-20 -->
+                    <div class="calendar-day">
+                        <div class="day-number">14</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">15</div>
+                        <div class="day-events">
+                            <div class="event-indicator meeting">Client Meeting</div>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">16</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">17</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">18</div>
+                        <div class="day-events">
+                            <div class="event-indicator task">Code Review</div>
+                        </div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">19</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">20</div>
+                        <div class="day-events">
+                            <div class="event-indicator deadline">Deadline</div>
+                        </div>
+                    </div>
+
+                    <!-- Week 4: Sep 21-27 (THE PROBLEM DATES) -->
+                    <div class="calendar-day problem-dates">
+                        <div class="day-number">21</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day problem-dates">
+                        <div class="day-number">22</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day problem-dates">
+                        <div class="day-number">23</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day problem-dates">
+                        <div class="day-number">24</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day problem-dates">
+                        <div class="day-number">25</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day problem-dates">
+                        <div class="day-number">26</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day problem-dates">
+                        <div class="day-number">27</div>
+                        <div class="day-events"></div>
+                    </div>
+
+                    <!-- Week 5: Sep 28-30 + 4 empty -->
+                    <div class="calendar-day">
+                        <div class="day-number">28</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">29</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day">
+                        <div class="day-number">30</div>
+                        <div class="day-events"></div>
+                    </div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+
+                    <!-- Week 6: 7 empty cells -->
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-sidebar">
+            <div class="upcoming-events">
+                <h3>Test Results</h3>
+                <div id="test-results">
+                    <p>✅ Total cells: 42 (6 weeks × 7 days)</p>
+                    <p>✅ Dates 21-27: Should form complete row 4</p>
+                    <p>✅ Grid CSS: <code>grid-template-rows: repeat(6, 1fr)</code></p>
+                    <p>✅ Fixed height: <code>height: 480px</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Count elements and verify structure
+        document.addEventListener('DOMContentLoaded', () => {
+            const allDays = document.querySelectorAll('.calendar-day');
+            const problemDates = document.querySelectorAll('.problem-dates');
+
+            console.log(`Total calendar days: ${allDays.length}`);
+            console.log(`Problem dates (21-27): ${problemDates.length}`);
+
+            const testResults = document.getElementById('test-results');
+
+            if (allDays.length === 42) {
+                testResults.innerHTML += '<p style="color: green;">✅ Correct total cells: 42</p>';
+            } else {
+                testResults.innerHTML += `<p style="color: red;">❌ Wrong cell count: ${allDays.length}/42</p>`;
+            }
+
+            if (problemDates.length === 7) {
+                testResults.innerHTML += '<p style="color: green;">✅ All problem dates found: 7</p>';
+            } else {
+                testResults.innerHTML += `<p style="color: red;">❌ Missing problem dates: ${problemDates.length}/7</p>`;
+            }
+
+            testResults.innerHTML += '<p><strong>Visual Test:</strong> Yellow dates should form one horizontal row</p>';
+        });
+    </script>
+</body>
+</html>

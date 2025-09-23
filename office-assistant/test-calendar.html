@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendar Test</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="calendar-root"></div>
+
+    <script src="js/components/calendar.js"></script>
+    <script>
+        // Test the calendar rendering
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Testing calendar...');
+            if (window.calendar) {
+                window.calendar.refreshCalendar();
+            } else {
+                console.error('Calendar not loaded');
+            }
+        });
+    </script>
+</body>
+</html>

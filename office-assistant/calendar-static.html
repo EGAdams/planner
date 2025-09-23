@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Calendar Test - September 2025</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="app">
+        <main class="main-content">
+            <div id="content-area">
+                <!-- Manually rendered calendar for September 2025 -->
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button class="btn btn-outline calendar-nav-btn">← Previous</button>
+                            <h2 class="calendar-title">September 2025</h2>
+                            <button class="btn btn-outline calendar-nav-btn">Next →</button>
+                        </div>
+                        <div class="calendar-controls">
+                            <button class="btn btn-primary">+ Add Event</button>
+                            <div class="view-toggles">
+                                <button class="btn btn-secondary">Month</button>
+                                <button class="btn btn-outline">Week</button>
+                                <button class="btn btn-outline">Day</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="calendar-content">
+                        <div class="calendar-grid">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">Sun</div>
+                                <div class="weekday">Mon</div>
+                                <div class="weekday">Tue</div>
+                                <div class="weekday">Wed</div>
+                                <div class="weekday">Thu</div>
+                                <div class="weekday">Fri</div>
+                                <div class="weekday">Sat</div>
+                            </div>
+                            <div class="calendar-days">
+                                <!-- Week 1: Aug 31 (empty), Sep 1-6 -->
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day">
+                                    <div class="day-number">1</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">2</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">3</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">4</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">5</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">6</div>
+                                    <div class="day-events"></div>
+                                </div>
+
+                                <!-- Week 2: Sep 7-13 -->
+                                <div class="calendar-day">
+                                    <div class="day-number">7</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">8</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">9</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">10</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">11</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">12</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day today">
+                                    <div class="day-number">13</div>
+                                    <div class="day-events"></div>
+                                </div>
+
+                                <!-- Week 3: Sep 14-20 -->
+                                <div class="calendar-day">
+                                    <div class="day-number">14</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">15</div>
+                                    <div class="day-events">
+                                        <div class="event-indicator meeting">Client Meeting - WebDev Project</div>
+                                    </div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">16</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">17</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">18</div>
+                                    <div class="day-events">
+                                        <div class="event-indicator task">Code Review Session</div>
+                                    </div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">19</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">20</div>
+                                    <div class="day-events">
+                                        <div class="event-indicator deadline">Project Deadline - Mobile App</div>
+                                    </div>
+                                </div>
+
+                                <!-- Week 4: Sep 21-27 (THE PROBLEM DATES) -->
+                                <div class="calendar-day" style="background-color: #ffeb3b !important;">
+                                    <div class="day-number">21</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day" style="background-color: #ffeb3b !important;">
+                                    <div class="day-number">22</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day" style="background-color: #ffeb3b !important;">
+                                    <div class="day-number">23</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day" style="background-color: #ffeb3b !important;">
+                                    <div class="day-number">24</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day" style="background-color: #ffeb3b !important;">
+                                    <div class="day-number">25</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day" style="background-color: #ffeb3b !important;">
+                                    <div class="day-number">26</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day" style="background-color: #ffeb3b !important;">
+                                    <div class="day-number">27</div>
+                                    <div class="day-events"></div>
+                                </div>
+
+                                <!-- Week 5: Sep 28-30, Oct 1-4 -->
+                                <div class="calendar-day">
+                                    <div class="day-number">28</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">29</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day">
+                                    <div class="day-number">30</div>
+                                    <div class="day-events"></div>
+                                </div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+
+                                <!-- Week 6: All empty (Oct days) -->
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                                <div class="calendar-day empty"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="calendar-sidebar">
+                        <div class="upcoming-events">
+                            <h3>Upcoming Events</h3>
+                            <div class="upcoming-event meeting">
+                                <div class="event-date">9/15/2025</div>
+                                <div class="event-title">Client Meeting - WebDev Project</div>
+                                <div class="event-client">TechCorp</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        /* Highlight problem dates */
+        .calendar-day[style*="background-color: #ffeb3b"] {
+            border: 2px solid #f44336 !important;
+        }
+    </style>
+</body>
+</html>

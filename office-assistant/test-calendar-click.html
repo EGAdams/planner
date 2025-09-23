@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Calendar Click</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Office Assistant</h1>
+                <div class="user-info">
+                    <span class="user-name">Calendar Test</span>
+                </div>
+            </div>
+        </header>
+
+        <nav class="navigation">
+            <div class="nav-container">
+                <button class="nav-button" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-button active" data-section="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Calendar</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div id="content-area">
+                <div class="loading"><div class="spinner"></div>Loading calendar...</div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/components/calendar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/navigation.js"></script>
+
+    <script>
+        // Auto-load calendar on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Auto-loading calendar...');
+
+            // Wait for all components to load
+            setTimeout(() => {
+                if (typeof window.app !== 'undefined' && window.app.loadCalendarSection) {
+                    console.log('Loading calendar section...');
+                    window.app.loadCalendarSection();
+                    window.app.currentSection = 'calendar';
+                    console.log('Calendar should now be loaded');
+                } else {
+                    console.error('App or loadCalendarSection not found');
+
+                    // Direct calendar load as fallback
+                    if (typeof window.calendar !== 'undefined') {
+                        console.log('Loading calendar directly...');
+                        const contentArea = document.getElementById('content-area');
+                        contentArea.innerHTML = window.calendar.render();
+                        console.log('Calendar loaded directly');
+                    } else {
+                        console.error('Calendar not found');
+                    }
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

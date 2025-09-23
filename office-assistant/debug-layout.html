@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendar Layout Debug</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .debug-output {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 8px;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calendar Layout Analysis</h1>
+    <div id="debug-output" class="debug-output">Loading...</div>
+
+    <!-- Test the actual calendar rendering -->
+    <h2>Actual Calendar (September 2025)</h2>
+    <div id="calendar-test" style="margin: 20px;"></div>
+
+    <script src="js/components/calendar.js"></script>
+    <script>
+        function analyzeCalendarLayout() {
+            const year = 2025;
+            const month = 8; // September (0-indexed)
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+
+            let output = `September 2025 Calendar Debug:\n`;
+            output += `First day: ${firstDay.toDateString()}\n`;
+            output += `Last day: ${lastDay.toDateString()}\n`;
+            output += `Days in month: ${daysInMonth}\n`;
+            output += `Starting day of week: ${startingDayOfWeek} (0=Sun, 6=Sat)\n\n`;
+
+            // Generate calendar layout
+            let calendar = [];
+            let cellIndex = 0;
+
+            // Leading empty cells
+            for (let i = 0; i < startingDayOfWeek; i++) {
+                calendar.push({
+                    type: 'empty',
+                    day: '',
+                    row: Math.floor(cellIndex / 7) + 1,
+                    col: (cellIndex % 7) + 1,
+                    index: cellIndex
+                });
+                cellIndex++;
+            }
+
+            // Month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                calendar.push({
+                    type: 'day',
+                    day: day,
+                    row: Math.floor(cellIndex / 7) + 1,
+                    col: (cellIndex % 7) + 1,
+                    index: cellIndex,
+                    isTarget: day >= 21 && day <= 27
+                });
+                cellIndex++;
+            }
+
+            // Trailing empty cells
+            while (cellIndex < 42) {
+                calendar.push({
+                    type: 'empty',
+                    day: '',
+                    row: Math.floor(cellIndex / 7) + 1,
+                    col: (cellIndex % 7) + 1,
+                    index: cellIndex
+                });
+                cellIndex++;
+            }
+
+            output += `Calendar Layout (42 cells):\n`;
+            output += `Row | Sun  Mon  Tue  Wed  Thu  Fri  Sat\n`;
+            output += `----+--------------------------------\n`;
+
+            for (let row = 1; row <= 6; row++) {
+                let rowData = `${row}   | `;
+                for (let col = 1; col <= 7; col++) {
+                    const cell = calendar.find(c => c.row === row && c.col === col);
+                    const dayStr = cell.day ? cell.day.toString().padStart(2, ' ') : '  ';
+                    const marker = cell.isTarget ? '*' : ' ';
+                    rowData += `${dayStr}${marker} `;
+                }
+                output += rowData + '\n';
+            }
+
+            output += `\nTarget dates 21-27 positions:\n`;
+            calendar.filter(c => c.isTarget).forEach(cell => {
+                output += `Day ${cell.day}: Row ${cell.row}, Col ${cell.col}, Index ${cell.index}\n`;
+            });
+
+            output += `\nExpected behavior:\n`;
+            output += `- All target dates should be in row 4\n`;
+            output += `- CSS should use: grid-template-rows: repeat(6, 1fr)\n`;
+            output += `- Each row should have equal height\n`;
+
+            return output;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Show analysis
+            const analysis = analyzeCalendarLayout();
+            document.getElementById('debug-output').textContent = analysis;
+
+            // Load actual calendar
+            if (window.calendar) {
+                window.calendar.currentDate = new Date(2025, 8, 1);
+                document.getElementById('calendar-test').innerHTML = window.calendar.render();
+
+                // Count the actual calendar days in the DOM
+                setTimeout(() => {
+                    const calendarDays = document.querySelectorAll('#calendar-test .calendar-day');
+                    const dayNumbers = Array.from(document.querySelectorAll('#calendar-test .day-number'))
+                        .map(el => el.textContent).filter(t => t);
+
+                    let domOutput = `\n\nDOM Analysis:\n`;
+                    domOutput += `Total calendar-day elements: ${calendarDays.length}\n`;
+                    domOutput += `Day numbers found: ${dayNumbers.join(', ')}\n`;
+
+                    // Check for dates 21-27
+                    const targetDates = dayNumbers.filter(d => parseInt(d) >= 21 && parseInt(d) <= 27);
+                    domOutput += `Target dates 21-27 found: ${targetDates.join(', ')}\n`;
+
+                    document.getElementById('debug-output').textContent += domOutput;
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>

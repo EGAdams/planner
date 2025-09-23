@@ -1,0 +1,44 @@
+directories:
+  output: dist
+  buildResources: build
+appId: com.planner.app
+productName: Planner - AI Project Management
+files:
+  - filter:
+      - main.js
+      - office-assistant/**/*
+      - assets/**/*
+      - node_modules/**/*
+      - package.json
+win:
+  target:
+    - target: msi
+      arch:
+        - x64
+    - target: nsis
+      arch:
+        - x64
+  icon: assets/icon.ico
+msi:
+  oneClick: false
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  menuCategory: Productivity
+  shortcutName: Planner AI
+  perMachine: false
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  menuCategory: Productivity
+  shortcutName: Planner AI
+linux:
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  category: Productivity
+  description: AI-powered project management system for freelancers
+  maintainer: Planner Team
+electronVersion: 38.1.2

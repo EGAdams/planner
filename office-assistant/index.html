@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Assistant</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Mom's Dashboard</h1>
+                <div class="user-info">
+                    <span class="user-name">rbarnes@aol.com</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navigation">
+            <div class="nav-container">
+                <button class="nav-button active" data-section="index">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-button" data-section="projects">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Projects</span>
+                </button>
+                <button class="nav-button" data-section="clients">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Clients</span>
+                </button>
+                <button class="nav-button" data-section="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Calendar</span>
+                </button>
+                <button class="nav-button" data-section="documents">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Documents</span>
+                </button>
+                <button class="nav-button" data-section="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div id="content-area">
+                <!-- Dynamic content will be loaded here -->
+                <div class="welcome-section">
+                    <h2>Welcome to Office Assistant</h2>
+                    <p>Your comprehensive project management and client coordination platform.</p>
+                    <p class="status-note">Navigation buttons are ready for implementation.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Software Freelancer AI Expert - Office Assistant v1.0</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="js/components/calendar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/navigation.js"></script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Test - Calendar Navigation</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Simplified Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Office Assistant - Calendar Test</h1>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="navigation">
+            <div class="nav-container">
+                <button class="nav-button active" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-button" data-section="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Calendar</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="test-controls" style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <button class="btn btn-primary" onclick="testCalendarNavigation()">Test Calendar Navigation</button>
+                <button class="btn btn-outline" onclick="resetTest()">Reset</button>
+                <div id="test-status" style="margin-top: 1rem; font-weight: bold;"></div>
+            </div>
+
+            <div id="content-area">
+                <div class="welcome-section">
+                    <h2>Integration Test Ready</h2>
+                    <p>Click "Test Calendar Navigation" to simulate clicking the calendar button.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/components/calendar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/navigation.js"></script>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('test-status');
+            const colors = {
+                success: '#4caf50',
+                error: '#f44336',
+                info: '#2196f3',
+                warning: '#ff9800'
+            };
+            status.textContent = message;
+            status.style.color = colors[type] || colors.info;
+        }
+
+        function testCalendarNavigation() {
+            updateStatus('Starting calendar navigation test...', 'info');
+
+            setTimeout(() => {
+                // Find and click the calendar button
+                const calendarButton = document.querySelector('[data-section="calendar"]');
+                if (calendarButton) {
+                    updateStatus('Found calendar button, clicking...', 'info');
+                    calendarButton.click();
+
+                    setTimeout(() => {
+                        // Check if calendar loaded
+                        const calendarContent = document.querySelector('.calendar-container');
+                        if (calendarContent) {
+                            updateStatus('✅ SUCCESS: Calendar navigation and rendering works!', 'success');
+
+                            // Check for dates 21-27
+                            const days = document.querySelectorAll('.calendar-day .day-number');
+                            const targetDays = [];
+                            days.forEach(day => {
+                                const dayNum = parseInt(day.textContent);
+                                if (dayNum >= 21 && dayNum <= 27) {
+                                    targetDays.push(day);
+                                }
+                            });
+
+                            if (targetDays.length > 0) {
+                                updateStatus(`✅ SUCCESS: Found ${targetDays.length} days in range 21-27. Calendar layout fixed!`, 'success');
+                            } else {
+                                updateStatus('⚠️ WARNING: Could not find days 21-27 in current month view', 'warning');
+                            }
+
+                        } else {
+                            updateStatus('❌ ERROR: Calendar content not found after navigation', 'error');
+                        }
+                    }, 500);
+                } else {
+                    updateStatus('❌ ERROR: Calendar button not found', 'error');
+                }
+            }, 100);
+        }
+
+        function resetTest() {
+            updateStatus('Test reset', 'info');
+            const dashboardButton = document.querySelector('[data-section="dashboard"]');
+            if (dashboardButton) {
+                dashboardButton.click();
+            }
+        }
+
+        // Auto-run test after page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            updateStatus('Integration test page loaded. Ready to test.', 'success');
+        });
+    </script>
+</body>
+</html>

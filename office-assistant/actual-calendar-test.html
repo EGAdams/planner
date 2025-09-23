@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actual Calendar Click Test</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <!-- Replicate the exact structure from index.html -->
+    <div id="app">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Office Assistant</h1>
+                <div class="user-info">
+                    <span class="user-name">Calendar Test</span>
+                </div>
+            </div>
+        </header>
+
+        <nav class="navigation">
+            <div class="nav-container">
+                <button class="nav-button" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-button" data-section="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Calendar</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div id="content-area">
+                <div class="welcome-section">
+                    <h2>Click Calendar Button Above</h2>
+                    <button onclick="testCalendarClick()" class="btn btn-primary">
+                        Simulate Calendar Click
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Load the exact same scripts as index.html -->
+    <script src="js/components/calendar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/navigation.js"></script>
+
+    <script>
+        function testCalendarClick() {
+            console.log('Testing calendar click...');
+
+            // Simulate clicking the calendar button
+            const calendarButton = document.querySelector('[data-section="calendar"]');
+            if (calendarButton && window.app) {
+                console.log('Triggering calendar navigation...');
+
+                // Update active state
+                document.querySelectorAll('.nav-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                calendarButton.classList.add('active');
+
+                // Load calendar section
+                window.app.loadSection('calendar');
+                window.app.currentSection = 'calendar';
+
+                console.log('Calendar navigation triggered');
+
+                // After a short delay, check the DOM
+                setTimeout(() => {
+                    checkCalendarDOM();
+                }, 1000);
+            } else {
+                console.error('Calendar button or app not found');
+            }
+        }
+
+        function checkCalendarDOM() {
+            console.log('Checking calendar DOM...');
+
+            const calendarContainer = document.querySelector('.calendar-container');
+            if (calendarContainer) {
+                console.log('✅ Calendar container found');
+
+                const calendarDays = document.querySelectorAll('.calendar-day');
+                console.log(`📊 Found ${calendarDays.length} calendar day elements`);
+
+                const dayNumbers = Array.from(document.querySelectorAll('.day-number'))
+                    .map(el => el.textContent.trim())
+                    .filter(text => text && !isNaN(parseInt(text)))
+                    .map(text => parseInt(text));
+
+                console.log(`📅 Day numbers: ${dayNumbers.join(', ')}`);
+
+                // Check for target dates
+                const targetDates = dayNumbers.filter(day => day >= 21 && day <= 27);
+                console.log(`🎯 Target dates 21-27 found: ${targetDates.join(', ')}`);
+
+                if (targetDates.length === 7) {
+                    console.log('✅ All target dates 21-27 are present');
+                } else {
+                    console.log(`❌ Missing target dates. Expected 7, found ${targetDates.length}`);
+                }
+
+                // Check the actual grid structure
+                analyzeGridStructure();
+
+            } else {
+                console.error('❌ Calendar container not found');
+            }
+        }
+
+        function analyzeGridStructure() {
+            const calendarDaysContainer = document.querySelector('.calendar-days');
+            if (!calendarDaysContainer) {
+                console.error('❌ .calendar-days container not found');
+                return;
+            }
+
+            const computedStyle = window.getComputedStyle(calendarDaysContainer);
+            console.log('📐 Calendar days computed style:');
+            console.log(`  display: ${computedStyle.display}`);
+            console.log(`  grid-template-columns: ${computedStyle.gridTemplateColumns}`);
+            console.log(`  grid-template-rows: ${computedStyle.gridTemplateRows}`);
+            console.log(`  height: ${computedStyle.height}`);
+
+            const allDays = document.querySelectorAll('.calendar-day');
+            console.log(`📊 Total calendar day cells: ${allDays.length}`);
+
+            // Check if grid is properly sized
+            if (allDays.length === 42) {
+                console.log('✅ Correct number of grid cells (42 = 6 weeks × 7 days)');
+            } else {
+                console.log(`❌ Incorrect grid size. Expected 42, got ${allDays.length}`);
+            }
+
+            // Check target date positions
+            const targetElements = Array.from(allDays).filter((day, index) => {
+                const dayNumber = day.querySelector('.day-number');
+                if (!dayNumber) return false;
+                const num = parseInt(dayNumber.textContent);
+                return num >= 21 && num <= 27;
+            });
+
+            console.log(`🎯 Target date elements (21-27): ${targetElements.length}`);
+            targetElements.forEach((element, index) => {
+                const dayNum = element.querySelector('.day-number').textContent;
+                const rect = element.getBoundingClientRect();
+                console.log(`  Day ${dayNum}: ${rect.width.toFixed(1)}×${rect.height.toFixed(1)}px`);
+            });
+        }
+
+        // Auto-run test when page loads
+        window.addEventListener('load', () => {
+            console.log('Page loaded, auto-testing calendar...');
+            setTimeout(testCalendarClick, 500);
+        });
+    </script>
+</body>
+</html>

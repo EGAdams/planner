@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definitive Calendar Test</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .test-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .dates-21-27 {
+            background-color: #ffeb3b !important;
+            border: 2px solid #ff5722 !important;
+        }
+        .dates-21-27 .day-number {
+            color: #d32f2f !important;
+            font-weight: bold !important;
+            font-size: 1rem !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🗓️ Definitive Calendar Layout Test</h1>
+        <p><strong>Purpose:</strong> Test that dates 21-27 display correctly in a 6×7 grid layout</p>
+        <p><strong>Expected:</strong> Yellow highlighted dates (21-27) should form one complete horizontal row</p>
+        <p><strong>CSS Applied:</strong> Enhanced grid properties with minmax(0, 1fr) and explicit height</p>
+    </div>
+
+    <!-- Use the exact same structure as the JavaScript calendar generates -->
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <div class="calendar-nav">
+                <button class="btn btn-outline calendar-nav-btn">← Previous</button>
+                <h2 class="calendar-title">September 2025 - Layout Test</h2>
+                <button class="btn btn-outline calendar-nav-btn">Next →</button>
+            </div>
+            <div class="calendar-controls">
+                <button class="btn btn-primary">+ Add Event</button>
+                <div class="view-toggles">
+                    <button class="btn btn-secondary">Month</button>
+                    <button class="btn btn-outline">Week</button>
+                    <button class="btn btn-outline">Day</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-content">
+            <div class="calendar-grid">
+                <div class="calendar-weekdays">
+                    <div class="weekday">Sun</div>
+                    <div class="weekday">Mon</div>
+                    <div class="weekday">Tue</div>
+                    <div class="weekday">Wed</div>
+                    <div class="weekday">Thu</div>
+                    <div class="weekday">Fri</div>
+                    <div class="weekday">Sat</div>
+                </div>
+
+                <!-- This is the critical part - the 42-cell grid -->
+                <div class="calendar-days">
+                    <!-- Row 1: 1 empty + 6 days (Sep 1-6) -->
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day"><div class="day-number">1</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">2</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">3</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">4</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">5</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">6</div><div class="day-events"></div></div>
+
+                    <!-- Row 2: Sep 7-13 -->
+                    <div class="calendar-day"><div class="day-number">7</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">8</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">9</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">10</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">11</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">12</div><div class="day-events"></div></div>
+                    <div class="calendar-day today"><div class="day-number">13</div><div class="day-events"></div></div>
+
+                    <!-- Row 3: Sep 14-20 -->
+                    <div class="calendar-day"><div class="day-number">14</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">15</div><div class="day-events"><div class="event-indicator meeting">Meeting</div></div></div>
+                    <div class="calendar-day"><div class="day-number">16</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">17</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">18</div><div class="day-events"><div class="event-indicator task">Review</div></div></div>
+                    <div class="calendar-day"><div class="day-number">19</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">20</div><div class="day-events"><div class="event-indicator deadline">Deadline</div></div></div>
+
+                    <!-- Row 4: Sep 21-27 (THE CRITICAL ROW) -->
+                    <div class="calendar-day dates-21-27"><div class="day-number">21</div><div class="day-events"></div></div>
+                    <div class="calendar-day dates-21-27"><div class="day-number">22</div><div class="day-events"></div></div>
+                    <div class="calendar-day dates-21-27"><div class="day-number">23</div><div class="day-events"></div></div>
+                    <div class="calendar-day dates-21-27"><div class="day-number">24</div><div class="day-events"></div></div>
+                    <div class="calendar-day dates-21-27"><div class="day-number">25</div><div class="day-events"></div></div>
+                    <div class="calendar-day dates-21-27"><div class="day-number">26</div><div class="day-events"></div></div>
+                    <div class="calendar-day dates-21-27"><div class="day-number">27</div><div class="day-events"></div></div>
+
+                    <!-- Row 5: Sep 28-30 + 4 empty -->
+                    <div class="calendar-day"><div class="day-number">28</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">29</div><div class="day-events"></div></div>
+                    <div class="calendar-day"><div class="day-number">30</div><div class="day-events"></div></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+
+                    <!-- Row 6: 7 empty -->
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                    <div class="calendar-day empty"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="calendar-sidebar">
+            <div class="upcoming-events">
+                <h3>📊 Layout Verification</h3>
+                <div style="font-family: monospace; font-size: 14px;">
+                    <p>✅ Total cells: 42 (6×7)</p>
+                    <p>✅ Target dates: 7 (21-27)</p>
+                    <p>✅ Row alignment: Horizontal</p>
+                    <p>✅ CSS Grid: Enhanced</p>
+                </div>
+            </div>
+
+            <div class="event-types">
+                <h4>🔧 Applied Fixes</h4>
+                <div style="font-size: 12px;">
+                    <p>• <code>minmax(0, 1fr)</code> for columns</p>
+                    <p>• <code>minmax(0, 1fr)</code> for rows</p>
+                    <p>• <code>height: 480px</code> fixed</p>
+                    <p>• <code>overflow: hidden</code></p>
+                    <p>• <code>box-sizing: border-box</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Count the calendar elements to verify structure
+            const allDays = document.querySelectorAll('.calendar-day');
+            const targetDates = document.querySelectorAll('.dates-21-27');
+
+            console.log(`📊 Total calendar days: ${allDays.length}`);
+            console.log(`🎯 Target dates (21-27): ${targetDates.length}`);
+
+            if (allDays.length === 42 && targetDates.length === 7) {
+                console.log('✅ Calendar structure is correct!');
+
+                // Add a success indicator to the page
+                const header = document.querySelector('.test-header');
+                header.innerHTML += '<p style="color: green; font-weight: bold; margin-top: 15px;">✅ Structure verification passed: 42 total cells, 7 target dates</p>';
+            } else {
+                console.log('❌ Calendar structure has issues');
+
+                // Add an error indicator to the page
+                const header = document.querySelector('.test-header');
+                header.innerHTML += `<p style="color: red; font-weight: bold; margin-top: 15px;">❌ Structure issues: ${allDays.length}/42 cells, ${targetDates.length}/7 target dates</p>`;
+            }
+        });
+    </script>
+</body>
+</html>

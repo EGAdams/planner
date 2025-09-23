@@ -1,0 +1,78 @@
+{
+  "name": "planner",
+  "version": "1.0.0",
+  "description": "A memory-enhanced project management system built with RAG (Retrieval-Augmented Generation) technology to help freelance AI consultants track projects, clients, and conversations.",
+  "homepage": "https://github.com/planner/planner-ai",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-msi": "electron-builder --win --x64 --publish=never",
+    "build-linux": "electron-builder --linux --x64 --publish=never",
+    "build-installer": "node build-msi.js",
+    "build-native": "electron-builder --publish=never",
+    "dist": "electron-builder --win --x64",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^38.1.2",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.planner.app",
+    "productName": "Planner - AI Project Management",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "office-assistant/**/*",
+      "assets/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "msi",
+          "arch": ["x64"]
+        },
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "msi": {
+      "oneClick": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "menuCategory": "Productivity",
+      "shortcutName": "Planner AI",
+      "perMachine": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "menuCategory": "Productivity",
+      "shortcutName": "Planner AI"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Productivity",
+      "description": "AI-powered project management system for freelancers",
+      "maintainer": "Planner Team"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Debug</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div style="padding: 20px;">
+        <h1>Calendar Debug</h1>
+        <div id="calendar-root"></div>
+    </div>
+
+    <script src="js/components/calendar.js"></script>
+    <script>
+        // Initialize and render calendar directly
+        const cal = new Calendar();
+        document.getElementById('calendar-root').innerHTML = cal.render();
+
+        // Log the current date for debugging
+        console.log('Current date:', cal.currentDate);
+        console.log('Calendar initialized');
+    </script>
+</body>
+</html>

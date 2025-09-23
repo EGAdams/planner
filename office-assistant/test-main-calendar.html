@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Calendar Test</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <!-- EXACT replica of the main index.html structure -->
+    <div id="app">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Office Assistant</h1>
+                <div class="user-info">
+                    <span class="user-name">Calendar Fix Test</span>
+                </div>
+            </div>
+        </header>
+
+        <nav class="navigation">
+            <div class="nav-container">
+                <button class="nav-button" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-button" data-section="projects">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Projects</span>
+                </button>
+                <button class="nav-button" data-section="clients">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Clients</span>
+                </button>
+                <button class="nav-button" data-section="calendar" onclick="testCalendarClick(this)">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Calendar</span>
+                </button>
+                <button class="nav-button" data-section="documents">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Documents</span>
+                </button>
+                <button class="nav-button" data-section="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div id="content-area">
+                <div class="welcome-section">
+                    <h2>Calendar Fix Test</h2>
+                    <p>Click the Calendar tab above to test the enhanced calendar layout.</p>
+                    <p><strong>Expected:</strong> Dates 21-27 should display in a properly aligned grid row.</p>
+                    <button class="btn btn-primary" onclick="autoTestCalendar()">Auto-Test Calendar</button>
+                    <div id="test-status" style="margin-top: 1rem; padding: 1rem; background: #f0f0f0; border-radius: 4px; display: none;">
+                        <strong>Test Results:</strong>
+                        <div id="test-results"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Software Freelancer AI Expert - Office Assistant v1.0</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Load exact same scripts as main app -->
+    <script src="js/components/calendar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/navigation.js"></script>
+
+    <script>
+        function testCalendarClick(button) {
+            console.log('🗓️ Calendar button clicked - testing enhanced layout...');
+
+            // Update active state
+            document.querySelectorAll('.nav-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+
+            // Use the app's navigation system
+            if (window.app) {
+                window.app.handleNavigation(button);
+
+                // Test the result after a delay
+                setTimeout(() => {
+                    verifyCalendarLayout();
+                }, 1000);
+            } else {
+                console.error('App not loaded');
+            }
+        }
+
+        function autoTestCalendar() {
+            const calendarButton = document.querySelector('[data-section="calendar"]');
+            testCalendarClick(calendarButton);
+        }
+
+        function verifyCalendarLayout() {
+            const statusDiv = document.getElementById('test-status');
+            const resultsDiv = document.getElementById('test-results');
+
+            statusDiv.style.display = 'block';
+
+            const calendarContainer = document.querySelector('.calendar-container');
+            let results = '';
+
+            if (calendarContainer) {
+                results += '<p style="color: green;">✅ Calendar container loaded</p>';
+
+                const calendarDays = calendarContainer.querySelectorAll('.calendar-day');
+                results += `<p>📊 Calendar cells: ${calendarDays.length} (expected: 42)</p>`;
+
+                const dayNumbers = Array.from(calendarContainer.querySelectorAll('.day-number'))
+                    .map(el => el.textContent.trim())
+                    .filter(text => text && !isNaN(parseInt(text)))
+                    .map(text => parseInt(text));
+
+                const targetDates = dayNumbers.filter(day => day >= 21 && day <= 27);
+                results += `<p>🎯 Target dates (21-27): ${targetDates.join(', ')} (${targetDates.length}/7)</p>`;
+
+                // Check CSS grid properties
+                const calendarDaysGrid = calendarContainer.querySelector('.calendar-days');
+                if (calendarDaysGrid) {
+                    const styles = window.getComputedStyle(calendarDaysGrid);
+                    results += `<p>🎨 Grid display: ${styles.display}</p>`;
+                    results += `<p>📏 Grid height: ${styles.height}</p>`;
+                    results += `<p>📐 Grid template rows: ${styles.gridTemplateRows}</p>`;
+                }
+
+                // Final assessment
+                if (calendarDays.length === 42 && targetDates.length === 7) {
+                    results += '<p style="color: green; font-weight: bold;">🎉 ALL TESTS PASSED - Calendar layout is fixed!</p>';
+                } else {
+                    results += '<p style="color: red; font-weight: bold;">⚠️ Issues still exist in calendar layout</p>';
+                }
+
+            } else {
+                results += '<p style="color: red;">❌ Calendar container not found</p>';
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+    </script>
+</body>
+</html>

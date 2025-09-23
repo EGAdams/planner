@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <div id="output"></div>
+    <script src="js/components/calendar.js"></script>
+    <script>
+        // Wait for calendar to load
+        setTimeout(() => {
+            if (window.calendar) {
+                // Set to current month (September 2025)
+                const calendarHtml = window.calendar.renderMonthView();
+                document.getElementById('output').innerHTML = calendarHtml;
+            } else {
+                document.getElementById('output').innerHTML = 'Calendar not loaded';
+            }
+        }, 100);
+    </script>
+</body>
+</html>

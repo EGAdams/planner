@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Output Test</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+    <style>
+        .html-output {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .test-results {
+            background: #e8f5e8;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Calendar HTML Output Test</h1>
+
+    <div id="test-results" class="test-results">
+        <h3>Test Results:</h3>
+        <div id="results-content">Loading...</div>
+    </div>
+
+    <div class="html-output" id="html-output">
+        Generating calendar HTML...
+    </div>
+
+    <h3>Visual Calendar:</h3>
+    <div id="visual-calendar" style="border: 2px solid #ccc; padding: 20px; border-radius: 8px;">
+        Loading...
+    </div>
+
+    <script src="js/components/calendar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.calendar) {
+                    console.log('Calendar loaded, generating HTML...');
+
+                    // Set to September 2025
+                    window.calendar.currentDate = new Date(2025, 8, 1);
+
+                    // Get the raw calendar HTML
+                    const calendarHTML = window.calendar.render();
+
+                    // Display the raw HTML
+                    document.getElementById('html-output').textContent = calendarHTML;
+
+                    // Render the visual calendar
+                    document.getElementById('visual-calendar').innerHTML = calendarHTML;
+
+                    // Analyze the HTML
+                    analyzeHTML(calendarHTML);
+
+                } else {
+                    document.getElementById('html-output').textContent = 'ERROR: Calendar not loaded';
+                    document.getElementById('visual-calendar').innerHTML = '<p style="color: red;">Calendar component failed to load</p>';
+                }
+            }, 500);
+        });
+
+        function analyzeHTML(html) {
+            const results = document.getElementById('results-content');
+            let output = '';
+
+            // Count calendar-day elements
+            const dayMatches = html.match(/class="calendar-day/g);
+            const totalDays = dayMatches ? dayMatches.length : 0;
+
+            // Find target dates 21-27
+            const targetDates = [];
+            for (let day = 21; day <= 27; day++) {
+                const regex = new RegExp(`<div class="day-number">${day}</div>`);
+                if (html.match(regex)) {
+                    targetDates.push(day);
+                }
+            }
+
+            // Check for calendar structure
+            const hasContainer = html.includes('calendar-container');
+            const hasGrid = html.includes('calendar-days');
+            const hasWeekdays = html.includes('calendar-weekdays');
+
+            output += `📊 Total calendar-day elements: ${totalDays}<br>`;
+            output += `🎯 Target dates found: ${targetDates.join(', ')} (${targetDates.length}/7)<br>`;
+            output += `📋 Has calendar-container: ${hasContainer ? '✅' : '❌'}<br>`;
+            output += `🗂️ Has calendar-grid: ${hasGrid ? '✅' : '❌'}<br>`;
+            output += `📅 Has weekdays header: ${hasWeekdays ? '✅' : '❌'}<br>`;
+
+            // HTML length
+            output += `📄 HTML length: ${html.length} characters<br>`;
+
+            // Final assessment
+            if (totalDays === 42 && targetDates.length === 7 && hasContainer && hasGrid) {
+                output += '<br><strong style="color: green;">🎉 ALL TESTS PASSED - Calendar HTML structure is correct!</strong>';
+            } else {
+                output += '<br><strong style="color: red;">⚠️ Issues detected in calendar structure</strong>';
+            }
+
+            results.innerHTML = output;
+        }
+    </script>
+</body>
+</html>

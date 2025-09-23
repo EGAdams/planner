@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Calendar Test</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <!-- EXACT copy of main app structure -->
+    <div id="app">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">Office Assistant</h1>
+                <div class="user-info">
+                    <span class="user-name">Comprehensive Test</span>
+                </div>
+            </div>
+        </header>
+
+        <nav class="navigation">
+            <div class="nav-container">
+                <button class="nav-button" data-section="dashboard">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Dashboard</span>
+                </button>
+                <button class="nav-button" data-section="projects">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Projects</span>
+                </button>
+                <button class="nav-button" data-section="clients">
+                    <span class="nav-icon">👥</span>
+                    <span class="nav-text">Clients</span>
+                </button>
+                <button class="nav-button active" data-section="calendar">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Calendar</span>
+                </button>
+                <button class="nav-button" data-section="documents">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-text">Documents</span>
+                </button>
+                <button class="nav-button" data-section="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-text">Settings</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div id="content-area">
+                <div class="loading"><div class="spinner"></div>Loading calendar...</div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <p>&copy; 2025 Software Freelancer AI Expert - Office Assistant v1.0</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Load EXACT same scripts as main app -->
+    <script src="js/components/calendar.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/navigation.js"></script>
+
+    <!-- Auto-test script -->
+    <script>
+        let testPhase = 1;
+
+        function runComprehensiveTest() {
+            console.log(`🧪 Running test phase ${testPhase}...`);
+
+            if (testPhase === 1) {
+                // Phase 1: Load calendar exactly like clicking nav button
+                console.log('Phase 1: Simulating calendar navigation click...');
+
+                if (typeof window.app !== 'undefined') {
+                    console.log('✅ App loaded');
+                    window.app.currentSection = 'calendar';
+                    window.app.loadCalendarSection();
+                    testPhase = 2;
+                    setTimeout(runComprehensiveTest, 1000);
+                } else {
+                    console.log('❌ App not loaded, retrying...');
+                    setTimeout(runComprehensiveTest, 500);
+                }
+
+            } else if (testPhase === 2) {
+                // Phase 2: Analyze the resulting DOM
+                console.log('Phase 2: Analyzing rendered calendar DOM...');
+                analyzeCalendarDOM();
+                testPhase = 3;
+                setTimeout(runComprehensiveTest, 500);
+
+            } else if (testPhase === 3) {
+                // Phase 3: Extract raw HTML for examination
+                console.log('Phase 3: Extracting calendar HTML...');
+                extractCalendarHTML();
+                testPhase = 4;
+
+            } else {
+                console.log('🏁 Test complete!');
+            }
+        }
+
+        function analyzeCalendarDOM() {
+            const contentArea = document.getElementById('content-area');
+            console.log('📊 Content area analysis:');
+            console.log(`  innerHTML length: ${contentArea.innerHTML.length}`);
+
+            const calendarContainer = contentArea.querySelector('.calendar-container');
+            if (calendarContainer) {
+                console.log('✅ Calendar container found');
+
+                const calendarDays = calendarContainer.querySelectorAll('.calendar-day');
+                console.log(`📅 Calendar days found: ${calendarDays.length}`);
+
+                const dayNumbers = Array.from(calendarContainer.querySelectorAll('.day-number'))
+                    .map(el => el.textContent.trim())
+                    .filter(text => text && !isNaN(parseInt(text)));
+
+                console.log(`🔢 Day numbers: ${dayNumbers.join(', ')}`);
+
+                // Check target dates
+                const targetDates = dayNumbers.filter(num => {
+                    const n = parseInt(num);
+                    return n >= 21 && n <= 27;
+                });
+
+                console.log(`🎯 Target dates (21-27): ${targetDates.join(', ')}`);
+
+                if (targetDates.length === 7) {
+                    console.log('✅ All target dates present');
+                } else {
+                    console.log(`❌ Missing target dates: expected 7, found ${targetDates.length}`);
+                }
+
+                // Check CSS Grid
+                const calendarDaysGrid = calendarContainer.querySelector('.calendar-days');
+                if (calendarDaysGrid) {
+                    const styles = window.getComputedStyle(calendarDaysGrid);
+                    console.log('🎨 CSS Grid Analysis:');
+                    console.log(`  display: ${styles.display}`);
+                    console.log(`  grid-template-columns: ${styles.gridTemplateColumns}`);
+                    console.log(`  grid-template-rows: ${styles.gridTemplateRows}`);
+                    console.log(`  height: ${styles.height}`);
+                    console.log(`  gap: ${styles.gap}`);
+                }
+
+            } else {
+                console.log('❌ Calendar container NOT found');
+            }
+        }
+
+        function extractCalendarHTML() {
+            const contentArea = document.getElementById('content-area');
+            const calendarHTML = contentArea.innerHTML;
+
+            console.log('📄 Raw Calendar HTML (first 500 chars):');
+            console.log(calendarHTML.substring(0, 500));
+
+            // Count calendar-day elements
+            const matches = calendarHTML.match(/class="calendar-day/g);
+            const dayCount = matches ? matches.length : 0;
+            console.log(`📊 Counted calendar-day elements: ${dayCount}`);
+
+            // Look for target dates in HTML
+            const targetMatches = [];
+            for (let day = 21; day <= 27; day++) {
+                const regex = new RegExp(`<div class="day-number">${day}</div>`, 'g');
+                if (calendarHTML.match(regex)) {
+                    targetMatches.push(day);
+                }
+            }
+            console.log(`🎯 Target dates found in HTML: ${targetMatches.join(', ')}`);
+
+            // Output summary
+            console.log('\n📋 FINAL TEST SUMMARY:');
+            console.log(`✅ Calendar loaded via navigation: ${document.querySelector('.calendar-container') ? 'YES' : 'NO'}`);
+            console.log(`✅ Total calendar cells: ${dayCount} (expected: 42)`);
+            console.log(`✅ Target dates 21-27: ${targetMatches.length}/7 found`);
+            console.log(`✅ CSS Grid properly applied: ${dayCount === 42 ? 'YES' : 'NO'}`);
+
+            if (dayCount === 42 && targetMatches.length === 7) {
+                console.log('🎉 ALL TESTS PASSED - Calendar should display correctly!');
+            } else {
+                console.log('⚠️ Issues detected - Calendar may have display problems');
+            }
+        }
+
+        // Start test when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Comprehensive calendar test starting...');
+            setTimeout(runComprehensiveTest, 1000);
+        });
+    </script>
+</body>
+</html>

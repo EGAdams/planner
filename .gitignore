@@ -1,0 +1,12 @@
+rag_system/__pycache__/*
+storage/chromadb/3db4ef26-15a9-4991-88d5-b18ce224e9d0/header.bin
+venv/lib/python3.12/site-packages/*
+*.pyc
+*.bin
+venv/*
+node_modules/*
+
+dist/linux-unpacked/*
+dist/win-unpacked/*
+dist/*.AppImage
+dist/*.AppImage

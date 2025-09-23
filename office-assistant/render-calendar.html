@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Render Calendar HTML</title>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/components.css">
+</head>
+<body>
+    <h1>Calendar HTML Output</h1>
+    <div id="calendar-output" style="background: white; padding: 20px; margin: 20px; border: 1px solid #ccc;"></div>
+
+    <script src="js/components/calendar.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.calendar) {
+                // Set to September 2025 to check dates 21-27
+                window.calendar.currentDate = new Date(2025, 8, 1); // September 2025
+
+                // Get the rendered HTML
+                const calendarHTML = window.calendar.render();
+
+                // Output the HTML to the page so we can read it with curl
+                const output = document.getElementById('calendar-output');
+                output.innerHTML = '<pre>' + escapeHtml(calendarHTML) + '</pre>';
+
+                // Also render the actual calendar for visual inspection
+                const visualCalendar = document.createElement('div');
+                visualCalendar.innerHTML = calendarHTML;
+                output.appendChild(visualCalendar);
+
+                console.log('Calendar HTML rendered');
+            } else {
+                document.getElementById('calendar-output').innerHTML = '<p>ERROR: Calendar not loaded</p>';
+            }
+        });
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
+</body>
+</html>
