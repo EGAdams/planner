@@ -10,3 +10,5 @@ dist/linux-unpacked/*
 dist/win-unpacked/*
 dist/*.AppImage
 dist/*.AppImage
+nonprofit_finance_db/venv/*
+nonprofit_finance_db/.env
