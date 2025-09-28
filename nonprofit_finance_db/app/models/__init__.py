@@ -6,6 +6,7 @@ from .category import Category
 from .expense import Expense
 from .payment import Payment
 from .report import Report
+from .transaction import Transaction, ImportBatch, DuplicateFlag
 
 __all__ = [
     "ID",
@@ -15,4 +16,7 @@ __all__ = [
     "Expense",
     "Payment",
     "Report",
+    "Transaction",
+    "ImportBatch",
+    "DuplicateFlag",
 ]

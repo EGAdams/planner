@@ -35,6 +35,7 @@ I am Claude, your dedicated project planning and management agent for your Softw
 - Focus on incremental improvements
 - Prioritize quick access to project status
 - Build reusable components and templates
+- **EVERY 2 HOURS**: Check current time, read timed_progress.md, and update with current progress summary
 
 ## Future Enhancements
 - [ ] Create specialized agents for different domains (DevOps, Frontend, Backend, etc.)

@@ -1,0 +1,49 @@
+# Core dependencies for nonprofit finance database
+mysql-connector-python==8.1.0
+python-dotenv==1.0.0
+
+# Bank statement parsing dependencies
+pandas==2.1.3
+PyPDF2==3.0.1
+ofxparse==0.21
+
+# Duplicate detection dependencies
+fuzzywuzzy==0.18.0
+python-Levenshtein==0.21.1
+
+# Data validation and processing
+python-dateutil==2.8.2
+charset-normalizer==3.3.2
+
+# CLI and user interface
+click==8.1.7
+rich==13.6.0
+tabulate==0.9.0
+
+# Testing dependencies
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+
+# Development dependencies
+black==23.10.1
+flake8==6.1.0
+mypy==1.6.1
+pre-commit==3.5.0
+
+# Logging and monitoring
+structlog==23.2.0
+python-json-logger==2.0.7
+
+# Optional web interface dependencies (for future use)
+flask==3.0.0
+flask-cors==4.0.0
+gunicorn==21.2.0
+
+# Data export dependencies
+xlsxwriter==3.1.9
+reportlab==4.0.7
+
+# Configuration management
+pydantic==2.5.0
+pyyaml==6.0.1
