@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, date
 import re
 import logging
 
@@ -127,8 +127,11 @@ class TransactionValidator:
 
     def _validate_date(self, date_str: Any) -> str:
         """Validate transaction date"""
+        if isinstance(date_str, (datetime, date)):
+            return date_str.strftime(self.date_format)
+
         if not isinstance(date_str, str):
-            raise ValidationError("Transaction date must be a string")
+            raise ValidationError("Transaction date must be a string in YYYY-MM-DD format")
 
         try:
             # Parse and reformat to ensure consistency

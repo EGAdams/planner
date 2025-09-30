@@ -1,0 +1,80 @@
+#!/bin/bash
+# Simple wrapper for viewing bank statements with navigation
+
+# Set environment
+cd "$(dirname "$0")/.."
+source venv/bin/activate
+export PYTHONPATH=.
+
+# Default values
+PAGE=1
+PAGE_SIZE=20
+SHOW_ALL=false
+LINE=""
+SIMPLE=false
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p|--page)
+            PAGE="$2"
+            shift 2
+            ;;
+        -s|--size|--page-size)
+            PAGE_SIZE="$2"
+            shift 2
+            ;;
+        -a|--all|--full)
+            SHOW_ALL=true
+            shift
+            ;;
+        -l|--line)
+            LINE="$2"
+            shift 2
+            ;;
+        --simple)
+            SIMPLE=true
+            shift
+            ;;
+        -h|--help)
+            echo "Bank Statement Viewer"
+            echo ""
+            echo "Usage: $0 [options]"
+            echo ""
+            echo "Options:"
+            echo "  -p, --page N        Show page N (default: 1)"
+            echo "  -s, --size N        Transactions per page (default: 20)"
+            echo "  -a, --all           Show complete statement"
+            echo "  -l, --line N        Jump to line N (simple viewer)"
+            echo "  --simple            Use simple stable viewer (no flickering)"
+            echo "  -h, --help          Show this help"
+            echo ""
+            echo "Examples:"
+            echo "  $0                  # Show first page (20 transactions)"
+            echo "  $0 -p 2             # Show page 2"
+            echo "  $0 -s 10 -p 3       # Show page 3 with 10 transactions per page"
+            echo "  $0 --all            # Show entire statement"
+            echo "  $0 --simple         # Use stable viewer (no blinking)"
+            echo "  $0 --simple -l 25   # Jump to line 25 in stable viewer"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
+# Build command
+if [ "$SIMPLE" = true ]; then
+    if [ -n "$LINE" ]; then
+        python3 scripts/simple_scroll.py "$LINE"
+    else
+        python3 scripts/simple_scroll.py
+    fi
+elif [ "$SHOW_ALL" = true ]; then
+    python3 scripts/scrollable_viewer.py --all
+else
+    python3 scripts/scrollable_viewer.py --page "$PAGE" --page-size "$PAGE_SIZE"
+fi

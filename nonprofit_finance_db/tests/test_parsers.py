@@ -4,8 +4,10 @@ Tests for bank statement parsers
 
 import pytest
 import os
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
+from datetime import date
 from parsers.csv_parser import CSVParser
+from parsers.pdf_parser import PDFParser
 from parsers.base_parser import BaseParser
 
 
@@ -219,6 +221,170 @@ class TestCSVParser:
             'description': 'Test transaction'
         }
         assert parser._is_valid_transaction(invalid_tx_no_amount) == False
+
+
+class TestPDFParser:
+    """Test PDF parser functionality with Docling extractor"""
+
+    @pytest.fixture
+    def mock_docling_extractor(self):
+        """Create a mock Docling extractor for testing"""
+        mock = MagicMock()
+        mock.validate_format.return_value = True
+        mock.parse_transactions.return_value = [
+            {
+                'date': date(2024, 1, 15),
+                'description': 'Test Transaction 1',
+                'amount': -45.67,
+                'raw_date': '01/15',
+                'raw_amount': '(45.67)',
+                'raw_description': 'Test Transaction 1'
+            },
+            {
+                'date': date(2024, 1, 16),
+                'description': 'Test Transaction 2',
+                'amount': 100.00,
+                'raw_date': '01/16',
+                'raw_amount': '100.00',
+                'raw_description': 'Test Transaction 2'
+            }
+        ]
+        mock.extract_account_info.return_value = {
+            'account_number': '****1234',
+            'account_type': 'Checking',
+            'bank_name': 'Fifth Third Bank',
+            'statement_date': None
+        }
+        mock.extract_statement_period.return_value = (date(2024, 1, 1), date(2024, 1, 31))
+        mock.extract_text.return_value = "Sample PDF text content"
+        mock.extract_tables.return_value = [[['Date', 'Description', 'Amount'], ['01/15', 'Test Transaction', '-45.67']]]
+        return mock
+
+    def test_pdf_parser_initialization(self):
+        """Test PDF parser initialization"""
+        parser = PDFParser(org_id=1)
+        assert parser.org_id == 1
+        assert 'PDF' in parser.supported_formats
+        assert hasattr(parser, 'extractor')
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_validate_format(self, mock_extractor_class, mock_docling_extractor):
+        """Test PDF format validation"""
+        mock_extractor_class.return_value = mock_docling_extractor
+
+        parser = PDFParser(org_id=1)
+
+        # Test valid PDF
+        assert parser.validate_format('test.pdf') == True
+        mock_docling_extractor.validate_format.assert_called_with('test.pdf')
+
+        # Test invalid PDF
+        mock_docling_extractor.validate_format.return_value = False
+        assert parser.validate_format('invalid.pdf') == False
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_parse_transactions(self, mock_extractor_class, mock_docling_extractor):
+        """Test PDF transaction parsing"""
+        mock_extractor_class.return_value = mock_docling_extractor
+
+        parser = PDFParser(org_id=1)
+        transactions = parser.parse('test.pdf')
+
+        assert len(transactions) == 2
+        mock_docling_extractor.parse_transactions.assert_called_with('test.pdf')
+
+        # Check first transaction standardization
+        first_tx = transactions[0]
+        assert first_tx['org_id'] == 1
+        assert 'transaction_date' in first_tx
+        assert 'amount' in first_tx
+        assert 'description' in first_tx
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_extract_account_info(self, mock_extractor_class, mock_docling_extractor):
+        """Test account information extraction"""
+        mock_extractor_class.return_value = mock_docling_extractor
+
+        parser = PDFParser(org_id=1)
+        account_info = parser.extract_account_info('test.pdf')
+
+        assert account_info['account_number'] == '****1234'
+        assert account_info['account_type'] == 'Checking'
+        assert account_info['bank_name'] == 'Fifth Third Bank'
+        assert 'statement_start_date' in account_info
+        assert 'statement_end_date' in account_info
+
+        mock_docling_extractor.extract_account_info.assert_called_with('test.pdf')
+        mock_docling_extractor.extract_statement_period.assert_called_with('test.pdf')
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_extract_statement_period(self, mock_extractor_class, mock_docling_extractor):
+        """Test statement period extraction"""
+        mock_extractor_class.return_value = mock_docling_extractor
+
+        parser = PDFParser(org_id=1)
+        start_date, end_date = parser.extract_statement_period('test.pdf')
+
+        assert start_date == date(2024, 1, 1)
+        assert end_date == date(2024, 1, 31)
+        mock_docling_extractor.extract_statement_period.assert_called_with('test.pdf')
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_extract_text(self, mock_extractor_class, mock_docling_extractor):
+        """Test text extraction"""
+        mock_extractor_class.return_value = mock_docling_extractor
+
+        parser = PDFParser(org_id=1)
+        text = parser.extract_text('test.pdf')
+
+        assert text == "Sample PDF text content"
+        mock_docling_extractor.extract_text.assert_called_with('test.pdf')
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_extract_tables(self, mock_extractor_class, mock_docling_extractor):
+        """Test table extraction"""
+        mock_extractor_class.return_value = mock_docling_extractor
+
+        parser = PDFParser(org_id=1)
+        tables = parser.extract_tables('test.pdf')
+
+        assert len(tables) == 1
+        assert len(tables[0]) == 2  # Header + 1 data row
+        mock_docling_extractor.extract_tables.assert_called_with('test.pdf')
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_parse_error_handling(self, mock_extractor_class, mock_docling_extractor):
+        """Test error handling during parsing"""
+        mock_extractor_class.return_value = mock_docling_extractor
+        mock_docling_extractor.parse_transactions.side_effect = Exception("Parse error")
+
+        parser = PDFParser(org_id=1)
+        transactions = parser.parse('test.pdf')
+
+        assert transactions == []  # Should return empty list on error
+
+    @patch('parsers.pdf_parser.DoclingPDFExtractor')
+    def test_account_info_error_handling(self, mock_extractor_class, mock_docling_extractor):
+        """Test error handling during account info extraction"""
+        mock_extractor_class.return_value = mock_docling_extractor
+        mock_docling_extractor.extract_account_info.side_effect = Exception("Extract error")
+
+        parser = PDFParser(org_id=1)
+        account_info = parser.extract_account_info('test.pdf')
+
+        # Should return default structure with None values
+        assert account_info['account_number'] is None
+        assert account_info['account_type'] is None
+        assert account_info['bank_name'] is None
+
+    def test_pdf_format_validation_file_extension(self):
+        """Test that only PDF files are accepted"""
+        parser = PDFParser(org_id=1)
+
+        # These should be validated by the extractor, but let's test the interface
+        with patch.object(parser.extractor, 'validate_format', return_value=False):
+            assert parser.validate_format('test.csv') == False
+            assert parser.validate_format('test.txt') == False
 
 
 if __name__ == '__main__':

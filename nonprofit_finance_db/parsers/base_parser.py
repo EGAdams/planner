@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, date
 import json
 
 class BaseParser(ABC):
@@ -55,13 +55,20 @@ class BaseParser(ABC):
             'account_number': raw_data.get('account_number'),
             'bank_reference': raw_data.get('reference'),
             'balance_after': self._parse_amount(raw_data.get('balance')),
-            'raw_data': json.dumps(raw_data)
+            'raw_data': json.dumps(raw_data, default=self._json_serialize_dates)
         }
 
-    def _parse_date(self, date_str: str) -> Optional[str]:
+    def _parse_date(self, date_input: Any) -> Optional[str]:
         """Parse various date formats to YYYY-MM-DD"""
-        if not date_str:
+        if not date_input:
             return None
+
+        # Handle datetime.date objects directly
+        if hasattr(date_input, 'isoformat'):
+            return date_input.isoformat()
+
+        # Convert to string for string parsing
+        date_str = str(date_input).strip()
 
         # Common date formats
         formats = [
@@ -77,7 +84,7 @@ class BaseParser(ABC):
 
         for fmt in formats:
             try:
-                parsed_date = datetime.strptime(date_str.strip(), fmt)
+                parsed_date = datetime.strptime(date_str, fmt)
                 return parsed_date.strftime('%Y-%m-%d')
             except ValueError:
                 continue
@@ -127,3 +134,9 @@ class BaseParser(ABC):
             return 'UNKNOWN'
 
         return 'DEBIT' if parsed_amount < 0 else 'CREDIT'
+
+    def _json_serialize_dates(self, obj: Any) -> str:
+        """JSON serializer for date/datetime objects"""
+        if isinstance(obj, (date, datetime)):
+            return obj.isoformat()
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")

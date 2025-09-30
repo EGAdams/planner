@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, date
 import logging
 import os
 import json
@@ -37,6 +37,10 @@ class IngestionPipeline:
             'CSV': CSVParser(org_id),
             'PDF': PDFParser(org_id)
         }
+
+        # Cache existing transactions fetched from the database so we do not
+        # re-query for every duplicate check run.
+        self._existing_transactions_cache: Optional[List[Dict[str, Any]]] = None
 
     def ingest_file(self, file_path: str, auto_process: bool = True) -> Dict[str, Any]:
         """
@@ -97,6 +101,12 @@ class IngestionPipeline:
                 file_format=file_format,
                 total_transactions=len(parsed_transactions)
             )
+            import_batch = self._save_import_batch(import_batch)
+            import_batch = self.batch_processor.update_batch_status(
+                import_batch,
+                'PROCESSING'
+            )
+            self._update_import_batch(import_batch)
             result['import_batch'] = import_batch
 
             # Step 5: Validate transactions
@@ -130,7 +140,7 @@ class IngestionPipeline:
             # Step 8: Filter out duplicates and import
             logger.info("Importing transactions to database...")
             import_result = self._import_transactions(
-                processed_transactions, duplicate_flags, auto_process
+                processed_transactions, duplicate_flags, auto_process, import_batch
             )
 
             result['successful_imports'] = import_result['successful_imports']
@@ -145,6 +155,7 @@ class IngestionPipeline:
                 failed_imports=import_result['failed_imports'],
                 duplicate_count=len(duplicate_flags)
             )
+            self._update_import_batch(import_batch)
             result['import_batch'] = import_batch
 
             # Step 10: Generate summary
@@ -162,6 +173,7 @@ class IngestionPipeline:
                 import_batch = self.batch_processor.update_batch_status(
                     result['import_batch'], 'FAILED', error_log=str(e)
                 )
+                self._update_import_batch(import_batch)
                 result['import_batch'] = import_batch
 
         return result
@@ -183,24 +195,50 @@ class IngestionPipeline:
         Returns:
             List of existing transactions
         """
+        if self._existing_transactions_cache is not None:
+            return self._existing_transactions_cache
+
         if not self.db_connection:
             logger.warning("No database connection available for duplicate detection")
-            return []
+            self._existing_transactions_cache = []
+            return self._existing_transactions_cache
 
         try:
-            # This would typically query the database
-            # For now, return empty list
-            # TODO: Implement actual database query when repositories are connected
-            return []
+            query = (
+                "SELECT id, org_id, transaction_date, amount, description, "
+                "transaction_type, account_number, bank_reference, balance_after "
+                "FROM transactions WHERE org_id = %s"
+            )
+            with self.db_connection.cursor(dictionary=True) as cursor:
+                cursor.execute(query, (self.org_id,))
+                rows = cursor.fetchall()
+
+            # Normalize date fields to strings for downstream processing
+            normalized_rows = []
+            for row in rows:
+                tx = dict(row)
+                tx_date = tx.get('transaction_date')
+                if isinstance(tx_date, (datetime, date)):
+                    tx['transaction_date'] = tx_date.strftime('%Y-%m-%d')
+                elif tx_date is None:
+                    tx['transaction_date'] = None
+                else:
+                    tx['transaction_date'] = str(tx_date)
+                normalized_rows.append(tx)
+
+            self._existing_transactions_cache = normalized_rows
+            return self._existing_transactions_cache
 
         except Exception as e:
             logger.error(f"Error fetching existing transactions: {str(e)}")
-            return []
+            self._existing_transactions_cache = []
+            return self._existing_transactions_cache
 
     def _import_transactions(self,
                            transactions: List[Dict[str, Any]],
                            duplicate_flags: List[Dict[str, Any]],
-                           auto_process: bool) -> Dict[str, Any]:
+                           auto_process: bool,
+                           import_batch: Dict[str, Any]) -> Dict[str, Any]:
         """
         Import transactions to database, handling duplicates
 
@@ -218,6 +256,9 @@ class IngestionPipeline:
             'skipped_duplicates': 0
         }
 
+        if not self.db_connection:
+            raise RuntimeError("Database connection required for importing transactions")
+
         # Create set of transaction indices that are duplicates
         duplicate_indices = set()
         if auto_process:
@@ -225,26 +266,37 @@ class IngestionPipeline:
                 duplicate_flags, confidence_threshold=0.95
             )
             for flag in high_confidence_duplicates:
-                # Find index of new transaction in the list
                 new_tx = flag['new_transaction']
                 for i, tx in enumerate(transactions):
                     if self._transactions_match(tx, new_tx):
                         duplicate_indices.add(i)
                         break
 
-        # Import non-duplicate transactions
+        seen_keys = set()
+
         for i, transaction in enumerate(transactions):
+            tx_key = self._get_transaction_key(transaction)
+            if tx_key in seen_keys:
+                duplicate_indices.add(i)
+            else:
+                seen_keys.add(tx_key)
+
             if i in duplicate_indices:
                 import_result['skipped_duplicates'] += 1
                 continue
 
             try:
-                # Add import metadata
-                transaction['import_batch_id'] = None  # Will be set when batch is saved
-                transaction['created_at'] = datetime.now()
+                transaction['import_batch_id'] = import_batch.get('id')
+                transaction_id = self._save_transaction(transaction)
 
-                if self._save_transaction(transaction):
+                if transaction_id:
                     import_result['successful_imports'] += 1
+                    # Augment cache so subsequent duplicate checks during the same
+                    # ingest run are aware of the newly inserted transaction.
+                    if self._existing_transactions_cache is not None:
+                        cached_tx = transaction.copy()
+                        cached_tx['id'] = transaction_id
+                        self._existing_transactions_cache.append(cached_tx)
                 else:
                     import_result['failed_imports'] += 1
 
@@ -252,7 +304,6 @@ class IngestionPipeline:
                 logger.error(f"Error importing transaction {i}: {str(e)}")
                 import_result['failed_imports'] += 1
 
-        # Save duplicate flags for manual review
         if duplicate_flags:
             self._save_duplicate_flags(duplicate_flags)
 
@@ -266,28 +317,73 @@ class IngestionPipeline:
                 return False
         return True
 
-    def _save_transaction(self, transaction: Dict[str, Any]) -> bool:
+    def _get_transaction_key(self, transaction: Dict[str, Any]) -> str:
+        """Create a normalized key used for de-duplication within a batch."""
+        date_part = transaction.get('transaction_date') or ''
+        amount_part = transaction.get('amount') if transaction.get('amount') is not None else ''
+        description = (transaction.get('description') or '').strip().lower()[:120]
+        return f"{date_part}|{amount_part}|{description}"
+
+    def _save_transaction(self, transaction: Dict[str, Any]) -> Optional[int]:
         """
-        Save transaction to database
+        Persist a transaction to the database and return its primary key.
 
         Args:
             transaction: Transaction to save
 
         Returns:
-            True if successful, False otherwise
+            Inserted transaction ID, or None on failure
         """
         if not self.db_connection:
             logger.warning("No database connection available for saving transaction")
-            return False
+            return None
+
+        required_fields = ['org_id', 'transaction_date', 'amount', 'description', 'transaction_type']
+        for field in required_fields:
+            if transaction.get(field) in (None, ''):
+                raise ValueError(f"Missing required field '{field}' for transaction save")
+
+        payload = {
+            'org_id': transaction['org_id'],
+            'transaction_date': transaction['transaction_date'],
+            'amount': transaction['amount'],
+            'description': transaction.get('description', '')[:255],
+            'transaction_type': transaction.get('transaction_type', 'UNKNOWN'),
+            'account_number': transaction.get('account_number'),
+            'bank_reference': transaction.get('bank_reference'),
+            'balance_after': transaction.get('balance_after'),
+            'category_id': transaction.get('category_id'),
+            'import_batch_id': transaction.get('import_batch_id'),
+            'raw_data': transaction.get('raw_data')
+        }
+
+        # Ensure raw_data is serialized JSON
+        if payload['raw_data'] is not None and not isinstance(payload['raw_data'], str):
+            payload['raw_data'] = json.dumps(payload['raw_data'])
+
+        columns = []
+        placeholders = []
+        values: List[Any] = []
+
+        for column, value in payload.items():
+            if value is not None:
+                columns.append(column)
+                placeholders.append('%s')
+                values.append(value)
+
+        sql = f"INSERT INTO transactions ({', '.join(columns)}) VALUES ({', '.join(placeholders)})"
 
         try:
-            # TODO: Implement actual database save when repositories are connected
-            logger.debug(f"Would save transaction: {transaction['description'][:50]}...")
-            return True
+            with self.db_connection.cursor() as cursor:
+                cursor.execute(sql, tuple(values))
+                transaction_id = cursor.lastrowid
+            self.db_connection.commit()
+            return transaction_id
 
         except Exception as e:
             logger.error(f"Error saving transaction: {str(e)}")
-            return False
+            self.db_connection.rollback()
+            return None
 
     def _save_duplicate_flags(self, duplicate_flags: List[Dict[str, Any]]) -> bool:
         """
@@ -299,18 +395,83 @@ class IngestionPipeline:
         Returns:
             True if successful, False otherwise
         """
-        if not self.db_connection:
-            logger.warning("No database connection available for saving duplicate flags")
+        if not self.db_connection or not duplicate_flags:
             return False
+
+        # For now, we only log duplicate metadata for investigation. Persisting
+        # duplicate candidates requires schema updates (the current
+        # duplicate_flags table expects two transaction IDs). We retain this
+        # hook so the pipeline surface stays consistent once that table is wired
+        # up.
+        logger.info("Duplicate candidates detected: %s", len(duplicate_flags))
+        return True
+
+    def _save_import_batch(self, batch: Dict[str, Any]) -> Dict[str, Any]:
+        """Create an import batch record in the database and attach its ID."""
+        if not self.db_connection:
+            logger.warning("No database connection available for saving import batch")
+            return batch
+
+        payload = {
+            'org_id': batch['org_id'],
+            'filename': batch['filename'],
+            'file_format': batch['file_format'],
+            'import_date': batch.get('import_date', datetime.now()),
+            'total_transactions': batch.get('total_transactions', 0),
+            'successful_imports': batch.get('successful_imports', 0),
+            'failed_imports': batch.get('failed_imports', 0),
+            'duplicate_count': batch.get('duplicate_count', 0),
+            'status': batch.get('status', 'PENDING'),
+            'error_log': batch.get('error_log')
+        }
+
+        columns = [col for col, val in payload.items() if val is not None]
+        placeholders = ['%s'] * len(columns)
+        values = [payload[col] for col in columns]
+
+        sql = f"INSERT INTO import_batches ({', '.join(columns)}) VALUES ({', '.join(placeholders)})"
 
         try:
-            # TODO: Implement actual database save when repositories are connected
-            logger.debug(f"Would save {len(duplicate_flags)} duplicate flags")
-            return True
+            with self.db_connection.cursor() as cursor:
+                cursor.execute(sql, tuple(values))
+                batch_id = cursor.lastrowid
+            self.db_connection.commit()
+            saved_batch = batch.copy()
+            saved_batch['id'] = batch_id
+            return saved_batch
 
         except Exception as e:
-            logger.error(f"Error saving duplicate flags: {str(e)}")
-            return False
+            logger.error(f"Error saving import batch: {str(e)}")
+            self.db_connection.rollback()
+            return batch
+
+    def _update_import_batch(self, batch: Dict[str, Any]) -> None:
+        """Persist changes to an existing import batch record."""
+        if not self.db_connection or not batch.get('id'):
+            return
+
+        sql = (
+            "UPDATE import_batches SET status=%s, total_transactions=%s, "
+            "successful_imports=%s, failed_imports=%s, duplicate_count=%s, error_log=%s "
+            "WHERE id=%s"
+        )
+        params = (
+            batch.get('status', 'PENDING'),
+            batch.get('total_transactions', 0),
+            batch.get('successful_imports', 0),
+            batch.get('failed_imports', 0),
+            batch.get('duplicate_count', 0),
+            batch.get('error_log'),
+            batch['id']
+        )
+
+        try:
+            with self.db_connection.cursor() as cursor:
+                cursor.execute(sql, params)
+            self.db_connection.commit()
+        except Exception as e:
+            logger.error(f"Error updating import batch {batch['id']}: {str(e)}")
+            self.db_connection.rollback()
 
     def get_import_history(self, limit: int = 50) -> List[Dict[str, Any]]:
         """
