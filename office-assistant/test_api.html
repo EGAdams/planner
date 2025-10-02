@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+</head>
+<body>
+    <h1>API Connection Test</h1>
+    <div id="result"></div>
+    <script>
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            try {
+                resultDiv.innerHTML = 'Testing connection to http://localhost:8000/api/transactions...<br>';
+
+                const response = await fetch('http://localhost:8000/api/transactions');
+                resultDiv.innerHTML += `Response status: ${response.status}<br>`;
+
+                const data = await response.json();
+                resultDiv.innerHTML += `Got ${data.length} transactions<br>`;
+                resultDiv.innerHTML += `<pre>${JSON.stringify(data.slice(0, 3), null, 2)}</pre>`;
+            } catch (error) {
+                resultDiv.innerHTML += `<span style="color:red">ERROR: ${error.message}</span><br>`;
+                resultDiv.innerHTML += `<pre>${error.stack}</pre>`;
+            }
+        }
+        testAPI();
+    </script>
+</body>
+</html>

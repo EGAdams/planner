@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Daily Expense Categorizer</title>
+  <style>
+    :root{
+      --footer-h: 56px;
+
+      --gap: 8px;
+      --line: #dcdcdc;
+    }
+    *{box-sizing:border-box;}
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      margin: 0;
+      padding: 12px 16px calc(var(--footer-h) + 24px + env(safe-area-inset-bottom));
+      color:#111;
+      background:#fff;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--gap);
+      margin-bottom: 8px;
+      border-bottom:1px solid var(--line);
+      padding-bottom:8px;
+    }
+    h1{
+      font-size:20px;
+      margin:0;
+    }
+    .meta{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      font-size:13px;
+    }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:4px 10px;
+      background:#f7f7f7;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:14px;
+    }
+    th, td{
+      border:1px solid var(--line);
+      padding:6px 8px;
+      vertical-align:top;
+      text-align:left;
+    }
+    th{
+      background:#fafafa;
+      font-weight:600;
+    }
+    tbody tr.categorized td.category{
+      color:#0a7a0a;
+      font-weight:600;
+    }
+    tfoot td{
+      font-weight:600;
+      background:#fafafa;
+    }
+    select, input[type="text"]{
+      width:100%;
+      padding:5px 6px;
+      font:inherit;
+    }
+    .status{
+      font-size:12px;
+      opacity:.8;
+    }
+    .footer{padding-bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 1000;
+      min-height: var(--footer-h);
+
+      position: fixed;
+      bottom:0;
+      left:0;
+      right:0;
+      background:#fff;
+      border-top:1px solid var(--line);
+      padding:10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .nav{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    button{
+      padding:6px 10px;
+      border:1px solid #bbb;
+      background:#f6f6f6;
+      border-radius:8px;
+      cursor:pointer;
+      font:inherit;
+    }
+    button:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+    .loading{
+      text-align:center;
+      padding:20px;
+      color:#666;
+    }
+    .error{
+      background:#fee;
+      border:1px solid #c33;
+      padding:12px;
+      margin:12px 0;
+      border-radius:4px;
+      color:#c33;
+    }
+    @media print{
+      .footer{ display:none; }
+      header{ border:none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Daily Expense Categorizer</h1>
+    <div class="meta">
+      <div class="pill" id="currentMonthPill">Month: <strong id="monthText"></strong></div>
+      <div class="pill">Date: <strong id="dateText"></strong></div>
+      <div class="pill">Uncategorized: <strong id="uncatCount">0</strong></div>
+      <div class="pill">Total (day): <strong id="dayTotal">$0.00</strong></div>
+    </div>
+  </header>
+
+  <div id="loadingMsg" class="loading">Loading transactions from database...</div>
+  <div id="errorMsg" class="error" style="display:none;"></div>
+
+  <table aria-label="Transactions for the day" style="display:none;" id="mainTable">
+    <thead>
+      <tr>
+        <th style="width:22%;">Vendor / Description</th>
+        <th style="width:12%;">Amount</th>
+        <th style="width:22%;">Category</th>
+        <th>Notes</th>
+        <th style="width:12%;">Status</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="5">Showing transactions for <span id="dateTextBottom"></span></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="footer">
+    <div>
+      <label for="monthSelect" style="font-size:13px;">Select month:</label>
+      <select id="monthSelect" title="Select calendar month"></select>
+    </div>
+    <div class="nav">
+      <button id="firstBtn" title="First day">&laquo; First</button>
+      <button id="prevBtn" title="Previous day">&lsaquo; Previous</button>
+      <button id="nextBtn" title="Next day">Next &rsaquo;</button>
+      <button id="lastBtn" title="Last day">Last &raquo;</button>
+    </div>
+  </div>
+
+<script>
+// ----- Configuration -----
+const API_BASE = 'http://localhost:8000/api';
+
+// ----- Global data -----
+let allTransactions = [];
+let categoryOptions = [];
+let dataByDate = {};
+let months = [];
+let datesByMonth = {};
+
+// ----- Utility helpers -----
+const fmtCurrency = (n) => n.toLocaleString(undefined, {style:'currency', currency:'USD'});
+const monthKey = (d) => d.slice(0,7); // 'YYYY-MM'
+const monthLabel = (yyyyMM) => {
+  const [y,m] = yyyyMM.split('-').map(Number);
+  return new Date(y, m-1, 1).toLocaleString(undefined, {month:'long', year:'numeric'});
+};
+
+// ----- State -----
+let state = {
+  month: null,
+  dayIdx: 0
+};
+
+// ----- DOM refs -----
+const monthSelect = document.getElementById('monthSelect');
+const rowsEl = document.getElementById('rows');
+const dateText = document.getElementById('dateText');
+const dateTextBottom = document.getElementById('dateTextBottom');
+const monthText = document.getElementById('monthText');
+const uncatCount = document.getElementById('uncatCount');
+const dayTotal = document.getElementById('dayTotal');
+const loadingMsg = document.getElementById('loadingMsg');
+const errorMsg = document.getElementById('errorMsg');
+const mainTable = document.getElementById('mainTable');
+
+const firstBtn = document.getElementById('firstBtn');
+const prevBtn  = document.getElementById('prevBtn');
+const nextBtn  = document.getElementById('nextBtn');
+const lastBtn  = document.getElementById('lastBtn');
+
+// ----- API Functions -----
+async function fetchTransactions() {
+  const response = await fetch(`${API_BASE}/transactions`);
+  if (!response.ok) throw new Error(`Failed to fetch transactions: ${response.statusText}`);
+  return await response.json();
+}
+
+async function fetchCategories() {
+  const response = await fetch(`${API_BASE}/categories`);
+  if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
+  return await response.json();
+}
+
+async function updateTransactionCategory(transactionId, categoryId) {
+  const response = await fetch(`${API_BASE}/transactions/${transactionId}/category`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ category_id: categoryId })
+  });
+  if (!response.ok) throw new Error(`Failed to update category: ${response.statusText}`);
+  return await response.json();
+}
+
+// ----- Data Loading -----
+async function loadData() {
+  try {
+    loadingMsg.style.display = 'block';
+    errorMsg.style.display = 'none';
+    mainTable.style.display = 'none';
+
+    // Load transactions and categories in parallel
+    [allTransactions, categoryOptions] = await Promise.all([
+      fetchTransactions(),
+      fetchCategories()
+    ]);
+
+    if (allTransactions.length === 0) {
+      errorMsg.textContent = 'No transactions found in database.';
+      errorMsg.style.display = 'block';
+      loadingMsg.style.display = 'none';
+      return;
+    }
+
+    // Organize data by date
+    dataByDate = allTransactions.reduce((acc, t) => {
+      (acc[t.date] ||= []).push({...t});
+      return acc;
+    }, {});
+
+    // Get unique months
+    months = Array.from(new Set(allTransactions.map(t => monthKey(t.date)))).sort();
+
+    // Dates available per month (sorted)
+    datesByMonth = months.reduce((acc, m) => {
+      const dates = Object.keys(dataByDate).filter(d => monthKey(d) === m).sort();
+      acc[m] = dates;
+      return acc;
+    }, {});
+
+    // Populate month selector
+    monthSelect.innerHTML = '';
+    months.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = monthLabel(m);
+      monthSelect.appendChild(opt);
+    });
+
+    // Set initial state to most recent month
+    state.month = months[months.length - 1];
+    state.dayIdx = datesByMonth[state.month].length - 1; // Most recent day
+    monthSelect.value = state.month;
+
+    loadingMsg.style.display = 'none';
+    mainTable.style.display = 'table';
+    render();
+
+  } catch (error) {
+    console.error('Error loading data:', error);
+    errorMsg.textContent = `Error loading data: ${error.message}. Make sure the API server is running at ${API_BASE}`;
+    errorMsg.style.display = 'block';
+    loadingMsg.style.display = 'none';
+  }
+}
+
+// ----- Rendering -----
+function currentDate(){
+  const dates = datesByMonth[state.month];
+  return dates[state.dayIdx];
+}
+
+function render(){
+  const d = currentDate();
+  const items = (dataByDate[d] || []).slice();
+
+  // Update meta
+  monthText.textContent = monthLabel(state.month);
+  dateText.textContent = d;
+  dateTextBottom.textContent = d;
+
+  // Build rows
+  rowsEl.innerHTML = '';
+  let uncat = 0;
+  let total = 0;
+
+  for(const item of items){
+    total += (item.amount || 0);
+    const tr = document.createElement('tr');
+    if(item.category) tr.classList.add('categorized');
+
+    // Vendor/Desc
+    const tdVendor = document.createElement('td');
+    tdVendor.innerHTML = `<strong>${item.vendor || 'Unknown'}</strong><br><span class="status">${item.method || ''}</span>`;
+    tr.appendChild(tdVendor);
+
+    // Amount
+    const tdAmt = document.createElement('td');
+    tdAmt.textContent = fmtCurrency(item.amount || 0);
+    tr.appendChild(tdAmt);
+
+    // Category
+    const tdCat = document.createElement('td');
+    tdCat.className = 'category';
+    if(item.category){
+      tdCat.textContent = item.category;
+    } else {
+      uncat++;
+      const sel = document.createElement('select');
+      sel.innerHTML = `<option value="">— select category —</option>` +
+        categoryOptions.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+      sel.value = item.category_id || '';
+      sel.addEventListener('change', async () => {
+        if (sel.value) {
+          try {
+            await updateTransactionCategory(item.id, parseInt(sel.value));
+            // Update local data
+            const category = categoryOptions.find(c => c.id === parseInt(sel.value));
+            item.category = category ? category.name : null;
+            item.category_id = parseInt(sel.value);
+            render(); // re-render for status/uncat count
+          } catch (error) {
+            console.error('Error updating category:', error);
+            alert('Failed to update category: ' + error.message);
+          }
+        }
+      });
+      tdCat.appendChild(sel);
+    }
+    tr.appendChild(tdCat);
+
+    // Notes
+    const tdNotes = document.createElement('td');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = item.notes || '';
+    input.placeholder = 'Add a note (optional)';
+    input.addEventListener('input', () => item.notes = input.value);
+    tdNotes.appendChild(input);
+    tr.appendChild(tdNotes);
+
+    // Status
+    const tdStatus = document.createElement('td');
+    tdStatus.className = 'status';
+    tdStatus.textContent = item.category ? 'Categorized' : 'Needs category';
+    tr.appendChild(tdStatus);
+
+    rowsEl.appendChild(tr);
+  }
+
+  uncatCount.textContent = uncat;
+  dayTotal.textContent = fmtCurrency(total);
+
+  // Update nav button states
+  const lastIndex = datesByMonth[state.month].length - 1;
+  firstBtn.disabled = state.dayIdx <= 0;
+  prevBtn.disabled  = state.dayIdx <= 0;
+  nextBtn.disabled  = state.dayIdx >= lastIndex;
+  lastBtn.disabled  = state.dayIdx >= lastIndex;
+}
+
+// ----- Events -----
+monthSelect.addEventListener('change', () => {
+  state.month = monthSelect.value;
+  state.dayIdx = 0; // jump to first available day in that month
+  render();
+});
+
+firstBtn.addEventListener('click', () => { state.dayIdx = 0; render(); });
+lastBtn .addEventListener('click',  () => { state.dayIdx = datesByMonth[state.month].length - 1; render(); });
+prevBtn .addEventListener('click', () => { if(state.dayIdx > 0) state.dayIdx--; render(); });
+nextBtn .addEventListener('click', () => { const max = datesByMonth[state.month].length - 1; if(state.dayIdx < max) state.dayIdx++; render(); });
+
+// Keyboard shortcuts (← →)
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'ArrowLeft') prevBtn.click();
+  if(e.key === 'ArrowRight') nextBtn.click();
+});
+
+// Initial load
+loadData();
+</script>
+</body>
+</html>

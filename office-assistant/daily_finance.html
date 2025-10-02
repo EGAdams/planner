@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Expense Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+        
+        .header-info {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .header-info input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .categories {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .category {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            background: #fafafa;
+        }
+        
+        .category h3 {
+            color: #5e35b1;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .input-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .category select {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+        }
+        
+        .amount-input {
+            width: 90px;
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .amount-label {
+            font-size: 12px;
+            color: #666;
+            margin-right: 4px;
+        }
+        
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 5px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        
+        .subcategory {
+            margin-top: 10px;
+        }
+        
+        .subcategory-title {
+            font-weight: 600;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .subcategory-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .expense-field {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Daily Expense Tracker</h1>
+        
+        <div class="header-info">
+            <input type="text" placeholder="Day" id="day">
+            <input type="date" placeholder="Date" id="date">
+            <input type="text" placeholder="Special activity on this day" id="special-activity" style="flex: 2;">
+        </div>
+        
+        <div class="categories">
+            <div class="category">
+                <h3>1. Facility Payment</h3>
+                <div class="input-row">
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>2. Facility Upkeep</h3>
+                <div class="input-row">
+                    <select>
+                        <option value="">Select item...</option>
+                        <option value="trash">Trash</option>
+                        <option value="furnishings">Furnishings</option>
+                        <option value="tools">Tools</option>
+                        <option value="cleaning">Cleaning</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>3. Utilities</h3>
+                <div class="input-row">
+                    <select>
+                        <option value="">Select utility...</option>
+                        <option value="gas">Gas</option>
+                        <option value="water">Water</option>
+                        <option value="electric">Electric</option>
+                        <option value="att">AT&T</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>4. Food/Supplies</h3>
+                <div class="input-row">
+                    <select>
+                        <option value="">Select vendor...</option>
+                        <option value="family-fare">Family Fare</option>
+                        <option value="meijer">Meijer</option>
+                        <option value="restaurants">Restaurants/Members/Guests</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>5. Office</h3>
+                <div class="input-row">
+                    <select>
+                        <option value="">Select category...</option>
+                        <option value="supplies">Supplies</option>
+                        <option value="apple">Apple</option>
+                        <option value="amazon">Amazon</option>
+                        <option value="postage">Postage</option>
+                        <option value="furnishings">Furnishings</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>6. Education/Music/TV</h3>
+                <div class="input-row">
+                    <select>
+                        <option value="">Select category...</option>
+                        <option value="cds">CDs</option>
+                        <option value="dvds">DVDs</option>
+                        <option value="books">Books</option>
+                        <option value="amazon">Amazon</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>7. Travel</h3>
+                <div class="input-row">
+                    <select>
+                        <option value="">Select category...</option>
+                        <option value="rj-gas">RJ Gas</option>
+                        <option value="rm-gas">RM Gas</option>
+                        <option value="rj-wash-oil">RJ Wash/Oil</option>
+                        <option value="rm-wash-oil">RM Wash/Oil</option>
+                        <option value="car-payment-rj">Car Payment RJ</option>
+                        <option value="car-payment-rm">Car Payment RM</option>
+                        <option value="car-repair">Car Repair RM/RJ</option>
+                        <option value="airfare">Airfare</option>
+                        <option value="tolls">Tolls</option>
+                        <option value="aaa">AAA</option>
+                        <option value="ministry-related">Ministry Related</option>
+                        <option value="hotels">Hotels</option>
+                        <option value="license-tags">License Tags RM/RJ</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>9. Insurance</h3>
+                <div class="input-row">
+                    <select>
+                        <option value="">Select type...</option>
+                        <option value="building">Building</option>
+                        <option value="boiler">Boiler</option>
+                        <option value="vehicles">Vehicles</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>8. Gifts and Love Offerings (includes work done for River of Life)</h3>
+                <div class="input-row">
+                    <select style="max-width: 300px;">
+                        <option value="">Select recipient...</option>
+                        <option value="eg-adams">EG Adams</option>
+                        <option value="c-baker">C Baker</option>
+                        <option value="a-baker">A Baker</option>
+                        <option value="k-cook">K Cook</option>
+                        <option value="r-menninga">R Menninga</option>
+                        <option value="j-menninga">J Menninga</option>
+                        <option value="k-roark">K Roark</option>
+                        <option value="h-schneider">H Schneider</option>
+                        <option value="r-exposito">R Exposito</option>
+                        <option value="k-vander-vliet">K Vander Vliet</option>
+                        <option value="j-mckay">J McKay</option>
+                        <option value="sound">Sound (R Slawson)</option>
+                        <option value="guest-speakers">Guest Speakers</option>
+                        <option value="chosen-people">Chosen People</option>
+                        <option value="columbia-orphanage">Columbia Orphanage</option>
+                        <option value="segals">Segals in Israel</option>
+                        <option value="intercessors">Intercessors for America</option>
+                        <option value="samaritans">Samaritans Purse</option>
+                        <option value="mel-trotter">Mel Trotter</option>
+                        <option value="guiding-light">Guiding Light</option>
+                        <option value="right-to-life">Right to Life</option>
+                        <option value="johnsons">Johnsons in Dominican Republic</option>
+                        <option value="jews-for-jesus">Jews for Jesus</option>
+                        <option value="jewish-voice">Jewish Voice</option>
+                        <option value="salvation-army">Salvation Army</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                    <input type="text" placeholder="Special occasions: name/occasion" style="flex: 2;">
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>10. Senior Pastors</h3>
+                <div class="subcategory-grid">
+                    <div>
+                        <div class="subcategory-title">RJ: Priority Health</div>
+                        <div class="input-row">
+                            <input type="text" placeholder="Medical expense details">
+                            <span class="amount-label">$</span>
+                            <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="subcategory-title">RM: Priority Health</div>
+                        <div class="input-row">
+                            <input type="text" placeholder="Medical expense details">
+                            <span class="amount-label">$</span>
+                            <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                        </div>
+                    </div>
+                </div>
+                <div class="subcategory">
+                    <div class="subcategory-title">Housing</div>
+                    <div class="input-row">
+                        <select>
+                            <option value="">Select expense...</option>
+                            <option value="house-payment">House Payment</option>
+                            <option value="gas">Gas</option>
+                            <option value="water">Water</option>
+                            <option value="trash">Trash</option>
+                            <option value="electric">Electric</option>
+                            <option value="house-taxes">House Taxes</option>
+                            <option value="house-insurance">House Insurance</option>
+                            <option value="service-professor">Service Professor</option>
+                        </select>
+                        <span class="amount-label">$</span>
+                        <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                    </div>
+                </div>
+                <div class="subcategory">
+                    <div class="subcategory-title">Upkeep</div>
+                    <div class="input-row">
+                        <select>
+                            <option value="">Select category...</option>
+                            <option value="decor">Décor/Furnishings</option>
+                            <option value="tools">Tools</option>
+                            <option value="repair">Repair</option>
+                            <option value="outdoor">Outdoor/Lawn Care</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <span class="amount-label">$</span>
+                        <input type="number" class="amount-input" placeholder="Amount" step="0.01">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="category">
+                <h3>11. Miscellaneous</h3>
+                <div class="expense-field">
+                    <input type="text" placeholder="Description">
+                </div>
+                <div class="input-row" style="margin-top: 8px;">
+                    <span class="amount-label">$</span>
+                    <input type="number" class="amount-input" placeholder="Amount" step="0.01" style="width: 100%;">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
