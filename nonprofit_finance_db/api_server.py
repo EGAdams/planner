@@ -101,19 +101,38 @@ async def get_transactions(
     - end_date: YYYY-MM-DD (optional)
     """
     try:
-        # Build SQL query with JOINs for category name
+        # First, get all categories to build full paths
+        categories_sql = "SELECT id, name, parent_id FROM categories"
+        all_categories = query_all(categories_sql, ())
+
+        # Build a map of category_id -> full_path
+        category_map = {cat['id']: cat for cat in all_categories}
+
+        def get_full_path(cat_id):
+            if not cat_id or cat_id not in category_map:
+                return None
+            path = []
+            current_id = cat_id
+            # Traverse up the hierarchy
+            while current_id is not None:
+                cat = category_map.get(current_id)
+                if not cat:
+                    break
+                path.insert(0, cat['name'])  # Insert at beginning
+                current_id = cat.get('parent_id')
+            return ' / '.join(path)
+
+        # Build SQL query for transactions
         sql = """
             SELECT
                 t.id,
                 t.transaction_date as date,
                 t.description as vendor,
                 ABS(t.amount) as amount,
-                c.name as category,
                 t.category_id,
                 COALESCE(t.transaction_type, '') as method,
                 '' as paid_by
             FROM transactions t
-            LEFT JOIN categories c ON t.category_id = c.id
         """
 
         conditions = []
@@ -134,7 +153,7 @@ async def get_transactions(
 
         rows = query_all(sql, tuple(params))
 
-        # Convert rows to transaction format
+        # Convert rows to transaction format with full category path
         transactions = []
         for row in rows:
             transactions.append({
@@ -142,7 +161,7 @@ async def get_transactions(
                 "date": convert_value(row['date']),
                 "vendor": row['vendor'] or "",
                 "amount": convert_value(row['amount']),
-                "category": row['category'],
+                "category": get_full_path(row['category_id']),
                 "category_id": row['category_id'],
                 "method": row['method'] or "",
                 "paid_by": row['paid_by'] or ""

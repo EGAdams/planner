@@ -38,11 +38,15 @@
       "target": [
         {
           "target": "msi",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "assets/icon.ico"
@@ -67,12 +71,17 @@
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "category": "Productivity",
       "description": "AI-powered project management system for freelancers",
       "maintainer": "Planner Team"
     }
+  },
+  "dependencies": {
+    "puppeteer": "^24.23.0"
   }
 }
