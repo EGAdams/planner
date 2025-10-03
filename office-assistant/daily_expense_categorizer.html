@@ -390,42 +390,51 @@ function render(){
     // Category
     const tdCat = document.createElement('td');
     tdCat.className = 'category';
+
+    // Always create category-picker component
+    const picker = document.createElement('category-picker');
+    picker.setAttribute('expense-id', item.id);
+    picker.setAttribute('placeholder', 'Select category…');
+
+    // Create inline JSON taxonomy from categoryOptions
+    const script = document.createElement('script');
+    script.type = 'application/json';
+    script.textContent = JSON.stringify(categoryOptions);
+    picker.appendChild(script);
+
+    // If already categorized, set the value (will show in green completed state)
     if(item.category){
-      tdCat.textContent = item.category;
+      // Set value after component is connected to DOM
+      tdCat.appendChild(picker);
+      // Use setTimeout to ensure component is fully initialized
+      setTimeout(() => {
+        picker.value = item.category;
+      }, 0);
     } else {
       uncat++;
-      const picker = document.createElement('category-picker');
-      picker.setAttribute('expense-id', item.id);
-      picker.setAttribute('placeholder', 'Select category…');
-
-      // Create inline JSON taxonomy from categoryOptions
-      const script = document.createElement('script');
-      script.type = 'application/json';
-      script.textContent = JSON.stringify(categoryOptions);
-      picker.appendChild(script);
-
-      // Listen for categorization completion
-      picker.addEventListener('completed', async (e) => {
-        try {
-          const fullLabel = e.detail.label;
-          const nodeId = e.detail.nodeId;
-
-          // Find the category node in the tree by nodeId
-          const categoryNode = findCategoryNodeById(categoryOptions, nodeId);
-          if (categoryNode && categoryNode._original) {
-            await updateTransactionCategory(item.id, categoryNode._original.id);
-            item.category = fullLabel;
-            item.category_id = categoryNode._original.id;
-            render();
-          }
-        } catch (error) {
-          console.error('Error updating category:', error);
-          alert('Failed to update category: ' + error.message);
-        }
-      });
-
       tdCat.appendChild(picker);
     }
+
+    // Listen for categorization completion
+    picker.addEventListener('completed', async (e) => {
+      try {
+        const fullLabel = e.detail.label;
+        const nodeId = e.detail.nodeId;
+
+        // Find the category node in the tree by nodeId
+        const categoryNode = findCategoryNodeById(categoryOptions, nodeId);
+        if (categoryNode && categoryNode._original) {
+          await updateTransactionCategory(item.id, categoryNode._original.id);
+          item.category = fullLabel;
+          item.category_id = categoryNode._original.id;
+          render();
+        }
+      } catch (error) {
+        console.error('Error updating category:', error);
+        alert('Failed to update category: ' + error.message);
+      }
+    });
+
     tr.appendChild(tdCat);
 
     // Notes
