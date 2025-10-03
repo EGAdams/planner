@@ -58,7 +58,7 @@ if OFFICE_ASSISTANT_DIR.is_dir():
 
 # Models
 class CategoryUpdate(BaseModel):
-    category_id: int
+    category_id: Optional[int] = None
 
 class Transaction(BaseModel):
     id: int

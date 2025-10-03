@@ -435,6 +435,19 @@ function render(){
       }
     });
 
+    // Listen for reset button click to clear category in database
+    picker.addEventListener('reset', async (e) => {
+      try {
+        await updateTransactionCategory(item.id, null);
+        item.category = null;
+        item.category_id = null;
+        render();
+      } catch (error) {
+        console.error('Error resetting category:', error);
+        alert('Failed to reset category: ' + error.message);
+      }
+    });
+
     tr.appendChild(tdCat);
 
     // Notes

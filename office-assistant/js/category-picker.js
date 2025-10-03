@@ -185,6 +185,8 @@ export class CategoryPicker extends HTMLElement {
     /** Render options into the single <select> */
     renderOptions(options) {
         this.currentOptions = options;
+        // Guard: selectEl might not exist if called before connectedCallback
+        if (!this.selectEl) return;
         this.selectEl.innerHTML = "";
         const ph = document.createElement("option");
         ph.value = "";
@@ -247,6 +249,15 @@ export class CategoryPicker extends HTMLElement {
         this.renderOptions(this.taxonomy);
         this.updateStatus(true);
         this.markIncomplete();
+        // Dispatch reset event for parent to handle database update
+        this.dispatchEvent(new CustomEvent("reset", {
+            detail: { expenseId: this.expenseId },
+            bubbles: true,
+            composed: true
+        }));
+        emit("expense:reset", {
+            expenseId: this.expenseId
+        });
     }
     /** Mark done -> light green */
     markComplete() {
