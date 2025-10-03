@@ -50,22 +50,66 @@
         "label": "Office Supplies"
       },
       {
-        "id": "cleaning_supplies",
-        "label": "Cleaning Supplies"
+        "id": "kitchen_supplies",
+        "label": "Kitchen Supplies"
       }
     ]
   },
   {
-    "id": "transportation",
-    "label": "Transportation",
+    "id": "travel",
+    "label": "Travel",
     "children": [
       {
-        "id": "fuel",
-        "label": "Fuel"
+        "id": "airfare",
+        "label": "Airfare"
       },
       {
-        "id": "maintenance",
-        "label": "Maintenance/Repairs"
+        "id": "hotel",
+        "label": "Hotel"
+      },
+      {
+        "id": "meals",
+        "label": "Meals"
+      },
+      {
+        "id": "ground_transportation",
+        "label": "Ground Transportation"
+      }
+    ]
+  },
+  {
+    "id": "fundraising",
+    "label": "Fundraising",
+    "children": [
+      {
+        "id": "event_costs",
+        "label": "Event Costs"
+      },
+      {
+        "id": "marketing_materials",
+        "label": "Marketing Materials"
+      },
+      {
+        "id": "venue_rental",
+        "label": "Venue Rental"
+      }
+    ]
+  },
+  {
+    "id": "office",
+    "label": "Office",
+    "children": [
+      {
+        "id": "office_equipment",
+        "label": "Office Equipment"
+      },
+      {
+        "id": "office_rent",
+        "label": "Office Rent"
+      },
+      {
+        "id": "office_maintenance",
+        "label": "Office Maintenance"
       }
     ]
   }

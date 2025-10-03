@@ -165,6 +165,55 @@ INSERT INTO categories (name, kind) VALUES
   ('Program Rev',  'INCOME'),
   ('Reimbursements','INCOME');
 
+-- Get category IDs for parent categories
+SET @cat_supplies := (SELECT id FROM categories WHERE name='Supplies' AND kind='EXPENSE');
+SET @cat_travel := (SELECT id FROM categories WHERE name='Travel' AND kind='EXPENSE');
+SET @cat_fundraising := (SELECT id FROM categories WHERE name='Fundraising' AND kind='EXPENSE');
+SET @cat_office := (SELECT id FROM categories WHERE name='Office' AND kind='EXPENSE');
+SET @cat_utilities := (SELECT id FROM categories WHERE name='Utilities' AND kind='EXPENSE');
+
+-- Insert Utilities subcategories
+INSERT INTO categories (name, kind, parent_id) VALUES
+  ('Gas Bill', 'EXPENSE', @cat_utilities),
+  ('Electric Bill', 'EXPENSE', @cat_utilities),
+  ('Water/Sewer', 'EXPENSE', @cat_utilities),
+  ('Trash Pickup', 'EXPENSE', @cat_utilities);
+
+-- Get gas and electric IDs for third level
+SET @cat_gas := (SELECT id FROM categories WHERE name='Gas Bill' AND kind='EXPENSE');
+SET @cat_electric := (SELECT id FROM categories WHERE name='Electric Bill' AND kind='EXPENSE');
+
+-- Insert third level utility subcategories
+INSERT INTO categories (name, kind, parent_id) VALUES
+  ('Housing Gas Bill', 'EXPENSE', @cat_gas),
+  ('Church Gas Bill', 'EXPENSE', @cat_gas),
+  ('Housing Electric Bill', 'EXPENSE', @cat_electric),
+  ('Church Electric Bill', 'EXPENSE', @cat_electric);
+
+-- Insert Supplies subcategories
+INSERT INTO categories (name, kind, parent_id) VALUES
+  ('Office Supplies', 'EXPENSE', @cat_supplies),
+  ('Kitchen Supplies', 'EXPENSE', @cat_supplies);
+
+-- Insert Travel subcategories
+INSERT INTO categories (name, kind, parent_id) VALUES
+  ('Airfare', 'EXPENSE', @cat_travel),
+  ('Hotel', 'EXPENSE', @cat_travel),
+  ('Meals', 'EXPENSE', @cat_travel),
+  ('Ground Transportation', 'EXPENSE', @cat_travel);
+
+-- Insert Fundraising subcategories
+INSERT INTO categories (name, kind, parent_id) VALUES
+  ('Event Costs', 'EXPENSE', @cat_fundraising),
+  ('Marketing Materials', 'EXPENSE', @cat_fundraising),
+  ('Venue Rental', 'EXPENSE', @cat_fundraising);
+
+-- Insert Office subcategories
+INSERT INTO categories (name, kind, parent_id) VALUES
+  ('Office Equipment', 'EXPENSE', @cat_office),
+  ('Office Rent', 'EXPENSE', @cat_office),
+  ('Office Maintenance', 'EXPENSE', @cat_office);
+
 SET @org_np := (SELECT id FROM organizations WHERE name = 'GoodWorks Nonprofit');
 SET @org_me := (SELECT id FROM organizations WHERE name = 'Personal (You)');
 
