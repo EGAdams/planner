@@ -1,0 +1,14 @@
+{
+  "name": "category-picker",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "serve": "npx http-server public"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

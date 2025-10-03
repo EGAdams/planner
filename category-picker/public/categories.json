@@ -1,0 +1,72 @@
+[
+  {
+    "id": "utilities",
+    "label": "Utilities",
+    "children": [
+      {
+        "id": "gas",
+        "label": "Gas Bill",
+        "children": [
+          {
+            "id": "housing_gas",
+            "label": "Housing Gas Bill"
+          },
+          {
+            "id": "church_gas",
+            "label": "Church Gas Bill"
+          }
+        ]
+      },
+      {
+        "id": "electric",
+        "label": "Electric Bill",
+        "children": [
+          {
+            "id": "housing_electric",
+            "label": "Housing Electric Bill"
+          },
+          {
+            "id": "church_electric",
+            "label": "Church Electric Bill"
+          }
+        ]
+      },
+      {
+        "id": "water",
+        "label": "Water/Sewer"
+      },
+      {
+        "id": "trash",
+        "label": "Trash Pickup"
+      }
+    ]
+  },
+  {
+    "id": "supplies",
+    "label": "Supplies",
+    "children": [
+      {
+        "id": "office_supplies",
+        "label": "Office Supplies"
+      },
+      {
+        "id": "cleaning_supplies",
+        "label": "Cleaning Supplies"
+      }
+    ]
+  },
+  {
+    "id": "transportation",
+    "label": "Transportation",
+    "children": [
+      {
+        "id": "fuel",
+        "label": "Fuel"
+      },
+      {
+        "id": "maintenance",
+        "label": "Maintenance/Repairs"
+      }
+    ]
+  }
+]

@@ -175,9 +175,10 @@
     </div>
   </div>
 
+<script type="module" src="/office/js/main.js"></script>
 <script>
 // ----- Configuration -----
-const API_BASE = 'http://localhost:8000/api';
+const API_BASE = 'http://localhost:8080/api';
 
 // ----- Global data -----
 let allTransactions = [];
@@ -227,7 +228,56 @@ async function fetchTransactions() {
 async function fetchCategories() {
   const response = await fetch(`${API_BASE}/categories`);
   if (!response.ok) throw new Error(`Failed to fetch categories: ${response.statusText}`);
-  return await response.json();
+  const flatCategories = await response.json();
+
+  // Convert flat list to hierarchical structure for category-picker
+  // Assuming categories have parent_id field for hierarchy
+  return buildCategoryTree(flatCategories);
+}
+
+function buildCategoryTree(categories) {
+  const map = {};
+  const roots = [];
+
+  // First pass: create map and convert to CategoryNode format
+  categories.forEach(cat => {
+    map[cat.id] = {
+      id: String(cat.id),
+      label: cat.name,
+      children: [],
+      _original: cat  // Keep reference to original data
+    };
+  });
+
+  // Second pass: build tree structure
+  categories.forEach(cat => {
+    const node = map[cat.id];
+    if (cat.parent_id && map[cat.parent_id]) {
+      map[cat.parent_id].children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  // Clean up empty children arrays
+  Object.values(map).forEach(node => {
+    if (node.children.length === 0) {
+      delete node.children;
+    }
+  });
+
+  return roots;
+}
+
+function findCategoryNodeById(nodes, id) {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    if (node.children) {
+      const found = findCategoryNodeById(node.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
 }
 
 async function updateTransactionCategory(transactionId, categoryId) {
@@ -344,26 +394,37 @@ function render(){
       tdCat.textContent = item.category;
     } else {
       uncat++;
-      const sel = document.createElement('select');
-      sel.innerHTML = `<option value="">— select category —</option>` +
-        categoryOptions.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
-      sel.value = item.category_id || '';
-      sel.addEventListener('change', async () => {
-        if (sel.value) {
-          try {
-            await updateTransactionCategory(item.id, parseInt(sel.value));
-            // Update local data
-            const category = categoryOptions.find(c => c.id === parseInt(sel.value));
-            item.category = category ? category.name : null;
-            item.category_id = parseInt(sel.value);
-            render(); // re-render for status/uncat count
-          } catch (error) {
-            console.error('Error updating category:', error);
-            alert('Failed to update category: ' + error.message);
+      const picker = document.createElement('category-picker');
+      picker.setAttribute('expense-id', item.id);
+      picker.setAttribute('placeholder', 'Select category…');
+
+      // Create inline JSON taxonomy from categoryOptions
+      const script = document.createElement('script');
+      script.type = 'application/json';
+      script.textContent = JSON.stringify(categoryOptions);
+      picker.appendChild(script);
+
+      // Listen for categorization completion
+      picker.addEventListener('completed', async (e) => {
+        try {
+          const fullLabel = e.detail.label;
+          const nodeId = e.detail.nodeId;
+
+          // Find the category node in the tree by nodeId
+          const categoryNode = findCategoryNodeById(categoryOptions, nodeId);
+          if (categoryNode && categoryNode._original) {
+            await updateTransactionCategory(item.id, categoryNode._original.id);
+            item.category = fullLabel;
+            item.category_id = categoryNode._original.id;
+            render();
           }
+        } catch (error) {
+          console.error('Error updating category:', error);
+          alert('Failed to update category: ' + error.message);
         }
       });
-      tdCat.appendChild(sel);
+
+      tdCat.appendChild(picker);
     }
     tr.appendChild(tdCat);
 

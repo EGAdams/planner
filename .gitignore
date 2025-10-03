@@ -13,3 +13,5 @@ dist/*.AppImage
 nonprofit_finance_db/venv/*
 nonprofit_finance_db/.env
 nonprofit_finance_db/.venv/*
+category-picker/node_modules/*
+

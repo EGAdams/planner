@@ -5,6 +5,8 @@ Serves transaction data from MySQL database
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime, date
@@ -19,6 +21,10 @@ from app.db import query_all, query_one, execute
 
 app = FastAPI(title="Daily Expense Categorizer API")
 
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = (BASE_DIR.parent / "category-picker" / "public").resolve()
+OFFICE_ASSISTANT_DIR = (BASE_DIR.parent / "office-assistant").resolve()
+
 # Enable CORS for local development
 app.add_middleware(
     CORSMiddleware,
@@ -27,6 +33,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if FRONTEND_DIR.is_dir():
+    app.mount(
+        "/ui",
+        StaticFiles(directory=str(FRONTEND_DIR), html=True),
+        name="category-picker-ui",
+    )
+
+if OFFICE_ASSISTANT_DIR.is_dir():
+    @app.get("/", include_in_schema=False)
+    async def get_daily_expense_categorizer():
+        return FileResponse(OFFICE_ASSISTANT_DIR / "daily_expense_categorizer.html")
+
+    @app.get("/daily_expense_categorizer.html", include_in_schema=False)
+    async def get_daily_expense_categorizer_direct():
+        return FileResponse(OFFICE_ASSISTANT_DIR / "daily_expense_categorizer.html")
+
+    app.mount(
+        "/office",
+        StaticFiles(directory=str(OFFICE_ASSISTANT_DIR), html=True),
+        name="office-assistant",
+    )
 
 # Models
 class CategoryUpdate(BaseModel):
@@ -45,6 +73,7 @@ class Transaction(BaseModel):
 class Category(BaseModel):
     id: int
     name: str
+    parent_id: Optional[int] = None
 
 # Helper function
 def convert_value(val):
@@ -56,7 +85,7 @@ def convert_value(val):
     return val
 
 # Routes
-@app.get("/")
+@app.get("/api")
 async def root():
     return {"message": "Daily Expense Categorizer API", "status": "running"}
 
@@ -126,18 +155,18 @@ async def get_transactions(
 
 @app.get("/api/categories", response_model=List[Category])
 async def get_categories():
-    """Get all active expense categories"""
+    """Get all active expense categories with hierarchy"""
     try:
         sql = """
-            SELECT id, name
+            SELECT id, name, parent_id
             FROM categories
             WHERE kind = 'EXPENSE' AND is_active = 1
-            ORDER BY name
+            ORDER BY parent_id, name
         """
 
         rows = query_all(sql, ())
 
-        return [{"id": row['id'], "name": row['name']} for row in rows]
+        return [{"id": row['id'], "name": row['name'], "parent_id": row.get('parent_id')} for row in rows]
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -168,10 +197,15 @@ async def update_category(transaction_id: int, update: CategoryUpdate):
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Starting Daily Expense Categorizer API on http://localhost:8000")
-    print("   API Documentation: http://localhost:8000/docs")
-    print("   Endpoints:")
+    print("🚀 Starting Daily Expense Categorizer on http://localhost:8080")
+    print("   Main App:         http://localhost:8080/")
+    print("   API Documentation: http://localhost:8080/docs")
+    print("   API Endpoints:")
     print("   - GET  /api/transactions")
     print("   - GET  /api/categories")
     print("   - PUT  /api/transactions/<id>/category")
-    uvicorn.run("api_server:app", host="0.0.0.0", port=8000, reload=True)
+    if FRONTEND_DIR.is_dir():
+        print("   Category Picker:  http://localhost:8080/ui")
+    if OFFICE_ASSISTANT_DIR.is_dir():
+        print("   Office Assistant: http://localhost:8080/office")
+    uvicorn.run("api_server:app", host="0.0.0.0", port=8080, reload=True)

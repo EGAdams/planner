@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Category Picker Demo</title>
+  <style>
+    body{ font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin:20px; }
+    form { display:flex; flex-direction:column; gap:16px; }
+    .log{ border:1px solid #ddd; padding:10px; border-radius:8px; max-width: 760px; }
+    pre{ margin:0; white-space:pre-wrap; word-break:break-word; }
+  </style>
+</head>
+<body>
+  <h1>Category Picker (Web Component)</h1>
+
+  <form id="demo-form" onsubmit="return false;">
+    <label>Expense Category:</label>
+    <category-picker name="category" data-src="./categories.json" expense-id="EXP-1234" placeholder="Pick a top-level category…"></category-picker>
+
+    <div>
+      <button id="submit">Submit Form (inspect console)</button>
+    </div>
+  </form>
+
+  <div class="log">
+    <strong>Event log</strong>
+    <pre id="log"></pre>
+  </div>
+
+  <script type="module" src="./js/main.js"></script>
+  <script type="module">
+    const log = document.getElementById('log');
+    function add(line){ log.textContent += line + "\n"; }
+
+    window.addEventListener("expense:progress", (ev) => {
+      add("progress => " + JSON.stringify(ev.detail));
+    });
+    window.addEventListener("expense:categorized", (ev) => {
+      add("categorized => " + JSON.stringify(ev.detail));
+    });
+
+    document.getElementById('submit').addEventListener('click', () => {
+      const form = document.getElementById('demo-form');
+      const fd = new FormData(form as HTMLFormElement);
+      // This will include the <category-picker> value when finalized
+      console.log("FormData entries:");
+      for (const [k,v] of fd.entries()) console.log(k, "=>", v);
+      add("FormData => " + JSON.stringify(Object.fromEntries(fd as any)));
+    });
+  </script>
+</body>
+</html>
