@@ -34,7 +34,7 @@ body {
 }
 
 .header-content {
-    max-width: 1200px;
+    max-width: 95%;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
@@ -67,7 +67,7 @@ body {
 }
 
 .nav-container {
-    max-width: 1200px;
+    max-width: 95%;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
@@ -125,7 +125,7 @@ body {
 /* Main Content */
 .main-content {
     flex: 1;
-    max-width: 1200px;
+    max-width: 95%;
     margin: 0 auto;
     padding: 2rem;
     width: 100%;
@@ -134,9 +134,16 @@ body {
 #content-area {
     background: white;
     border-radius: 12px;
-    padding: 2rem;
+    padding: 1rem;
     box-shadow: 0 4px 6px rgba(0,0,0,0.07);
     min-height: 60vh;
+}
+
+#content-area iframe {
+    width: 100%;
+    height: calc(100vh - 250px);
+    border: none;
+    display: block;
 }
 
 .welcome-section {

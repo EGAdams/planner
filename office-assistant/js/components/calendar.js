@@ -78,54 +78,58 @@ class Calendar {
     render() {
         return `
             <div class="calendar-container">
-                <div class="calendar-header">
-                    <div class="calendar-nav">
-                        <button class="btn btn-outline calendar-nav-btn" onclick="calendar.previousMonth()">
-                            ← Previous
-                        </button>
-                        <h2 class="calendar-title">${this.getMonthYearText()}</h2>
-                        <button class="btn btn-outline calendar-nav-btn" onclick="calendar.nextMonth()">
-                            Next →
-                        </button>
-                    </div>
-                    <div class="calendar-controls">
-                        <button class="btn btn-primary" onclick="calendar.showAddEventModal()">
-                            + Add Event
-                        </button>
-                        <div class="view-toggles">
-                            <button class="btn ${this.viewMode === 'month' ? 'btn-secondary' : 'btn-outline'}"
-                                    onclick="calendar.setViewMode('month')">Month</button>
-                            <button class="btn ${this.viewMode === 'week' ? 'btn-secondary' : 'btn-outline'}"
-                                    onclick="calendar.setViewMode('week')">Week</button>
-                            <button class="btn ${this.viewMode === 'day' ? 'btn-secondary' : 'btn-outline'}"
-                                    onclick="calendar.setViewMode('day')">Day</button>
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-4">
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" onclick="calendar.previousMonth()">
+                                ← Previous
+                            </button>
+                            <h2 class="text-2xl font-semibold text-gray-800">${this.getMonthYearText()}</h2>
+                            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50" onclick="calendar.nextMonth()">
+                                Next →
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700" onclick="calendar.showAddEventModal()">
+                                + Add Event
+                            </button>
+                            <div class="flex gap-1">
+                                <button class="px-3 py-2 ${this.viewMode === 'month' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg hover:bg-gray-200"
+                                        onclick="calendar.setViewMode('month')">Month</button>
+                                <button class="px-3 py-2 ${this.viewMode === 'week' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg hover:bg-gray-200"
+                                        onclick="calendar.setViewMode('week')">Week</button>
+                                <button class="px-3 py-2 ${this.viewMode === 'day' ? 'bg-gray-600 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg hover:bg-gray-200"
+                                        onclick="calendar.setViewMode('day')">Day</button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="calendar-content">
-                    ${this.renderCalendarView()}
-                </div>
-
-                <div class="calendar-sidebar">
-                    <div class="upcoming-events">
-                        <h3>Upcoming Events</h3>
-                        ${this.renderUpcomingEvents()}
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-3">
+                        ${this.renderCalendarView()}
                     </div>
-                    <div class="event-types">
-                        <h4>Event Types</h4>
-                        <div class="type-legend">
-                            <div class="type-item">
-                                <span class="type-dot meeting"></span>
-                                <span>Meetings</span>
-                            </div>
-                            <div class="type-item">
-                                <span class="type-dot deadline"></span>
-                                <span>Deadlines</span>
-                            </div>
-                            <div class="type-item">
-                                <span class="type-dot task"></span>
-                                <span>Tasks</span>
+
+                    <div class="space-y-6">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h3 class="text-lg font-semibold mb-3">Upcoming Events</h3>
+                            ${this.renderUpcomingEvents()}
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-md font-semibold mb-3">Event Types</h4>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-blue-500"></span>
+                                    <span class="text-sm">Meetings</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                    <span class="text-sm">Deadlines</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                                    <span class="text-sm">Tasks</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -155,22 +159,22 @@ class Calendar {
         const startingDayOfWeek = firstDay.getDay(); // 0=Sun..6=Sat
 
         let html = `
-            <div class="calendar-grid">
-                <div class="calendar-weekdays">
-                    <div class="weekday">Sun</div>
-                    <div class="weekday">Mon</div>
-                    <div class="weekday">Tue</div>
-                    <div class="weekday">Wed</div>
-                    <div class="weekday">Thu</div>
-                    <div class="weekday">Fri</div>
-                    <div class="weekday">Sat</div>
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
+                    <div class="text-center py-2 text-sm font-semibold text-gray-700">Sun</div>
+                    <div class="text-center py-2 text-sm font-semibold text-gray-700">Mon</div>
+                    <div class="text-center py-2 text-sm font-semibold text-gray-700">Tue</div>
+                    <div class="text-center py-2 text-sm font-semibold text-gray-700">Wed</div>
+                    <div class="text-center py-2 text-sm font-semibold text-gray-700">Thu</div>
+                    <div class="text-center py-2 text-sm font-semibold text-gray-700">Fri</div>
+                    <div class="text-center py-2 text-sm font-semibold text-gray-700">Sat</div>
                 </div>
-                <div class="calendar-days">
+                <div class="grid grid-cols-7">
         `;
 
         // Leading empty cells
         for (let i = 0; i < startingDayOfWeek; i++) {
-            html += '<div class="calendar-day empty"></div>';
+            html += '<div class="border border-gray-200 h-24 bg-gray-50"></div>';
         }
 
         // Month days
@@ -180,17 +184,23 @@ class Calendar {
             const isToday = this.isToday(date);
             const isSelected = this.selectedDate && this.isSameDay(date, this.selectedDate);
 
+            const eventColors = {
+                meeting: 'bg-blue-100 text-blue-800 border-blue-300',
+                deadline: 'bg-red-100 text-red-800 border-red-300',
+                task: 'bg-green-100 text-green-800 border-green-300'
+            };
+
             html += `
-                <div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}"
+                <div class="border border-gray-200 h-24 p-1 cursor-pointer hover:bg-gray-50 ${isToday ? 'bg-blue-50' : ''} ${isSelected ? 'bg-purple-50' : ''}"
                      onclick="calendar.selectDate(new Date(${year}, ${month}, ${day}))">
-                    <div class="day-number">${day}</div>
-                    <div class="day-events">
+                    <div class="text-sm font-medium ${isToday ? 'text-blue-600' : 'text-gray-700'}">${day}</div>
+                    <div class="space-y-1 mt-1">
                         ${dayEvents.slice(0, 2).map(event => `
-                            <div class="event-indicator ${event.type}" title="${event.title}">
+                            <div class="text-xs px-1 py-0.5 rounded border ${eventColors[event.type] || 'bg-gray-100 text-gray-800'} truncate" title="${event.title}">
                                 ${event.title.length > 12 ? event.title.substring(0, 12) + '...' : event.title}
                             </div>
                         `).join('')}
-                        ${dayEvents.length > 2 ? `<div class="more-events">+${dayEvents.length - 2} more</div>` : ''}
+                        ${dayEvents.length > 2 ? `<div class="text-xs text-gray-500">+${dayEvents.length - 2} more</div>` : ''}
                     </div>
                 </div>
             `;
@@ -200,10 +210,10 @@ class Calendar {
         const totalCells = startingDayOfWeek + daysInMonth;
         const remainingCells = 42 - totalCells;
         for (let i = 0; i < remainingCells; i++) {
-            html += '<div class="calendar-day empty"></div>';
+            html += '<div class="border border-gray-200 h-24 bg-gray-50"></div>';
         }
 
-        html += '</div></div>'; // close .calendar-days and .calendar-grid
+        html += '</div></div>'; // close grids
         return html;
     }
 
@@ -211,10 +221,12 @@ class Calendar {
     renderWeekView() {
         // Simplified week view
         return `
-            <div class="week-view">
-                <div class="alert alert-info">
-                    <span>📅</span>
-                    <div>Week view - Coming soon! Currently showing month view.</div>
+            <div class="space-y-4">
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                    <div class="flex items-start">
+                        <span class="text-xl mr-2">📅</span>
+                        <div class="text-blue-700">Week view - Coming soon! Currently showing month view.</div>
+                    </div>
                 </div>
                 ${this.renderMonthView()}
             </div>
@@ -225,24 +237,32 @@ class Calendar {
         const selectedDate = this.selectedDate || new Date();
         const dayEvents = this.getEventsForDate(selectedDate);
 
+        const eventColors = {
+            meeting: 'border-l-4 border-blue-500 bg-blue-50',
+            deadline: 'border-l-4 border-red-500 bg-red-50',
+            task: 'border-l-4 border-green-500 bg-green-50'
+        };
+
         return `
-            <div class="day-view">
-                <h3>Events for ${selectedDate.toLocaleDateString()}</h3>
+            <div class="space-y-4">
+                <h3 class="text-xl font-semibold text-gray-800">Events for ${selectedDate.toLocaleDateString()}</h3>
                 ${dayEvents.length === 0 ?
-                    '<div class="no-events">No events scheduled for this day.</div>' :
+                    '<div class="text-center py-12 text-gray-500">No events scheduled for this day.</div>' :
                     dayEvents.map(event => `
-                        <div class="day-event ${event.type}">
-                            <div class="event-time">
-                                ${event.startTime ? event.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'All day'}
-                            </div>
-                            <div class="event-details">
-                                <div class="event-title">${event.title}</div>
-                                ${event.client ? `<div class="event-client">Client: ${event.client}</div>` : ''}
-                                ${event.description ? `<div class="event-description">${event.description}</div>` : ''}
-                            </div>
-                            <div class="event-actions">
-                                <button class="btn-small" onclick="calendar.editEvent(${event.id})">Edit</button>
-                                <button class="btn-small btn-danger" onclick="calendar.deleteEvent(${event.id})">Delete</button>
+                        <div class="p-4 rounded-lg ${eventColors[event.type] || 'border-l-4 border-gray-500 bg-gray-50'}">
+                            <div class="flex justify-between items-start">
+                                <div class="flex-1">
+                                    <div class="text-sm text-gray-600 mb-1">
+                                        ${event.startTime ? event.startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'All day'}
+                                    </div>
+                                    <div class="font-semibold text-gray-800 mb-1">${event.title}</div>
+                                    ${event.client ? `<div class="text-sm text-gray-600">Client: ${event.client}</div>` : ''}
+                                    ${event.description ? `<div class="text-sm text-gray-700 mt-2">${event.description}</div>` : ''}
+                                </div>
+                                <div class="flex gap-2 ml-4">
+                                    <button class="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded" onclick="calendar.editEvent(${event.id})">Edit</button>
+                                    <button class="px-3 py-1 text-sm bg-red-500 text-white hover:bg-red-600 rounded" onclick="calendar.deleteEvent(${event.id})">Delete</button>
+                                </div>
                             </div>
                         </div>
                     `).join('')
@@ -258,14 +278,20 @@ class Calendar {
             .slice(0, 5);
 
         if (upcoming.length === 0) {
-            return '<div class="no-upcoming">No upcoming events</div>';
+            return '<div class="text-sm text-gray-500">No upcoming events</div>';
         }
 
+        const eventColors = {
+            meeting: 'border-l-2 border-blue-500',
+            deadline: 'border-l-2 border-red-500',
+            task: 'border-l-2 border-green-500'
+        };
+
         return upcoming.map(event => `
-            <div class="upcoming-event ${event.type}">
-                <div class="event-date">${event.date.toLocaleDateString()}</div>
-                <div class="event-title">${event.title}</div>
-                ${event.client ? `<div class="event-client">${event.client}</div>` : ''}
+            <div class="mb-3 pl-2 ${eventColors[event.type] || 'border-l-2 border-gray-500'}">
+                <div class="text-xs text-gray-500">${event.date.toLocaleDateString()}</div>
+                <div class="text-sm font-medium text-gray-800">${event.title}</div>
+                ${event.client ? `<div class="text-xs text-gray-600">${event.client}</div>` : ''}
             </div>
         `).join('');
     }
@@ -328,67 +354,73 @@ class Calendar {
     showAddEventModal(editEvent = null) {
         const isEdit = !!editEvent;
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="modal">
-                <div class="modal-header">
-                    <h2 class="modal-title">${isEdit ? 'Edit Event' : 'Add New Event'}</h2>
-                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 sticky top-0 bg-white">
+                    <h2 class="text-xl font-semibold text-gray-800">${isEdit ? 'Edit Event' : 'Add New Event'}</h2>
+                    <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="this.closest('.fixed').remove()">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <form id="eventForm">
-                        <div class="form-group">
-                            <label for="eventTitle">Event Title *</label>
+                <div class="px-6 py-4">
+                    <form id="eventForm" class="space-y-4">
+                        <div>
+                            <label for="eventTitle" class="block text-sm font-medium text-gray-700 mb-1">Event Title *</label>
                             <input type="text" id="eventTitle" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                    value="${isEdit ? editEvent.title : ''}" placeholder="Enter event title">
                         </div>
 
-                        <div class="form-group">
-                            <label for="eventDate">Date *</label>
+                        <div>
+                            <label for="eventDate" class="block text-sm font-medium text-gray-700 mb-1">Date *</label>
                             <input type="date" id="eventDate" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                    value="${isEdit ? editEvent.date.toISOString().split('T')[0] : ''}">
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="eventStartTime">Start Time</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="eventStartTime" class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
                                 <input type="time" id="eventStartTime"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                        value="${isEdit && editEvent.startTime ? editEvent.startTime.toTimeString().slice(0,5) : ''}">
                             </div>
-                            <div class="form-group">
-                                <label for="eventEndTime">End Time</label>
+                            <div>
+                                <label for="eventEndTime" class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
                                 <input type="time" id="eventEndTime"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                        value="${isEdit && editEvent.endTime ? editEvent.endTime.toTimeString().slice(0,5) : ''}">
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="eventType">Event Type</label>
-                            <select id="eventType">
+                        <div>
+                            <label for="eventType" class="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
+                            <select id="eventType" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                                 <option value="meeting" ${isEdit && editEvent.type === 'meeting' ? 'selected' : ''}>Meeting</option>
                                 <option value="deadline" ${isEdit && editEvent.type === 'deadline' ? 'selected' : ''}>Deadline</option>
                                 <option value="task" ${isEdit && editEvent.type === 'task' ? 'selected' : ''}>Task</option>
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label for="eventClient">Client</label>
+                        <div>
+                            <label for="eventClient" class="block text-sm font-medium text-gray-700 mb-1">Client</label>
                             <input type="text" id="eventClient"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                    value="${isEdit ? (editEvent.client || '') : ''}" placeholder="Client name (optional)">
                         </div>
 
-                        <div class="form-group">
-                            <label for="eventDescription">Description</label>
+                        <div>
+                            <label for="eventDescription" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                             <textarea id="eventDescription" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                       placeholder="Event description (optional)">${isEdit ? (editEvent.description || '') : ''}</textarea>
                         </div>
 
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
+                        <div class="flex gap-3 pt-4">
+                            <button type="submit" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
                                 ${isEdit ? 'Update Event' : 'Add Event'}
                             </button>
-                            <button type="button" class="btn btn-outline"
-                                    onclick="this.closest('.modal-overlay').remove()">
+                            <button type="button" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                                    onclick="this.closest('.fixed').remove()">
                                 Cancel
                             </button>
                         </div>

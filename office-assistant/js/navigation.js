@@ -24,11 +24,11 @@ class NavigationManager {
                 }
             }
 
-            // ESC to go back to dashboard
+            // ESC to go back to expense categorizer
             if (e.key === 'Escape') {
-                const dashboardButton = document.querySelector('[data-section="dashboard"]');
-                if (!dashboardButton.classList.contains('active')) {
-                    dashboardButton.click();
+                const expensesButton = document.querySelector('[data-section="expenses"]');
+                if (expensesButton && expensesButton.getAttribute('data-active') !== 'true') {
+                    expensesButton.click();
                 }
             }
         });
@@ -136,13 +136,13 @@ class NavigationManager {
                 <div class="modal-body">
                     <h4>Keyboard Shortcuts:</h4>
                     <ul style="margin-left: 1rem;">
-                        <li><kbd>Alt + 1</kbd> - Dashboard</li>
+                        <li><kbd>Alt + 1</kbd> - Expense Categorizer</li>
                         <li><kbd>Alt + 2</kbd> - Projects</li>
                         <li><kbd>Alt + 3</kbd> - Clients</li>
                         <li><kbd>Alt + 4</kbd> - Calendar</li>
                         <li><kbd>Alt + 5</kbd> - Documents</li>
                         <li><kbd>Alt + 6</kbd> - Settings</li>
-                        <li><kbd>Esc</kbd> - Return to Dashboard</li>
+                        <li><kbd>Esc</kbd> - Return to Expense Categorizer</li>
                     </ul>
 
                     <h4 class="mt-2">Mobile:</h4>

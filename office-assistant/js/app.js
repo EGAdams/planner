@@ -2,7 +2,7 @@
 
 class OfficeAssistant {
     constructor() {
-        this.currentSection = 'dashboard';
+        this.currentSection = 'expenses';
         this.init();
     }
 
@@ -14,12 +14,17 @@ class OfficeAssistant {
 
     setupEventListeners() {
         // Navigation event delegation
-        document.querySelector('.nav-container').addEventListener('click', (e) => {
-            const navButton = e.target.closest('.nav-button');
-            if (navButton) {
-                this.handleNavigation(navButton);
-            }
-        });
+        const navContainer = document.querySelector('.nav-container');
+        if (navContainer) {
+            navContainer.addEventListener('click', (e) => {
+                const navButton = e.target.closest('.nav-button');
+                if (navButton) {
+                    this.handleNavigation(navButton);
+                }
+            });
+        } else {
+            console.error('Nav container not found!');
+        }
 
         // Handle window resize for responsive behavior
         window.addEventListener('resize', () => {
@@ -30,11 +35,11 @@ class OfficeAssistant {
     handleNavigation(button) {
         const section = button.dataset.section;
 
-        // Update active state
+        // Update active state using data attribute for Tailwind
         document.querySelectorAll('.nav-button').forEach(btn => {
-            btn.classList.remove('active');
+            btn.setAttribute('data-active', 'false');
         });
-        button.classList.add('active');
+        button.setAttribute('data-active', 'true');
 
         // Load content for the section
         this.loadSection(section);
@@ -45,11 +50,14 @@ class OfficeAssistant {
         const contentArea = document.getElementById('content-area');
 
         // Add loading state
-        contentArea.innerHTML = '<div class="loading"><div class="spinner"></div>Loading...</div>';
+        contentArea.innerHTML = '<div class="flex items-center justify-center py-20"><div class="text-gray-500">Loading...</div></div>';
 
         // Load actual content or show placeholder
         setTimeout(() => {
             switch(section) {
+                case 'expenses':
+                    this.loadExpensesSection();
+                    break;
                 case 'calendar':
                     this.loadCalendarSection();
                     break;
@@ -57,6 +65,20 @@ class OfficeAssistant {
                     this.showNotImplementedAlert(section);
             }
         }, 300);
+    }
+
+    loadExpensesSection() {
+        console.log('Loading expenses section...');
+        const contentArea = document.getElementById('content-area');
+        contentArea.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+        contentArea.innerHTML = `
+            <iframe src="daily_expense_categorizer.html"
+                    class="w-full h-[calc(100vh-200px)] border-0"
+                    title="Daily Expense Categorizer"
+                    onload="console.log('Iframe loaded successfully')"
+                    onerror="console.error('Iframe failed to load')">
+            </iframe>
+        `;
     }
 
     loadCalendarSection() {
@@ -67,6 +89,7 @@ class OfficeAssistant {
         }
 
         const contentArea = document.getElementById('content-area');
+        contentArea.className = 'bg-white rounded-lg shadow-md p-4 min-h-[70vh]';
         contentArea.innerHTML = `
             <div class="fade-in">
                 ${window.calendar.render()}
@@ -76,7 +99,7 @@ class OfficeAssistant {
 
     showNotImplementedAlert(section) {
         const sectionNames = {
-            dashboard: 'Dashboard',
+            expenses: 'Expense Categorizer',
             projects: 'Projects',
             clients: 'Clients',
             calendar: 'Calendar',
@@ -85,35 +108,38 @@ class OfficeAssistant {
         };
 
         const contentArea = document.getElementById('content-area');
+        contentArea.className = 'bg-white rounded-lg shadow-md p-4 min-h-[70vh]';
         const sectionName = sectionNames[section] || section;
 
         contentArea.innerHTML = `
             <div class="fade-in">
-                <div class="alert alert-info">
-                    <span style="font-size: 1.2rem;">ℹ️</span>
-                    <div>
-                        <strong>${sectionName} Section</strong><br>
-                        Not implemented yet. This feature is planned for future development.
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">ℹ️</span>
+                        <div>
+                            <strong class="text-blue-800">${sectionName} Section</strong><br>
+                            <span class="text-blue-700">Not implemented yet. This feature is planned for future development.</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">${sectionName} Overview</h3>
-                        <p class="card-subtitle">Coming Soon</p>
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-xl font-semibold text-gray-800">${sectionName} Overview</h3>
+                        <p class="text-sm text-gray-600">Coming Soon</p>
                     </div>
-                    <div class="card-body">
-                        <p>This section will contain:</p>
-                        <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">
+                    <div class="px-6 py-4">
+                        <p class="mb-3 text-gray-700">This section will contain:</p>
+                        <ul class="ml-6 mb-6 list-disc text-gray-600">
                             ${this.getSectionFeatures(section)}
                         </ul>
 
-                        <div class="mt-3">
-                            <button class="btn btn-primary" onclick="app.showFeatureModal('${section}')">
+                        <div class="flex gap-3">
+                            <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors" onclick="app.showFeatureModal('${section}')">
                                 Learn More
                             </button>
-                            <button class="btn btn-outline" onclick="app.goToDashboard()">
-                                Back to Dashboard
+                            <button class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors" onclick="app.goToExpenses()">
+                                Back to Expense Categorizer
                             </button>
                         </div>
                     </div>
@@ -124,12 +150,12 @@ class OfficeAssistant {
 
     getSectionFeatures(section) {
         const features = {
-            dashboard: `
-                <li>Project status overview</li>
-                <li>Recent client communications</li>
-                <li>Upcoming deadlines</li>
-                <li>Quick action buttons</li>
-                <li>Performance metrics</li>
+            expenses: `
+                <li>Daily transaction categorization</li>
+                <li>Category assignment</li>
+                <li>Transaction notes</li>
+                <li>Month and day navigation</li>
+                <li>Uncategorized expense tracking</li>
             `,
             projects: `
                 <li>Project creation and management</li>
@@ -173,7 +199,7 @@ class OfficeAssistant {
 
     showFeatureModal(section) {
         const sectionNames = {
-            dashboard: 'Dashboard',
+            expenses: 'Expense Categorizer',
             projects: 'Projects',
             clients: 'Clients',
             calendar: 'Calendar',
@@ -182,24 +208,26 @@ class OfficeAssistant {
         };
 
         const modal = document.createElement('div');
-        modal.className = 'modal-overlay';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
         modal.innerHTML = `
-            <div class="modal">
-                <div class="modal-header">
-                    <h2 class="modal-title">${sectionNames[section]} Features</h2>
-                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">&times;</button>
+            <div class="bg-white rounded-lg max-w-lg w-full shadow-xl">
+                <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-xl font-semibold text-gray-800">${sectionNames[section]} Features</h2>
+                    <button class="text-gray-400 hover:text-gray-600 text-2xl" onclick="this.closest('.fixed').remove()">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="alert alert-warning">
-                        <span style="font-size: 1.1rem;">🚧</span>
-                        <div>
-                            <strong>Development Status</strong><br>
-                            This section is currently in the planning phase and will be implemented in future updates.
+                <div class="px-6 py-4">
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4 rounded">
+                        <div class="flex items-start">
+                            <span class="text-xl mr-2">🚧</span>
+                            <div>
+                                <strong class="text-yellow-800">Development Status</strong><br>
+                                <span class="text-yellow-700">This section is currently in the planning phase and will be implemented in future updates.</span>
+                            </div>
                         </div>
                     </div>
-                    <p>The ${sectionNames[section]} section will be a comprehensive tool for managing this aspect of your freelance business.</p>
-                    <div class="mt-2">
-                        <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">
+                    <p class="text-gray-700 mb-4">The ${sectionNames[section]} section will be a comprehensive tool for managing this aspect of your freelance business.</p>
+                    <div>
+                        <button class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors" onclick="this.closest('.fixed').remove()">
                             Close
                         </button>
                     </div>
@@ -217,14 +245,14 @@ class OfficeAssistant {
         });
     }
 
-    goToDashboard() {
-        const dashboardButton = document.querySelector('[data-section="dashboard"]');
-        this.handleNavigation(dashboardButton);
+    goToExpenses() {
+        const expensesButton = document.querySelector('[data-section="expenses"]');
+        this.handleNavigation(expensesButton);
     }
 
     loadInitialContent() {
-        // Load dashboard by default
-        this.loadSection('dashboard');
+        // Load expense categorizer by default
+        this.loadSection('expenses');
     }
 
     handleResize() {
@@ -234,10 +262,23 @@ class OfficeAssistant {
 
     // Utility method for showing alerts
     showAlert(message, type = 'info') {
+        const colors = {
+            info: 'bg-blue-50 border-blue-500 text-blue-700',
+            warning: 'bg-yellow-50 border-yellow-500 text-yellow-700',
+            success: 'bg-green-50 border-green-500 text-green-700',
+            error: 'bg-red-50 border-red-500 text-red-700'
+        };
+        const icons = {
+            info: 'ℹ️',
+            warning: '⚠️',
+            success: '✅',
+            error: '❌'
+        };
+
         const alertEl = document.createElement('div');
-        alertEl.className = `alert alert-${type} fade-in`;
+        alertEl.className = `${colors[type]} border-l-4 p-4 mb-4 rounded fade-in flex items-start`;
         alertEl.innerHTML = `
-            <span style="font-size: 1.1rem;">${type === 'info' ? 'ℹ️' : type === 'warning' ? '⚠️' : type === 'success' ? '✅' : '❌'}</span>
+            <span class="text-xl mr-3">${icons[type]}</span>
             <div>${message}</div>
         `;
 
