@@ -19,42 +19,27 @@
 <body class="bg-gray-50 min-h-screen flex flex-col">
     <div id="app" class="flex flex-col min-h-screen">
         <!-- Header -->
-        <header class="bg-gradient-to-r from-purple-600 to-purple-800 text-white shadow-lg">
-            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-                <h1 class="text-2xl md:text-3xl font-semibold">Mom's Dashboard</h1>
-                <div class="text-sm md:text-base opacity-90">
-                    <span>rbarnes@aol.com</span>
-                </div>
+        <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+            <div class="container mx-auto px-4 py-4">
+                <h1 class="text-2xl md:text-3xl text-center" style="font-family: Georgia, serif;">Mom's Dashboard</h1>
             </div>
         </header>
 
         <!-- Navigation -->
-        <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10">
+        <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10 mt-2">
             <div class="container mx-auto px-4">
                 <div class="nav-container flex gap-2 overflow-x-auto">
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-purple-600 data-[active=true]:text-white data-[active=true]:border-purple-600" data-section="expenses" data-active="true">
+                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="expenses" data-active="true">
                         <span class="text-2xl">💰</span>
                         <span class="text-xs md:text-sm font-medium">Expense Categorizer</span>
                     </button>
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-purple-600 data-[active=true]:text-white data-[active=true]:border-purple-600" data-section="projects">
-                        <span class="text-2xl">📋</span>
-                        <span class="text-xs md:text-sm font-medium">Projects</span>
+                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="upload">
+                        <span class="text-2xl">📤</span>
+                        <span class="text-xs md:text-sm font-medium">Upload to Computer</span>
                     </button>
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-purple-600 data-[active=true]:text-white data-[active=true]:border-purple-600" data-section="clients">
-                        <span class="text-2xl">👥</span>
-                        <span class="text-xs md:text-sm font-medium">Clients</span>
-                    </button>
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-purple-600 data-[active=true]:text-white data-[active=true]:border-purple-600" data-section="calendar">
+                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="calendar">
                         <span class="text-2xl">📅</span>
                         <span class="text-xs md:text-sm font-medium">Calendar</span>
-                    </button>
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-purple-600 data-[active=true]:text-white data-[active=true]:border-purple-600" data-section="documents">
-                        <span class="text-2xl">📁</span>
-                        <span class="text-xs md:text-sm font-medium">Documents</span>
-                    </button>
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-purple-600 data-[active=true]:text-white data-[active=true]:border-purple-600" data-section="settings">
-                        <span class="text-2xl">⚙️</span>
-                        <span class="text-xs md:text-sm font-medium">Settings</span>
                     </button>
                 </div>
             </div>
@@ -65,7 +50,7 @@
             <div id="content-area" class="bg-white rounded-lg shadow-md p-4 min-h-[70vh]">
                 <!-- Dynamic content will be loaded here -->
                 <div class="welcome-section text-center py-12">
-                    <h2 class="text-4xl font-light text-purple-600 mb-4">Welcome to Office Assistant</h2>
+                    <h2 class="text-4xl font-light text-blue-600 mb-4">Welcome to Office Assistant</h2>
                     <p class="text-lg text-gray-600 mb-4 max-w-2xl mx-auto">Your comprehensive project management and client coordination platform.</p>
                     <p class="bg-blue-50 text-blue-700 border-l-4 border-blue-500 p-4 rounded max-w-2xl mx-auto font-medium">Navigation buttons are ready for implementation.</p>
                 </div>

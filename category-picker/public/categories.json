@@ -1,115 +1,509 @@
 [
   {
-    "id": "utilities",
-    "label": "Utilities",
+    "id": "1",
+    "label": "Church",
     "children": [
       {
-        "id": "gas",
-        "label": "Gas Bill",
+        "id": "100",
+        "label": "Facility Payment"
+      },
+      {
+        "id": "110",
+        "label": "Facility Upkeep",
         "children": [
           {
-            "id": "housing_gas",
+            "id": "111",
+            "label": "Trash"
+          },
+          {
+            "id": "112",
+            "label": "Furnishings"
+          },
+          {
+            "id": "113",
+            "label": "Tools"
+          },
+          {
+            "id": "114",
+            "label": "Cleaning"
+          },
+          {
+            "id": "115",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "120",
+        "label": "Utilities",
+        "children": [
+          {
+            "id": "121",
+            "label": "Church Gas Bill"
+          },
+          {
+            "id": "122",
+            "label": "Church Water Bill"
+          },
+          {
+            "id": "123",
+            "label": "Church Electric Bill"
+          },
+          {
+            "id": "124",
+            "label": "Church Phone/Internet Bill"
+          },
+          {
+            "id": "125",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "130",
+        "label": "Food & Supplies",
+        "children": [
+          {
+            "id": "131",
+            "label": "Family Fare"
+          },
+          {
+            "id": "132",
+            "label": "Meijer"
+          },
+          {
+            "id": "133",
+            "label": "Restaurants (members/guests)"
+          },
+          {
+            "id": "134",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "140",
+        "label": "Office",
+        "children": [
+          {
+            "id": "141",
+            "label": "Supplies"
+          },
+          {
+            "id": "142",
+            "label": "Apple"
+          },
+          {
+            "id": "143",
+            "label": "Amazon"
+          },
+          {
+            "id": "144",
+            "label": "Postage"
+          },
+          {
+            "id": "145",
+            "label": "Furnishings"
+          },
+          {
+            "id": "146",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "150",
+        "label": "Education / Music / TV",
+        "children": [
+          {
+            "id": "151",
+            "label": "CDs"
+          },
+          {
+            "id": "152",
+            "label": "DVDs"
+          },
+          {
+            "id": "153",
+            "label": "Books"
+          },
+          {
+            "id": "154",
+            "label": "Amazon"
+          },
+          {
+            "id": "155",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "160",
+        "label": "Travel & Transportation",
+        "children": [
+          {
+            "id": "161",
+            "label": "Fuel",
+            "children": [
+              {
+                "id": "162",
+                "label": "RJ gas"
+              },
+              {
+                "id": "163",
+                "label": "RM gas"
+              }
+            ]
+          },
+          {
+            "id": "164",
+            "label": "Vehicle Maintenance",
+            "children": [
+              {
+                "id": "165",
+                "label": "RJ wash/oil"
+              },
+              {
+                "id": "166",
+                "label": "RM wash/oil"
+              },
+              {
+                "id": "167",
+                "label": "Car repair (RJ)"
+              },
+              {
+                "id": "168",
+                "label": "Car repair (RM)"
+              }
+            ]
+          },
+          {
+            "id": "169",
+            "label": "Vehicle Ownership",
+            "children": [
+              {
+                "id": "170",
+                "label": "Car payment (general)"
+              },
+              {
+                "id": "171",
+                "label": "RJ Car Payment"
+              },
+              {
+                "id": "172",
+                "label": "RM Car Payment"
+              },
+              {
+                "id": "173",
+                "label": "License Tags",
+                "children": [
+                  {
+                    "id": "174",
+                    "label": "RJ"
+                  },
+                  {
+                    "id": "175",
+                    "label": "RM"
+                  },
+                  {
+                    "id": "176",
+                    "label": "Other"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "177",
+            "label": "Trips",
+            "children": [
+              {
+                "id": "178",
+                "label": "Airfare"
+              },
+              {
+                "id": "179",
+                "label": "Tolls"
+              },
+              {
+                "id": "180",
+                "label": "AAA"
+              },
+              {
+                "id": "181",
+                "label": "Hotels"
+              },
+              {
+                "id": "182",
+                "label": "Ministry-related travel"
+              }
+            ]
+          },
+          {
+            "id": "183",
+            "label": "Other"
+          }
+        ]
+      },
+      {
+        "id": "190",
+        "label": "Gifts & Love Offerings",
+        "children": [
+          {
+            "id": "191",
+            "label": "EG Adams (work for River of Life)"
+          },
+          {
+            "id": "192",
+            "label": "Individuals",
+            "children": [
+              {
+                "id": "193",
+                "label": "C Baker"
+              },
+              {
+                "id": "194",
+                "label": "A Baker"
+              },
+              {
+                "id": "195",
+                "label": "K Cook"
+              },
+              {
+                "id": "196",
+                "label": "R Menninga"
+              },
+              {
+                "id": "197",
+                "label": "J Menninga"
+              },
+              {
+                "id": "198",
+                "label": "K Roark"
+              },
+              {
+                "id": "199",
+                "label": "H Schneider"
+              },
+              {
+                "id": "200",
+                "label": "R Exposito"
+              },
+              {
+                "id": "201",
+                "label": "K Vander Vliet"
+              },
+              {
+                "id": "202",
+                "label": "J McKay"
+              },
+              {
+                "id": "203",
+                "label": "Sound (R Slawson)"
+              },
+              {
+                "id": "204",
+                "label": "Guest Speakers"
+              },
+              {
+                "id": "205",
+                "label": "Special occasions (name/occasion)"
+              }
+            ]
+          },
+          {
+            "id": "210",
+            "label": "Ministries & Organizations",
+            "children": [
+              {
+                "id": "211",
+                "label": "Chosen People"
+              },
+              {
+                "id": "212",
+                "label": "Columbia Orphanage"
+              },
+              {
+                "id": "213",
+                "label": "Segals in Israel"
+              },
+              {
+                "id": "214",
+                "label": "Intercessors for America"
+              },
+              {
+                "id": "215",
+                "label": "Samaritans Purse"
+              },
+              {
+                "id": "216",
+                "label": "Mel Trotter"
+              },
+              {
+                "id": "217",
+                "label": "Guiding Light"
+              },
+              {
+                "id": "218",
+                "label": "Right to Life"
+              },
+              {
+                "id": "219",
+                "label": "Johnsons in Dominican Republic"
+              },
+              {
+                "id": "220",
+                "label": "Jews for Jesus"
+              },
+              {
+                "id": "221",
+                "label": "Jewish Voice"
+              },
+              {
+                "id": "222",
+                "label": "Salvation Army"
+              },
+              {
+                "id": "223",
+                "label": "Other"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "230",
+        "label": "Insurance",
+        "children": [
+          {
+            "id": "231",
+            "label": "Building"
+          },
+          {
+            "id": "232",
+            "label": "Boiler"
+          },
+          {
+            "id": "233",
+            "label": "Vehicles"
+          }
+        ]
+      },
+      {
+        "id": "240",
+        "label": "Staff & Benefits",
+        "children": [
+          {
+            "id": "241",
+            "label": "Senior Pastors",
+            "children": [
+              {
+                "id": "242",
+                "label": "RJ — Priority Health (medical expenses)"
+              },
+              {
+                "id": "243",
+                "label": "RM — Priority Health (medical expenses)"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "250",
+        "label": "Misc."
+      }
+    ]
+  },
+  {
+    "id": "2",
+    "label": "Housing",
+    "children": [
+      {
+        "id": "300",
+        "label": "Housing Payment",
+        "children": [
+          {
+            "id": "301",
+            "label": "House Payment"
+          }
+        ]
+      },
+      {
+        "id": "310",
+        "label": "Utilities",
+        "children": [
+          {
+            "id": "311",
             "label": "Housing Gas Bill"
           },
           {
-            "id": "church_gas",
-            "label": "Church Gas Bill"
-          }
-        ]
-      },
-      {
-        "id": "electric",
-        "label": "Electric Bill",
-        "children": [
-          {
-            "id": "housing_electric",
-            "label": "Housing Electric Bill"
+            "id": "312",
+            "label": "Housing Water Bill"
           },
           {
-            "id": "church_electric",
-            "label": "Church Electric Bill"
+            "id": "313",
+            "label": "Housing Trash Bill"
+          },
+          {
+            "id": "314",
+            "label": "Housing Electric Bill"
           }
         ]
       },
       {
-        "id": "water",
-        "label": "Water/Sewer"
+        "id": "320",
+        "label": "Taxes & Insurance",
+        "children": [
+          {
+            "id": "321",
+            "label": "House Taxes"
+          },
+          {
+            "id": "322",
+            "label": "House Insurance"
+          }
+        ]
       },
       {
-        "id": "trash",
-        "label": "Trash Pickup"
-      }
-    ]
-  },
-  {
-    "id": "supplies",
-    "label": "Supplies",
-    "children": [
-      {
-        "id": "office_supplies",
-        "label": "Office Supplies"
+        "id": "330",
+        "label": "Services",
+        "children": [
+          {
+            "id": "331",
+            "label": "Service Professor"
+          }
+        ]
       },
       {
-        "id": "kitchen_supplies",
-        "label": "Kitchen Supplies"
-      }
-    ]
-  },
-  {
-    "id": "travel",
-    "label": "Travel",
-    "children": [
-      {
-        "id": "airfare",
-        "label": "Airfare"
+        "id": "340",
+        "label": "Upkeep",
+        "children": [
+          {
+            "id": "341",
+            "label": "Décor / Furnishings"
+          },
+          {
+            "id": "342",
+            "label": "Tools"
+          },
+          {
+            "id": "343",
+            "label": "Repair"
+          },
+          {
+            "id": "344",
+            "label": "Outdoor & Lawn Care"
+          },
+          {
+            "id": "345",
+            "label": "Other"
+          }
+        ]
       },
       {
-        "id": "hotel",
-        "label": "Hotel"
-      },
-      {
-        "id": "meals",
-        "label": "Meals"
-      },
-      {
-        "id": "ground_transportation",
-        "label": "Ground Transportation"
-      }
-    ]
-  },
-  {
-    "id": "fundraising",
-    "label": "Fundraising",
-    "children": [
-      {
-        "id": "event_costs",
-        "label": "Event Costs"
-      },
-      {
-        "id": "marketing_materials",
-        "label": "Marketing Materials"
-      },
-      {
-        "id": "venue_rental",
-        "label": "Venue Rental"
-      }
-    ]
-  },
-  {
-    "id": "office",
-    "label": "Office",
-    "children": [
-      {
-        "id": "office_equipment",
-        "label": "Office Equipment"
-      },
-      {
-        "id": "office_rent",
-        "label": "Office Rent"
-      },
-      {
-        "id": "office_maintenance",
-        "label": "Office Maintenance"
+        "id": "350",
+        "label": "Misc."
       }
     ]
   }
