@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload PDF Statements</title>
+  <style>
+    :root{
+      --gap: 8px;
+      --line: #dcdcdc;
+    }
+    *{box-sizing:border-box;}
+    body{
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      margin: 0;
+      padding: 20px;
+      color:#111;
+      background:#f5f5f5;
+    }
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--gap);
+      margin-bottom: 20px;
+      border-bottom:2px solid var(--line);
+      padding-bottom:12px;
+    }
+    h1{
+      font-size:24px;
+      margin:0;
+      color:#333;
+    }
+    .description{
+      color:#666;
+      font-size:14px;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .upload-container{
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .info-box{
+      background: #e3f2fd;
+      border-left: 4px solid #2196f3;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .info-box h3{
+      margin: 0 0 8px 0;
+      color: #1976d2;
+      font-size: 16px;
+    }
+    .info-box p{
+      margin: 0;
+      color: #555;
+      font-size: 14px;
+    }
+    .success-stats{
+      display: none;
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 16px;
+      margin-top: 20px;
+      border-radius: 4px;
+    }
+    .success-stats.show{
+      display: block;
+    }
+    .success-stats h3{
+      margin: 0 0 12px 0;
+      color: #2e7d32;
+    }
+    .stats-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .stat-item{
+      background: white;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #c8e6c9;
+    }
+    .stat-label{
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .stat-value{
+      font-size: 24px;
+      font-weight: 600;
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <div class="upload-container">
+    <header>
+      <h1>📤 Upload PDF Bank Statements</h1>
+    </header>
+
+    <div class="description">
+      <p>Import your bank statement PDFs to automatically extract and categorize transactions. The system will parse the PDF, check for duplicates, and add new transactions to your database.</p>
+    </div>
+
+    <div class="info-box">
+      <h3>How it works:</h3>
+      <p>
+        1. The system scans your Downloads folder for recent PDF files<br>
+        2. Select the bank statement you want to import<br>
+        3. Click "Import Selected PDF" to process the file<br>
+        4. Watch the terminal output to see the import progress<br>
+        5. New transactions will be available in the Expense Categorizer
+      </p>
+    </div>
+
+    <upload-component api-endpoint="/api/import-pdf"></upload-component>
+
+    <div class="success-stats" id="successStats">
+      <h3>✅ Import Complete!</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">Total Found</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Imported</div>
+          <div class="stat-value" id="statImported">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Duplicates</div>
+          <div class="stat-value" id="statDuplicates">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">Failed</div>
+          <div class="stat-value" id="statFailed">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="module">
+  import "./js/upload-component.js";
+  import { on } from "./js/event-bus.js";
+
+  // Listen for upload completion to show stats
+  on("upload:complete", (e) => {
+    const result = e.detail.result;
+    const statsDiv = document.getElementById("successStats");
+
+    document.getElementById("statTotal").textContent = result.total_transactions || 0;
+    document.getElementById("statImported").textContent = result.successful_imports || 0;
+    document.getElementById("statDuplicates").textContent = result.duplicate_count || 0;
+    document.getElementById("statFailed").textContent = result.failed_imports || 0;
+
+    statsDiv.classList.add("show");
+
+    // Optionally navigate back to expense categorizer after a delay
+    setTimeout(() => {
+      if (confirm("Import complete! Would you like to go to the Expense Categorizer to review the transactions?")) {
+        window.parent.postMessage({ action: 'navigate', section: 'expenses' }, '*');
+      }
+    }, 3000);
+  });
+
+  // Listen for upload errors
+  on("upload:error", (e) => {
+    console.error("Upload error:", e.detail);
+  });
+</script>
+</body>
+</html>

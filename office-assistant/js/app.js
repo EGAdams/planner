@@ -58,6 +58,9 @@ class OfficeAssistant {
                 case 'expenses':
                     this.loadExpensesSection();
                     break;
+                case 'upload':
+                    this.loadUploadSection();
+                    break;
                 case 'calendar':
                     this.loadCalendarSection();
                     break;
@@ -77,6 +80,20 @@ class OfficeAssistant {
                     title="Daily Expense Categorizer"
                     onload="console.log('Iframe loaded successfully')"
                     onerror="console.error('Iframe failed to load')">
+            </iframe>
+        `;
+    }
+
+    loadUploadSection() {
+        console.log('Loading upload section...');
+        const contentArea = document.getElementById('content-area');
+        contentArea.className = 'bg-white rounded-lg shadow-md overflow-hidden';
+        contentArea.innerHTML = `
+            <iframe src="upload_pdf_statements.html"
+                    class="w-full h-[calc(100vh-200px)] border-0"
+                    title="Upload PDF Statements"
+                    onload="console.log('Upload iframe loaded successfully')"
+                    onerror="console.error('Upload iframe failed to load')">
             </iframe>
         `;
     }

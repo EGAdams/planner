@@ -61,12 +61,14 @@ class DoclingPDFExtractor:
     def _get_cached_document(self, file_path: str):
         """Get cached document or convert and cache it."""
         if file_path not in self._document_cache:
-            logger.info(f"Converting PDF document: {file_path}")
+            logger.info(f"[DOCLING] Converting PDF document: {file_path}")
+            logger.info(f"[DOCLING] Starting Docling conversion process...")
             result = self.converter.convert(file_path)
+            logger.info(f"[DOCLING] Conversion completed, caching result")
             self._document_cache[file_path] = result
-            logger.info(f"PDF conversion completed: {file_path}")
+            logger.info(f"[DOCLING] PDF conversion completed: {file_path}")
         else:
-            logger.debug(f"Using cached document: {file_path}")
+            logger.info(f"[DOCLING] Using cached document: {file_path}")
         return self._document_cache[file_path]
 
     def validate_format(self, file_path: str) -> bool:
@@ -80,26 +82,33 @@ class DoclingPDFExtractor:
             bool: True if file is a valid PDF, False otherwise
         """
         try:
+            logger.info(f"[DOCLING] Step 1/4: Checking file existence for {file_path}")
             path = Path(file_path)
             if not path.exists():
                 logger.error(f"File does not exist: {file_path}")
                 return False
 
+            logger.info(f"[DOCLING] Step 2/4: Verifying PDF extension")
             if not path.suffix.lower() == '.pdf':
                 logger.error(f"File is not a PDF: {file_path}")
                 return False
 
+            logger.info(f"[DOCLING] Step 3/4: Converting document with Docling (this may take 30-60 seconds)...")
             # Try to convert the document to validate it (will be cached)
             result = self._get_cached_document(file_path)
+
+            logger.info(f"[DOCLING] Step 4/4: Validating conversion result")
             if result.document and len(result.document.pages) > 0:
-                logger.debug(f"PDF validation successful: {len(result.document.pages)} pages")
+                logger.info(f"[DOCLING] PDF validation successful: {len(result.document.pages)} pages")
                 return True
             else:
                 logger.error(f"PDF has no readable pages: {file_path}")
                 return False
 
         except Exception as e:
-            logger.error(f"PDF validation failed for {file_path}: {e}")
+            logger.error(f"[DOCLING] PDF validation failed for {file_path}: {e}")
+            import traceback
+            logger.error(f"[DOCLING] Traceback: {traceback.format_exc()}")
             return False
 
     def extract_text(self, file_path: str) -> str:
@@ -113,16 +122,22 @@ class DoclingPDFExtractor:
             str: Extracted text content
         """
         try:
+            logger.info(f"[DOCLING] Getting document for text extraction...")
             result = self._get_cached_document(file_path)
             if result.document:
+                logger.info(f"[DOCLING] Exporting document to markdown...")
                 # Extract markdown text which preserves structure better
-                return result.document.export_to_markdown()
+                text = result.document.export_to_markdown()
+                logger.info(f"[DOCLING] Text extraction successful")
+                return text
             else:
                 logger.warning(f"No document content extracted from {file_path}")
                 return ""
 
         except Exception as e:
             logger.error(f"Text extraction failed for {file_path}: {e}")
+            import traceback
+            logger.error(f"[DOCLING] Traceback: {traceback.format_exc()}")
             return ""
 
     def extract_tables(self, file_path: str) -> List[List[List[str]]]:
@@ -136,12 +151,15 @@ class DoclingPDFExtractor:
             List[List[List[str]]]: Tables as nested lists [table][row][cell]
         """
         try:
+            logger.info(f"[DOCLING] Getting document for table extraction...")
             result = self._get_cached_document(file_path)
             all_tables = []
 
             if result.document and result.document.tables:
-                for table in result.document.tables:
+                logger.info(f"[DOCLING] Found {len(result.document.tables)} tables in document")
+                for i, table in enumerate(result.document.tables):
                     try:
+                        logger.info(f"[DOCLING] Processing table {i+1}/{len(result.document.tables)}...")
                         # Use the modern export_to_dataframe API
                         df = table.export_to_dataframe(result.document)
 
@@ -156,21 +174,25 @@ class DoclingPDFExtractor:
                             table_data.append([str(cell) for cell in row])
 
                         all_tables.append(table_data)
+                        logger.info(f"[DOCLING] Table {i+1} extracted: {len(table_data)} rows")
 
                     except Exception as e:
-                        logger.debug(f"Failed to extract table data: {e}")
+                        logger.warning(f"[DOCLING] Failed to extract table {i+1} as dataframe: {e}")
                         # Fallback: try to get table data directly
                         table_data = []
                         if hasattr(table, 'data') and table.data and hasattr(table.data, 'table_cells'):
                             for row in table.data.table_cells:
                                 table_data.append([cell.text if hasattr(cell, 'text') else str(cell) for cell in row])
                         all_tables.append(table_data)
+                        logger.info(f"[DOCLING] Table {i+1} extracted via fallback: {len(table_data)} rows")
 
-            logger.debug(f"Extracted {len(all_tables)} tables from {file_path}")
+            logger.info(f"[DOCLING] Extracted {len(all_tables)} tables from {file_path}")
             return [all_tables]  # Return as [tables] to match expected format
 
         except Exception as e:
-            logger.error(f"Table extraction failed for {file_path}: {e}")
+            logger.error(f"[DOCLING] Table extraction failed for {file_path}: {e}")
+            import traceback
+            logger.error(f"[DOCLING] Traceback: {traceback.format_exc()}")
             return []
 
     def extract_account_info(self, file_path: str) -> Dict[str, Optional[str]]:
@@ -264,41 +286,50 @@ class DoclingPDFExtractor:
             List of transaction dictionaries
         """
         try:
-            logger.info(f"Parsing transactions from PDF: {file_path}")
+            logger.info(f"[DOCLING] Parsing transactions from PDF: {file_path}")
 
             # Get statement period
+            logger.info(f"[DOCLING] Extracting statement period...")
             start_date, end_date = self.extract_statement_period(file_path)
+            logger.info(f"[DOCLING] Statement period: {start_date} to {end_date}")
 
             # Extract text for transaction parsing
+            logger.info(f"[DOCLING] Extracting text from document...")
             text = self.extract_text(file_path)
+            logger.info(f"[DOCLING] Extracted {len(text)} characters of text")
 
             # Also try table extraction for better structured data
+            logger.info(f"[DOCLING] Extracting tables from document...")
             tables = self.extract_tables(file_path)
+            logger.info(f"[DOCLING] Extracted {len(tables)} table groups")
 
             transactions = []
 
             # First try to parse from tables (more reliable)
+            logger.info(f"[DOCLING] Attempting to parse transactions from tables...")
             try:
                 table_transactions = self._parse_transactions_from_tables(tables, start_date, end_date)
                 transactions.extend(table_transactions)
-                logger.debug(f"Parsed {len(table_transactions)} transactions from tables")
+                logger.info(f"[DOCLING] Parsed {len(table_transactions)} transactions from tables")
             except Exception as e:
-                logger.error(f"Table parsing failed: {e}")
+                logger.error(f"[DOCLING] Table parsing failed: {e}")
                 import traceback
-                logger.error(f"Table parsing traceback: {traceback.format_exc()}")
+                logger.error(f"[DOCLING] Table parsing traceback: {traceback.format_exc()}")
 
             # If no transactions found in tables, fall back to text parsing
             if not transactions:
+                logger.info(f"[DOCLING] No transactions from tables, falling back to text parsing...")
                 try:
                     text_transactions = self._parse_transactions_from_text(text, start_date, end_date)
                     transactions.extend(text_transactions)
-                    logger.debug(f"Parsed {len(text_transactions)} transactions from text")
+                    logger.info(f"[DOCLING] Parsed {len(text_transactions)} transactions from text")
                 except Exception as e:
-                    logger.error(f"Text parsing failed: {e}")
+                    logger.error(f"[DOCLING] Text parsing failed: {e}")
                     import traceback
-                    logger.error(f"Text parsing traceback: {traceback.format_exc()}")
+                    logger.error(f"[DOCLING] Text parsing traceback: {traceback.format_exc()}")
 
             # Add metadata to all transactions
+            logger.info(f"[DOCLING] Adding metadata to {len(transactions)} transactions...")
             for txn in transactions:
                 txn.update({
                     'org_id': self.org_id,
@@ -308,11 +339,13 @@ class DoclingPDFExtractor:
                     'created_at': datetime.utcnow()
                 })
 
-            logger.info(f"Extracted {len(transactions)} transactions from {file_path}")
+            logger.info(f"[DOCLING] Extracted {len(transactions)} transactions from {file_path}")
             return transactions
 
         except Exception as e:
-            logger.error(f"Transaction parsing failed for {file_path}: {e}")
+            logger.error(f"[DOCLING] Transaction parsing failed for {file_path}: {e}")
+            import traceback
+            logger.error(f"[DOCLING] Traceback: {traceback.format_exc()}")
             return []
 
     def _parse_transactions_from_tables(self, tables: List[List[List[str]]],

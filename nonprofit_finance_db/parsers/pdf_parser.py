@@ -57,10 +57,14 @@ class PDFParser(BaseParser):
         Returns:
             bool: True if file is a valid PDF, False otherwise
         """
+        logger.info(f"PDFParser: Starting format validation for {file_path}")
         if not self.extractor:
             logger.error("PDF extractor not available - cannot validate format")
             return False
-        return self.extractor.validate_format(file_path)
+
+        result = self.extractor.validate_format(file_path)
+        logger.info(f"PDFParser: Format validation completed. Result: {result}")
+        return result
 
     def parse(self, file_path: str) -> List[Dict[str, Any]]:
         """

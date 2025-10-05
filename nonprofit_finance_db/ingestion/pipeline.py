@@ -71,23 +71,27 @@ class IngestionPipeline:
 
         try:
             # Step 1: Validate file
+            logger.info("Step 1: Validating file format...")
             file_validation = self.file_validator.validate_file(file_path)
             if not file_validation['is_valid']:
                 result['validation_errors'] = file_validation['errors']
                 return result
 
             # Step 2: Determine file format and get appropriate parser
+            logger.info("Step 2: Detecting file format...")
             file_format = self._detect_file_format(file_path)
             if file_format not in self.parsers:
                 result['validation_errors'] = [f"Unsupported file format: {file_format}"]
                 return result
 
             parser = self.parsers[file_format]
+            logger.info(f"Format detected: {file_format}")
 
             # Step 3: Parse file
-            logger.info("Parsing bank statement file...")
+            logger.info("Step 3: Parsing bank statement file...")
             parsed_transactions = parser.parse(file_path)
             result['total_transactions'] = len(parsed_transactions)
+            logger.info(f"Found {len(parsed_transactions)} transactions in file")
 
             if not parsed_transactions:
                 result['validation_errors'] = ["No transactions found in file"]
@@ -110,10 +114,11 @@ class IngestionPipeline:
             result['import_batch'] = import_batch
 
             # Step 5: Validate transactions
-            logger.info("Validating transactions...")
+            logger.info("Step 5: Validating transactions...")
             validation_result = self.transaction_validator.validate_batch(parsed_transactions)
             valid_transactions = validation_result['validated_transactions']
             result['validation_errors'] = validation_result['summary']['errors']
+            logger.info(f"Validated {len(valid_transactions)} transactions")
 
             if not valid_transactions:
                 import_batch = self.batch_processor.update_batch_status(
@@ -123,25 +128,28 @@ class IngestionPipeline:
                 return result
 
             # Step 6: Process transactions
-            logger.info("Processing transactions...")
+            logger.info("Step 6: Processing transactions...")
             processing_result = self.transaction_processor.process_batch(valid_transactions)
             processed_transactions = processing_result['processed_transactions']
             result['processing_errors'] = processing_result['summary']['processing_errors']
+            logger.info(f"Processed {len(processed_transactions)} transactions")
 
             # Step 7: Detect duplicates
-            logger.info("Detecting duplicates...")
+            logger.info("Step 7: Detecting duplicates...")
             existing_transactions = self._get_existing_transactions()
             duplicate_flags = self.duplicate_detector.find_duplicates(
                 processed_transactions, existing_transactions
             )
             result['duplicate_count'] = len(duplicate_flags)
             result['duplicate_report'] = self.duplicate_detector.generate_duplicate_report(duplicate_flags)
+            logger.info(f"Found {len(duplicate_flags)} potential duplicates")
 
             # Step 8: Filter out duplicates and import
-            logger.info("Importing transactions to database...")
+            logger.info("Step 8: Importing transactions to database...")
             import_result = self._import_transactions(
                 processed_transactions, duplicate_flags, auto_process, import_batch
             )
+            logger.info(f"Imported {import_result['successful_imports']} transactions successfully")
 
             result['successful_imports'] = import_result['successful_imports']
             result['failed_imports'] = import_result['failed_imports']
