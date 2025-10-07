@@ -362,7 +362,7 @@ class DoclingPDFExtractor:
 
                 # Check if this looks like a transaction table
                 header = table[0] if table else []
-                header_text = ' '.join(header).lower()
+                header_text = ' '.join(str(h) for h in header).lower()
                 logger.debug(f"Table header: {header}")
 
                 # Skip balance summary tables explicitly

@@ -152,7 +152,7 @@ async def get_transactions(
             FROM transactions t
         """
 
-        conditions = []
+        conditions = ["t.transaction_type = 'DEBIT'"]  # Only show expenses, not deposits
         params = []
 
         if start_date:
@@ -163,8 +163,7 @@ async def get_transactions(
             conditions.append("t.transaction_date <= %s")
             params.append(end_date)
 
-        if conditions:
-            sql += " WHERE " + " AND ".join(conditions)
+        sql += " WHERE " + " AND ".join(conditions)
 
         sql += " ORDER BY t.transaction_date, t.id"
 
