@@ -8,7 +8,9 @@ from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Optional
 import uuid
 import os
+import math
 from pathlib import Path
+from datetime import datetime
 
 from ..models.document import Document, DocumentChunk, QueryResult, DocumentType
 
@@ -113,6 +115,9 @@ class RAGEngine:
                 "priority": document.priority or "",
                 "status": document.status or "",
                 "tags": ",".join(document.tags),
+                "artifact_type": document.artifact_type or "",
+                "source": document.source or "",
+                "file_path": document.file_path or "",
                 **document.metadata
             }
             chunk_metadatas.append(chunk_metadata)
@@ -126,26 +131,88 @@ class RAGEngine:
         
         return document.id
     
-    def query(self, query_text: str, n_results: int = 5, 
-              filter_dict: Optional[Dict[str, Any]] = None) -> List[QueryResult]:
+    def _calculate_time_decay(self, timestamp_iso: str) -> float:
         """
-        Query the RAG system
-        
+        Calculate time decay factor for artifact ranking
+        Based on Letta's approach: ~0.1 decay per 7 days
+
+        Args:
+            timestamp_iso: ISO format timestamp string
+
+        Returns:
+            Decay factor between 0 and 1
+        """
+        try:
+            created_at = datetime.fromisoformat(timestamp_iso)
+            now = datetime.now()
+            days_old = (now - created_at).total_seconds() / (60 * 60 * 24)
+            # Exponential decay: 0.1 decay per 7 days
+            decay = math.exp(-0.1 * (days_old / 7))
+            return decay
+        except (ValueError, AttributeError):
+            return 0.5  # Default moderate decay if parsing fails
+
+    def _apply_artifact_boosting(self, results: List[QueryResult]) -> List[QueryResult]:
+        """
+        Apply time-decay and tag-based boosting to artifact results
+        Based on Letta's scoring: overlap(70%) + recency(25%) + tag_bonus(+0.10)
+
+        Args:
+            results: Initial query results
+
+        Returns:
+            Re-scored and re-sorted results
+        """
+        boosted_results = []
+
+        for result in results:
+            base_score = result.score
+            artifact_type = result.metadata.get('artifact_type', '')
+            created_at = result.metadata.get('created_at', '')
+
+            # Apply time decay if it's a runtime artifact
+            if artifact_type:
+                recency_score = self._calculate_time_decay(created_at)
+
+                # Tag boost for important artifact types
+                tag_boost = 0.0
+                if artifact_type in ['error', 'fix', 'decision', 'test_failure']:
+                    tag_boost = 0.10
+
+                # Blend scores: overlap(70%) + recency(25%) + tag_boost
+                adjusted_score = (base_score * 0.70) + (recency_score * 0.25) + tag_boost
+                result.score = min(adjusted_score, 1.0)  # Cap at 1.0
+
+            boosted_results.append(result)
+
+        # Re-sort by adjusted scores
+        boosted_results.sort(key=lambda r: r.score, reverse=True)
+        return boosted_results
+
+    def query(self, query_text: str, n_results: int = 5,
+              filter_dict: Optional[Dict[str, Any]] = None,
+              apply_artifact_boosting: bool = True) -> List[QueryResult]:
+        """
+        Query the RAG system with optional artifact boosting
+
         Args:
             query_text: Query string
             n_results: Number of results to return
             filter_dict: Optional metadata filters
-            
+            apply_artifact_boosting: Apply time-decay and tag boosting for artifacts
+
         Returns:
             List of QueryResult objects
         """
-        # Query ChromaDB
+        # Query ChromaDB - get more results for re-ranking
+        fetch_count = n_results * 2 if apply_artifact_boosting else n_results
+
         results = self.collection.query(
             query_texts=[query_text],
-            n_results=n_results,
+            n_results=fetch_count,
             where=filter_dict
         )
-        
+
         # Convert to QueryResult objects
         query_results = []
         if results['ids'] and results['ids'][0]:  # Check if we have results
@@ -158,8 +225,13 @@ class RAGEngine:
                     metadata=results['metadatas'][0][i]
                 )
                 query_results.append(result)
-        
-        return query_results
+
+        # Apply artifact-specific boosting if enabled
+        if apply_artifact_boosting and query_results:
+            query_results = self._apply_artifact_boosting(query_results)
+
+        # Return top n_results after boosting
+        return query_results[:n_results]
     
     def get_document_by_id(self, document_id: str) -> Optional[List[QueryResult]]:
         """Get all chunks for a specific document"""

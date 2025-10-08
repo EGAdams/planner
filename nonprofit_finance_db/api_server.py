@@ -152,7 +152,7 @@ async def get_transactions(
             FROM transactions t
         """
 
-        conditions = ["t.transaction_type = 'DEBIT'"]  # Only show expenses, not deposits
+        conditions = ["t.transaction_type = 'CREDIT'"]  # Only show expenses (transactions marked as CREDIT in your DB)
         params = []
 
         if start_date:

@@ -7,7 +7,7 @@ from pathlib import Path
 from datetime import datetime
 
 from .rag_engine import RAGEngine
-from ..models.document import Document, DocumentType, QueryResult
+from ..models.document import Document, DocumentType, QueryResult, ArtifactType
 from ..utils.text_processing import (
     clean_text, extract_markdown_sections, extract_tags_from_text,
     detect_document_type_from_content, parse_metadata_from_text
@@ -223,6 +223,196 @@ class DocumentManager:
             ]
         }
     
+    def add_runtime_artifact(self,
+                            artifact_text: str,
+                            artifact_type: str,
+                            source: str,
+                            file_path: Optional[str] = None,
+                            project_name: Optional[str] = None,
+                            tags: Optional[List[str]] = None) -> str:
+        """
+        Log runtime artifacts (errors, test failures, CI output, PR decisions)
+        Based on Letta's memory pattern for capturing "what actually happened"
+
+        Args:
+            artifact_text: The error message, log output, or decision text
+            artifact_type: Type of artifact (error, runlog, fix, decision, etc.)
+            source: Source system (pytest, CI, review, manual, etc.)
+            file_path: Associated file path for code-specific artifacts
+            project_name: Optional project association
+            tags: Additional tags for categorization
+
+        Returns:
+            Document ID
+        """
+        # Validate artifact type
+        try:
+            ArtifactType(artifact_type)
+        except ValueError:
+            # Allow custom artifact types but warn
+            pass
+
+        # Generate title from artifact content
+        title_preview = artifact_text[:60].replace('\n', ' ')
+        title = f"[{artifact_type.upper()}] {title_preview}"
+
+        # Build tags list
+        artifact_tags = [artifact_type, source]
+        if file_path:
+            artifact_tags.append("file-specific")
+        if tags:
+            artifact_tags.extend(tags)
+
+        # Create metadata
+        metadata = {
+            "runtime_capture": True,
+            "source_system": source,
+            "artifact_category": artifact_type
+        }
+
+        # Create document
+        document = Document(
+            title=title,
+            content=clean_text(artifact_text),
+            doc_type=DocumentType.RUNTIME_ARTIFACT,
+            metadata=metadata,
+            tags=list(set(artifact_tags)),  # Remove duplicates
+            artifact_type=artifact_type,
+            source=source,
+            file_path=file_path,
+            project_name=project_name
+        )
+
+        return self.rag_engine.add_document(document)
+
+    def search_artifacts(self, query: str,
+                        artifact_type: Optional[str] = None,
+                        file_path: Optional[str] = None,
+                        n_results: int = 5) -> List[QueryResult]:
+        """
+        Search specifically for runtime artifacts with optional filtering
+
+        Args:
+            query: Search query
+            artifact_type: Filter by artifact type (error, fix, etc.)
+            file_path: Filter by associated file
+            n_results: Number of results
+
+        Returns:
+            List of QueryResult objects, ranked with time-decay
+        """
+        # ChromaDB requires $and operator for multiple conditions
+        filter_dict = None
+
+        if artifact_type and file_path:
+            filter_dict = {
+                "$and": [
+                    {"doc_type": "runtime_artifact"},
+                    {"artifact_type": artifact_type},
+                    {"file_path": file_path}
+                ]
+            }
+        elif artifact_type:
+            filter_dict = {
+                "$and": [
+                    {"doc_type": "runtime_artifact"},
+                    {"artifact_type": artifact_type}
+                ]
+            }
+        elif file_path:
+            filter_dict = {
+                "$and": [
+                    {"doc_type": "runtime_artifact"},
+                    {"file_path": file_path}
+                ]
+            }
+        else:
+            filter_dict = {"doc_type": "runtime_artifact"}
+
+        return self.rag_engine.query(
+            query_text=query,
+            n_results=n_results,
+            filter_dict=filter_dict,
+            apply_artifact_boosting=True
+        )
+
+    def log_performance_issue(self, description: str, metric: str,
+                             value: float, threshold: float,
+                             file_path: Optional[str] = None,
+                             project_name: Optional[str] = None) -> str:
+        """Log performance issues (slow queries, memory spikes, etc.)"""
+        artifact_text = f"{description}\nMetric: {metric}\nValue: {value}\nThreshold: {threshold}"
+
+        # Determine artifact type based on metric
+        if "query" in metric.lower() or "sql" in metric.lower():
+            artifact_type = "slow_query"
+        elif "memory" in metric.lower() or "ram" in metric.lower():
+            artifact_type = "memory_spike"
+        else:
+            artifact_type = "performance_log"
+
+        return self.add_runtime_artifact(
+            artifact_text=artifact_text,
+            artifact_type=artifact_type,
+            source="monitoring",
+            file_path=file_path,
+            project_name=project_name,
+            tags=["performance", metric]
+        )
+
+    def log_gotcha(self, description: str, workaround: str,
+                   file_path: Optional[str] = None,
+                   project_name: Optional[str] = None) -> str:
+        """Log code gotchas and their workarounds"""
+        artifact_text = f"**Gotcha**: {description}\n\n**Workaround**: {workaround}"
+
+        return self.add_runtime_artifact(
+            artifact_text=artifact_text,
+            artifact_type="gotcha",
+            source="manual",
+            file_path=file_path,
+            project_name=project_name,
+            tags=["gotcha", "workaround"]
+        )
+
+    def log_deployment(self, action: str, details: str,
+                      environment: str = "production",
+                      rollback_info: Optional[str] = None,
+                      project_name: Optional[str] = None) -> str:
+        """Log deployment actions and notes"""
+        artifact_text = f"**Action**: {action}\n**Environment**: {environment}\n\n{details}"
+
+        if rollback_info:
+            artifact_text += f"\n\n**Rollback Info**: {rollback_info}"
+            artifact_type = "rollback"
+        else:
+            artifact_type = "deployment_note"
+
+        return self.add_runtime_artifact(
+            artifact_text=artifact_text,
+            artifact_type=artifact_type,
+            source="deployment",
+            project_name=project_name,
+            tags=["deployment", environment, action]
+        )
+
+    def log_dependency_issue(self, package: str, issue: str,
+                            resolution: Optional[str] = None,
+                            project_name: Optional[str] = None) -> str:
+        """Log dependency and version conflicts"""
+        artifact_text = f"**Package**: {package}\n**Issue**: {issue}"
+
+        if resolution:
+            artifact_text += f"\n\n**Resolution**: {resolution}"
+
+        return self.add_runtime_artifact(
+            artifact_text=artifact_text,
+            artifact_type="dependency_issue",
+            source="package_manager",
+            project_name=project_name,
+            tags=["dependency", package]
+        )
+
     def get_system_stats(self) -> Dict[str, Any]:
         """Get comprehensive system statistics"""
         return self.rag_engine.get_stats()

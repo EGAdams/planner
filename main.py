@@ -14,7 +14,7 @@ from pathlib import Path
 
 from rag_system.core.document_manager import DocumentManager
 from rag_system.core.context_provider import ContextProvider
-from rag_system.models.document import DocumentType
+from rag_system.models.document import DocumentType, ArtifactType
 
 app = typer.Typer(help="Project Management RAG System - Memory for your freelance business")
 console = Console()
@@ -237,29 +237,220 @@ def status():
         console.print(doc_table)
 
 @app.command()
+def artifact(
+    text: str,
+    artifact_type: str,
+    source: str,
+    file_path: Optional[str] = None,
+    project: Optional[str] = None
+):
+    """Log runtime artifacts (errors, CI logs, test failures, PR decisions)"""
+    console.print(f"📦 Logging {artifact_type} artifact from {source}", style="bold magenta")
+
+    dm, _ = get_managers()
+
+    try:
+        doc_id = dm.add_runtime_artifact(
+            artifact_text=text,
+            artifact_type=artifact_type,
+            source=source,
+            file_path=file_path,
+            project_name=project
+        )
+        console.print(f"✅ Artifact logged successfully! ID: {doc_id}", style="green")
+        console.print(f"💡 Search with: python main.py search-artifacts \"{text[:30]}...\"", style="dim")
+    except Exception as e:
+        console.print(f"❌ Error logging artifact: {str(e)}", style="red")
+
+@app.command()
+def gotcha(
+    description: str,
+    workaround: str,
+    file_path: Optional[str] = None,
+    project: Optional[str] = None
+):
+    """Log a code gotcha and its workaround"""
+    console.print(f"💡 Logging gotcha...", style="bold yellow")
+
+    dm, _ = get_managers()
+
+    try:
+        doc_id = dm.log_gotcha(
+            description=description,
+            workaround=workaround,
+            file_path=file_path,
+            project_name=project
+        )
+        console.print(f"✅ Gotcha logged! ID: {doc_id}", style="green")
+        console.print(f"💡 Search with: python main.py search-artifacts \"gotcha {description[:20]}\"", style="dim")
+    except Exception as e:
+        console.print(f"❌ Error: {str(e)}", style="red")
+
+@app.command()
+def perf(
+    description: str,
+    metric: str,
+    value: float,
+    threshold: float,
+    file_path: Optional[str] = None,
+    project: Optional[str] = None
+):
+    """Log a performance issue"""
+    console.print(f"⚡ Logging performance issue...", style="bold red")
+
+    dm, _ = get_managers()
+
+    try:
+        doc_id = dm.log_performance_issue(
+            description=description,
+            metric=metric,
+            value=value,
+            threshold=threshold,
+            file_path=file_path,
+            project_name=project
+        )
+        console.print(f"✅ Performance issue logged! ID: {doc_id}", style="green")
+    except Exception as e:
+        console.print(f"❌ Error: {str(e)}", style="red")
+
+@app.command()
+def deploy(
+    action: str,
+    details: str,
+    environment: str = "production",
+    rollback_info: Optional[str] = None,
+    project: Optional[str] = None
+):
+    """Log a deployment action"""
+    console.print(f"🚀 Logging deployment to {environment}...", style="bold blue")
+
+    dm, _ = get_managers()
+
+    try:
+        doc_id = dm.log_deployment(
+            action=action,
+            details=details,
+            environment=environment,
+            rollback_info=rollback_info,
+            project_name=project
+        )
+        console.print(f"✅ Deployment logged! ID: {doc_id}", style="green")
+    except Exception as e:
+        console.print(f"❌ Error: {str(e)}", style="red")
+
+@app.command()
+def dependency(
+    package: str,
+    issue: str,
+    resolution: Optional[str] = None,
+    project: Optional[str] = None
+):
+    """Log a dependency or version conflict issue"""
+    console.print(f"📦 Logging dependency issue for {package}...", style="bold yellow")
+
+    dm, _ = get_managers()
+
+    try:
+        doc_id = dm.log_dependency_issue(
+            package=package,
+            issue=issue,
+            resolution=resolution,
+            project_name=project
+        )
+        console.print(f"✅ Dependency issue logged! ID: {doc_id}", style="green")
+    except Exception as e:
+        console.print(f"❌ Error: {str(e)}", style="red")
+
+@app.command()
+def search_artifacts(
+    query: str,
+    artifact_type: Optional[str] = None,
+    file_path: Optional[str] = None,
+    limit: int = 5
+):
+    """Search runtime artifacts with time-decay ranking"""
+    console.print(f"🔍 Searching artifacts: {query}", style="bold magenta")
+
+    dm, _ = get_managers()
+
+    results = dm.search_artifacts(
+        query=query,
+        artifact_type=artifact_type,
+        file_path=file_path,
+        n_results=limit
+    )
+
+    if not results:
+        console.print("No artifacts found.", style="yellow")
+        return
+
+    for i, result in enumerate(results, 1):
+        title = result.metadata.get('title', 'Untitled')
+        artifact_type_str = result.metadata.get('artifact_type', 'unknown')
+        source = result.metadata.get('source', 'unknown')
+        score = f"{result.score:.3f}"
+        file_path_str = result.metadata.get('file_path', '')
+
+        panel_header = f"[{i}] {title}"
+        panel_content = f"**Type**: {artifact_type_str} | **Source**: {source} | **Score**: {score}\n"
+        if file_path_str:
+            panel_content += f"**File**: {file_path_str}\n"
+        panel_content += f"\n{result.content[:400]}"
+        if len(result.content) > 400:
+            panel_content += "..."
+
+        console.print(Panel(
+            panel_content,
+            title=panel_header,
+            border_style="magenta"
+        ))
+
+@app.command()
 def types():
     """Show available document types"""
     console.print("📝 Available Document Types", style="bold")
-    
+
     types_table = Table()
     types_table.add_column("Type", style="cyan")
     types_table.add_column("Description", style="white")
-    
+
     type_descriptions = {
         "client_profile": "Information about clients and contacts",
-        "project_details": "Project specifications and requirements", 
+        "project_details": "Project specifications and requirements",
         "meeting_notes": "Meeting summaries and action items",
         "task_update": "Task progress and status updates",
         "decision_log": "Important decisions and rationale",
         "code_snippet": "Code examples and technical notes",
         "template": "Reusable templates and boilerplates",
-        "conversation": "Chat logs and general discussions"
+        "conversation": "Chat logs and general discussions",
+        "runtime_artifact": "Runtime errors, logs, CI output, test failures"
     }
-    
+
     for doc_type, description in type_descriptions.items():
         types_table.add_row(doc_type, description)
-    
+
     console.print(types_table)
+
+    # Show artifact types
+    console.print("\n🔧 Artifact Types", style="bold")
+    artifact_table = Table()
+    artifact_table.add_column("Artifact Type", style="magenta")
+    artifact_table.add_column("Use Case", style="white")
+
+    artifact_descriptions = {
+        "error": "Error messages and stack traces",
+        "runlog": "Command output and execution logs",
+        "fix": "Solutions and fixes applied",
+        "decision": "PR decisions and design rationale",
+        "ci_output": "CI/CD pipeline logs",
+        "test_failure": "Test failures and debugging info",
+        "pr_notes": "Pull request notes and reviews"
+    }
+
+    for artifact_type, description in artifact_descriptions.items():
+        artifact_table.add_row(artifact_type, description)
+
+    console.print(artifact_table)
 
 if __name__ == "__main__":
     app()

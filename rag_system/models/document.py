@@ -17,6 +17,38 @@ class DocumentType(str, Enum):
     CODE_SNIPPET = "code_snippet"
     TEMPLATE = "template"
     CONVERSATION = "conversation"
+    RUNTIME_ARTIFACT = "runtime_artifact"  # For errors, logs, CI output
+
+class ArtifactType(str, Enum):
+    """Types of runtime artifacts"""
+    ERROR = "error"
+    RUNLOG = "runlog"
+    FIX = "fix"
+    DECISION = "decision"
+    CI_OUTPUT = "ci_output"
+    TEST_FAILURE = "test_failure"
+    PR_NOTES = "pr_notes"
+
+    # Performance & monitoring
+    PERFORMANCE_LOG = "performance_log"
+    SLOW_QUERY = "slow_query"
+    MEMORY_SPIKE = "memory_spike"
+
+    # Dependencies & compatibility
+    DEPENDENCY_ISSUE = "dependency_issue"
+    VERSION_CONFLICT = "version_conflict"
+    BREAKING_CHANGE = "breaking_change"
+
+    # Deployment & operations
+    DEPLOYMENT_NOTE = "deployment_note"
+    ROLLBACK = "rollback"
+    CONFIG_CHANGE = "config_change"
+
+    # Code patterns & gotchas
+    GOTCHA = "gotcha"
+    WORKAROUND = "workaround"
+    ANTI_PATTERN = "anti_pattern"
+    BEST_PRACTICE = "best_practice"
 
 class Document(BaseModel):
     """A document to be stored in the RAG system"""
@@ -28,12 +60,17 @@ class Document(BaseModel):
     tags: List[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
-    
+
     # Project management specific fields
     client_name: Optional[str] = None
     project_name: Optional[str] = None
     priority: Optional[str] = None  # high, medium, low
     status: Optional[str] = None    # active, completed, blocked, etc.
+
+    # Runtime artifact specific fields
+    artifact_type: Optional[str] = None  # error, runlog, fix, decision, etc.
+    source: Optional[str] = None  # pytest, CI, review, etc.
+    file_path: Optional[str] = None  # Associated file for artifact
     
 class DocumentChunk(BaseModel):
     """A chunk of a document for RAG retrieval"""
