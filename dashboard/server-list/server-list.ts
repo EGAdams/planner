@@ -3,6 +3,8 @@
  * Responsibility: Display list of registered servers with their status
  */
 
+import { eventBus } from '../event-bus/event-bus.js';
+
 interface Server {
   id: string;
   name: string;
@@ -11,6 +13,7 @@ interface Server {
 
 export class ServerList extends HTMLElement {
   private servers: Server[] = [];
+  private unsubscribe: (() => void) | null = null;
 
   constructor() {
     super();
@@ -22,13 +25,20 @@ export class ServerList extends HTMLElement {
     this.render();
   }
 
+  disconnectedCallback() {
+    // Clean up event subscription
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+  }
+
   private setupEventListeners() {
-    window.addEventListener('bus-event', ((e: CustomEvent) => {
-      if (e.detail.type === 'servers-updated') {
-        this.servers = e.detail.data;
-        this.render();
-      }
-    }) as EventListener);
+    // Subscribe to servers updates from the EventBus
+    this.unsubscribe = eventBus.on('servers-updated', (data) => {
+      this.servers = data;
+      this.render();
+    });
   }
 
   private render() {

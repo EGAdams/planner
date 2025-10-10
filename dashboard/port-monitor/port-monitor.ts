@@ -3,6 +3,8 @@
  * Responsibility: Display all listening ports and associated processes
  */
 
+import { eventBus } from '../event-bus/event-bus.js';
+
 interface ProcessInfo {
   pid: string;
   port: string;
@@ -13,6 +15,7 @@ interface ProcessInfo {
 
 export class PortMonitor extends HTMLElement {
   private processes: ProcessInfo[] = [];
+  private unsubscribe: (() => void) | null = null;
 
   constructor() {
     super();
@@ -24,22 +27,25 @@ export class PortMonitor extends HTMLElement {
     this.render();
   }
 
+  disconnectedCallback() {
+    // Clean up event subscription
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+  }
+
   private setupEventListeners() {
-    window.addEventListener('bus-event', ((e: CustomEvent) => {
-      if (e.detail.type === 'ports-updated') {
-        this.processes = e.detail.data;
-        this.render();
-      }
-    }) as EventListener);
+    // Subscribe to ports updates from the EventBus
+    this.unsubscribe = eventBus.on('ports-updated', (data) => {
+      this.processes = data;
+      this.render();
+    });
   }
 
   private emitKillRequest(pid: string, port: string) {
-    const event = new CustomEvent('kill-process', {
-      bubbles: true,
-      composed: true,
-      detail: { pid, port }
-    });
-    this.dispatchEvent(event);
+    // Emit kill request via EventBus
+    eventBus.emit('kill-process', { pid, port });
   }
 
   private render() {

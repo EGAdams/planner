@@ -29,13 +29,21 @@ interface ServerConfig {
 
 // Server registry - define all servers that can be managed
 const SERVER_REGISTRY: Record<string, ServerConfig> = {
-  // Add your servers here
-  // Example:
-  // 'backend-api': {
-  //   name: 'Backend API',
-  //   command: 'npm run dev',
-  //   cwd: '/home/adamsl/planner/backend',
-  // }
+  'livekit-server': {
+    name: 'LiveKit Server',
+    command: './livekit-server --dev --bind 0.0.0.0',
+    cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+  },
+  'livekit-voice-agent': {
+    name: 'LiveKit Voice Agent',
+    command: 'uv run python livekit_mcp_agent.py dev',
+    cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+  },
+  'pydantic-web-server': {
+    name: 'Pydantic Web Server',
+    command: '.venv/bin/python pydantic_web_server.py',
+    cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+  },
 };
 
 const runningServers: Map<string, ChildProcess> = new Map();
@@ -49,15 +57,24 @@ async function getListeningPorts(): Promise<ProcessInfo[]> {
     for (const line of lines) {
       if (!line.trim()) continue;
 
-      const parts = line.split(/\s+/);
+      const parts = line.trim().split(/\s+/);  // Trim line to remove trailing spaces
       if (parts.length < 6) continue;
 
       const localAddress = parts[4] || '';
       const programInfo = parts[parts.length - 1] || '';
 
       const portMatch = localAddress.match(/:(\d+)$/);
-      const pidMatch = programInfo.match(/(\d+)\//);
-      const programMatch = programInfo.match(/\/(.+)$/);
+
+      // Handle both netstat format (123/program) and ss format (users:(("program",pid=123,fd=N)))
+      let pidMatch = programInfo.match(/(\d+)\//);  // netstat format
+      if (!pidMatch) {
+        pidMatch = programInfo.match(/pid=(\d+)/);  // ss format
+      }
+
+      let programMatch = programInfo.match(/\/(.+)$/);  // netstat format
+      if (!programMatch) {
+        programMatch = programInfo.match(/\(\("(.+?)",pid=/);  // ss format
+      }
 
       if (portMatch && pidMatch) {
         processes.push({
@@ -132,6 +149,20 @@ function startServer(serverId: string): { success: boolean; message: string } {
       env: { ...process.env, ...config.env },
       detached: true,
       stdio: 'ignore'
+    });
+
+    // Handle process exit to update tracking
+    child.on('exit', (code, signal) => {
+      console.log(`Server ${serverId} exited with code ${code}, signal ${signal}`);
+      runningServers.delete(serverId);
+      broadcastUpdate('servers', getServerStatus());
+    });
+
+    // Handle process errors
+    child.on('error', (error) => {
+      console.error(`Server ${serverId} error:`, error);
+      runningServers.delete(serverId);
+      broadcastUpdate('servers', getServerStatus());
     });
 
     child.unref();

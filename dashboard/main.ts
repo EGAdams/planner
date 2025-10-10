@@ -3,19 +3,21 @@
  * Responsibility: Initialize the dashboard and handle global events
  */
 
+import { eventBus } from './event-bus/event-bus.js';
+import { sseManager } from './event-bus/sse-manager.js';
+
 // Connection status indicator
 const statusElement = document.getElementById('connection-status');
 const statusText = document.getElementById('status-text');
 
-window.addEventListener('bus-event', ((e: CustomEvent) => {
-  const { type, data } = e.detail;
-
-  if (type === 'connection-open') {
+// Subscribe to connection status updates
+eventBus.on('connection-status', (data: { status: string; message: string }) => {
+  if (data.status === 'connected') {
     showStatus('Connected', 'success');
-  } else if (type === 'connection-error') {
-    showStatus('Disconnected - Reconnecting...', 'error');
+  } else if (data.status === 'error') {
+    showStatus(data.message, 'error');
   }
-}) as EventListener);
+});
 
 function showStatus(message: string, type: 'success' | 'error') {
   if (!statusElement || !statusText) return;
@@ -40,6 +42,9 @@ function showStatus(message: string, type: 'success' | 'error') {
     }, 3000);
   }
 }
+
+// Initialize SSE connection
+sseManager.connect();
 
 // Log app initialization
 console.log('Admin Dashboard initialized');

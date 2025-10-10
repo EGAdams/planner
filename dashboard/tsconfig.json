@@ -16,6 +16,7 @@
     "sourceMap": true
   },
   "include": [
+    "main.ts",
     "event-bus/**/*",
     "server-list/**/*",
     "port-monitor/**/*",

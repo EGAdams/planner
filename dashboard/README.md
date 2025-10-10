@@ -12,13 +12,22 @@ A TypeScript-based administrative dashboard for managing servers and monitoring 
 
 ## Architecture
 
-The dashboard follows Single Responsibility Principle with separate web components:
+The dashboard follows Single Responsibility Principle with clean separation of concerns:
 
-- `event-bus`: SSE connection and event distribution
+**Core Modules (ES Module Singletons):**
+- `event-bus/event-bus.ts`: Pure pub/sub event bus for component communication
+- `event-bus/sse-manager.ts`: Server-Sent Events connection manager
+
+**Web Components:**
 - `port-monitor`: Display listening ports and processes
 - `process-killer`: Handle process termination with notifications
 - `server-controller`: Individual server start/stop controls
 - `server-list`: Display all registered servers
+
+**Backend:**
+- `backend/server.ts`: Node.js HTTP server with SSE endpoint
+
+> **Note:** The EventBus uses modern ES Module singleton pattern (not HTMLElement) following industry best practices. See `REFACTORING_NOTES.md` for details.
 
 ## Setup
 

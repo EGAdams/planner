@@ -3,6 +3,8 @@
  * Responsibility: Control individual server start/stop operations
  */
 
+import { eventBus } from '../event-bus/event-bus.js';
+
 interface Server {
   id: string;
   name: string;
@@ -14,6 +16,7 @@ export class ServerController extends HTMLElement {
   private serverId: string = '';
   private server: Server | null = null;
   private isLoading: boolean = false;
+  private unsubscribe: (() => void) | null = null;
 
   static get observedAttributes() {
     return ['server-id'];
@@ -35,6 +38,14 @@ export class ServerController extends HTMLElement {
     this.render();
   }
 
+  disconnectedCallback() {
+    // Clean up event subscription
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+  }
+
   attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     if (name === 'server-id' && oldValue !== newValue) {
       this.serverId = newValue;
@@ -43,13 +54,11 @@ export class ServerController extends HTMLElement {
   }
 
   private setupEventListeners() {
-    window.addEventListener('bus-event', ((e: CustomEvent) => {
-      if (e.detail.type === 'servers-updated') {
-        const servers: Server[] = e.detail.data;
-        this.server = servers.find(s => s.id === this.serverId) || null;
-        this.render();
-      }
-    }) as EventListener);
+    // Subscribe to servers updates from the EventBus
+    this.unsubscribe = eventBus.on('servers-updated', (data: Server[]) => {
+      this.server = data.find(s => s.id === this.serverId) || null;
+      this.render();
+    });
   }
 
   private async toggleServer() {

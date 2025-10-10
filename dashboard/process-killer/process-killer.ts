@@ -3,11 +3,14 @@
  * Responsibility: Handle process termination requests and display status
  */
 
+import { eventBus } from '../event-bus/event-bus.js';
+
 export class ProcessKiller extends HTMLElement {
   private apiUrl: string = 'http://localhost:3030';
   private isKilling: boolean = false;
   private lastMessage: string = '';
   private lastMessageType: 'success' | 'error' | '' = '';
+  private unsubscribe: (() => void) | null = null;
 
   constructor() {
     super();
@@ -24,11 +27,20 @@ export class ProcessKiller extends HTMLElement {
     this.render();
   }
 
+  disconnectedCallback() {
+    // Clean up event subscription
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+  }
+
   private setupEventListeners() {
-    window.addEventListener('kill-process', ((e: CustomEvent) => {
-      const { pid, port } = e.detail;
+    // Subscribe to kill-process events from the EventBus
+    this.unsubscribe = eventBus.on('kill-process', (data: { pid: string; port: string }) => {
+      const { pid, port } = data;
       this.killProcess(pid, port);
-    }) as EventListener);
+    });
   }
 
   private async killProcess(pid: string, port: string) {
