@@ -4,6 +4,7 @@ venv/lib/python3.12/site-packages/*
 *.pyc
 *.bin
 venv/*
+.venv/*
 node_modules/*
 
 dist/linux-unpacked/*

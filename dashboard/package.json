@@ -1,0 +1,22 @@
+{
+  "name": "admin-dashboard",
+  "version": "1.0.0",
+  "description": "Administrative dashboard for server management",
+  "scripts": {
+    "build": "npm run build:components && npm run build:backend && npm run build:css",
+    "build:components": "tsc -p tsconfig.json",
+    "build:backend": "tsc -p tsconfig.backend.json",
+    "build:css": "npx tailwindcss -i ./public/styles/input.css -o ./public/styles/output.css --minify",
+    "dev:css": "npx tailwindcss -i ./public/styles/input.css -o ./public/styles/output.css --watch",
+    "dev:backend": "node backend/dist/server.js",
+    "start": "node backend/dist/server.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  }
+}

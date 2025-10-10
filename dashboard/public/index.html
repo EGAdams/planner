@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/styles/output.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <!-- Header -->
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">System Administration Dashboard</h1>
+      <p class="text-gray-600">Monitor and manage servers and processes</p>
+    </header>
+
+    <!-- Dashboard Grid -->
+    <div class="grid gap-6 mb-6">
+      <!-- Server Management Section -->
+      <section>
+        <server-list></server-list>
+      </section>
+
+      <!-- Port Monitor Section -->
+      <section>
+        <port-monitor></port-monitor>
+      </section>
+    </div>
+
+    <!-- Connection Status -->
+    <div id="connection-status" class="fixed top-4 right-4 px-4 py-2 rounded-md shadow-lg text-sm font-medium hidden">
+      <span id="status-text"></span>
+    </div>
+  </div>
+
+  <!-- Hidden Components -->
+  <event-bus api-url="http://localhost:3030"></event-bus>
+  <process-killer api-url="http://localhost:3030"></process-killer>
+
+  <!-- Load Components -->
+  <script type="module" src="/dist/event-bus/event-bus.js"></script>
+  <script type="module" src="/dist/server-list/server-list.js"></script>
+  <script type="module" src="/dist/port-monitor/port-monitor.js"></script>
+  <script type="module" src="/dist/process-killer/process-killer.js"></script>
+  <script type="module" src="/dist/server-controller/server-controller.js"></script>
+  <script type="module" src="/dist/main.js"></script>
+</body>
+</html>
