@@ -5,7 +5,9 @@ Stay logged in and chat with other agents in real-time
 """
 
 import sys
+from typing import Optional, Sequence
 from rag_tools import send, inbox
+from agent_messaging_interface import AgentMessage
 from rich.console import Console
 from rich.prompt import Prompt
 
@@ -29,7 +31,7 @@ def main():
 
     # Show initial messages
     console.print(f"📬 Checking initial messages on '{topic}':\n", style="yellow")
-    inbox(topic)
+    _display_messages(inbox(topic, render=False), agent_name)
 
     # Main loop
     while True:
@@ -48,18 +50,18 @@ def main():
 
         elif user_input.lower() == 'check':
             console.print(f"\n📬 Checking for new messages on '{topic}':\n", style="yellow")
-            inbox(topic)
+            _display_messages(inbox(topic, render=False), agent_name)
 
         elif user_input.lower() == 'all':
             console.print("\n📬 All messages:\n", style="yellow")
-            inbox()
+            _display_messages(inbox(render=False), agent_name)
 
         elif user_input.lower().startswith('topic:'):
             # Change topic
             new_topic = user_input.split(':', 1)[1].strip()
             topic = new_topic
             console.print(f"✅ Switched to topic: {topic}", style="green")
-            inbox(topic)
+            _display_messages(inbox(topic, render=False), agent_name)
 
         elif user_input.strip():
             # Send message
@@ -68,7 +70,7 @@ def main():
 
         else:
             # Default to checking messages
-            inbox(topic)
+            _display_messages(inbox(topic, render=False), agent_name)
 
 if __name__ == "__main__":
     try:
@@ -76,3 +78,19 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         console.print("\n\n👋 Interrupted. Goodbye!\n", style="yellow")
         sys.exit(0)
+
+
+def _display_messages(messages: Optional[Sequence[AgentMessage]], agent_name: str) -> None:
+    """Render a list of messages for the interactive chat."""
+
+    if not messages:
+        console.print("📭 No messages found.", style="yellow")
+        return
+
+    for msg in messages:
+        time_str = msg.timestamp.strftime('%H:%M:%S') if msg.timestamp else '--:--:--'
+        sender = msg.sender or 'unknown'
+        if sender == agent_name:
+            console.print(f"[dim][{time_str}][/dim] [green]You:[/green] {msg.content.strip()}")
+        else:
+            console.print(f"[dim][{time_str}][/dim] [cyan]{sender}:[/cyan] {msg.content.strip()}")

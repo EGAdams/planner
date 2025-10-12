@@ -2,7 +2,7 @@
 
 ## How AI Agents Can Talk to Each Other
 
-This guide shows how different AI agents (Claude, GPT-4, local LLMs, custom agents) can send messages to each other and collaborate as a team.
+This guide shows how different AI agents (Claude, gpt-codex, local LLMs, custom agents) can send messages to each other and collaborate as a team.
 
 ---
 
@@ -130,7 +130,7 @@ send(
 )
 ```
 
-**GPT-4 working on the same codebase:**
+**gpt-codex working on the same codebase:**
 ```python
 from rag_tools import inbox, recall
 
@@ -218,7 +218,7 @@ send(
 )
 ```
 
-**Teammate with GPT-4 (Afternoon):**
+**Teammate with gpt-codex (Afternoon):**
 ```python
 from rag_tools import inbox
 
@@ -368,7 +368,7 @@ send(
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                  Agent A (Claude)                    │
+│                  Agent A (claude)                    │
 │                                                      │
 │  from rag_tools import send                          │
 │  send("Fixed parser bug", topic="debugging")         │
@@ -389,7 +389,7 @@ send(
                    │
                    ▼
 ┌──────────────────────────────────────────────────────┐
-│                  Agent B (GPT-4)                     │
+│                  Agent B (gpt-codex)                     │
 │                                                      │
 │  from rag_tools import inbox                         │
 │  inbox("debugging")                                  │
@@ -531,7 +531,7 @@ remember("Refactored auth module", "Auth Work")
 send("Auth refactor complete. Ready for testing.", topic="dev")
 
 
-# === Afternoon: GPT-4 Session ===
+# === Afternoon: gpt-codex Session ===
 from rag_tools import inbox, send
 
 # Check messages

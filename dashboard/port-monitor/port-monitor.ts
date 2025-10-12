@@ -11,6 +11,9 @@ interface ProcessInfo {
   protocol: string;
   program: string;
   command: string;
+  color?: string;
+  serverId?: string;
+  orphaned?: boolean;
 }
 
 export class PortMonitor extends HTMLElement {
@@ -98,6 +101,25 @@ export class PortMonitor extends HTMLElement {
 
         tr:hover {
           background: #f9fafb;
+        }
+
+        tr.orphaned {
+          background-color: #fee2e2 !important;
+        }
+
+        tr.orphaned:hover {
+          background-color: #fecaca !important;
+        }
+
+        .orphaned-badge {
+          background-color: #ef4444;
+          color: white;
+          font-size: 0.65rem;
+          padding: 0.25rem 0.4rem;
+          border-radius: 0.25rem;
+          font-weight: 600;
+          margin-left: 0.5rem;
+          text-transform: uppercase;
         }
 
         .port-badge {
@@ -201,8 +223,11 @@ export class PortMonitor extends HTMLElement {
             </thead>
             <tbody>
               ${this.processes.map(proc => `
-                <tr>
-                  <td><span class="port-badge">${proc.port}</span></td>
+                <tr class="${proc.orphaned && !proc.color ? 'orphaned' : ''}" style="${proc.color ? `background-color: ${proc.color};` : (proc.orphaned ? 'background-color: #fee2e2;' : '')}">
+                  <td>
+                    <span class="port-badge">${proc.port}</span>
+                    ${proc.orphaned ? '<span class="orphaned-badge">ORPHANED</span>' : ''}
+                  </td>
                   <td><span class="protocol-badge">${proc.protocol}</span></td>
                   <td>${proc.pid}</td>
                   <td>${proc.program}</td>
@@ -210,7 +235,7 @@ export class PortMonitor extends HTMLElement {
                   <td>
                     <div class="actions">
                       <button class="btn-danger" data-pid="${proc.pid}" data-port="${proc.port}">
-                        Kill
+                        ${proc.orphaned ? 'Force Kill' : 'Kill'}
                       </button>
                     </div>
                   </td>

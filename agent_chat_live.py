@@ -28,35 +28,27 @@ class LiveAgentChat:
     def check_for_new_messages(self):
         """Check for new messages and display them"""
         try:
-            messages = inbox(topic=self.topic, limit=20)
+            messages = inbox(topic=self.topic, limit=20, render=False)
 
             for msg in messages:
                 # Create unique ID from timestamp and sender
-                msg_id = f"{msg.metadata.get('timestamp', '')}_{msg.metadata.get('source', '')}"
+                msg_timestamp = msg.timestamp.isoformat() if msg.timestamp else ''
+                msg_id = f"{msg_timestamp}_{msg.sender}"
 
                 if msg_id not in self.seen_messages:
                     self.seen_messages.add(msg_id)
 
                     # Only show if it's not our own message or if it's the first run
-                    sender = msg.metadata.get('source', 'unknown')
-                    timestamp = msg.metadata.get('timestamp', '')
+                    sender = msg.sender or 'unknown'
+                    timestamp = msg.timestamp
 
                     # Parse timestamp to show time only
                     if timestamp:
-                        try:
-                            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-                            time_str = dt.strftime('%H:%M:%S')
-                        except:
-                            time_str = timestamp[:8] if len(timestamp) >= 8 else timestamp
+                        time_str = timestamp.strftime('%H:%M:%S')
                     else:
                         time_str = datetime.now().strftime('%H:%M:%S')
 
-                    # Get content
                     content = msg.content
-                    # Extract actual content if it has headers
-                    if '**From**:' in content:
-                        lines = content.split('\n')
-                        content = '\n'.join(lines[4:]) if len(lines) > 4 else content
 
                     # Only show new messages (not from initial load)
                     if len(self.seen_messages) > 1:

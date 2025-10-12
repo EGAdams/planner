@@ -9,6 +9,8 @@ interface Server {
   id: string;
   name: string;
   running: boolean;
+  orphaned: boolean;
+  orphanedPid?: string;
 }
 
 export class ServerController extends HTMLElement {
@@ -64,6 +66,12 @@ export class ServerController extends HTMLElement {
   private async toggleServer() {
     if (this.isLoading || !this.server) return;
 
+    // If server is orphaned, force kill it
+    if (this.server.orphaned && this.server.orphanedPid) {
+      await this.forceKill(this.server.orphanedPid);
+      return;
+    }
+
     const action = this.server.running ? 'stop' : 'start';
     this.isLoading = true;
     this.render();
@@ -88,12 +96,62 @@ export class ServerController extends HTMLElement {
     this.render();
   }
 
+  private async forceKill(pid: string) {
+    if (this.isLoading) return;
+
+    if (!confirm(`Force kill orphaned process (PID: ${pid})? This cannot be undone.`)) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.render();
+
+    try {
+      const response = await fetch(`${this.apiUrl}/api/kill`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ pid })
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        console.error('Force kill failed:', result.message);
+        alert(`Failed to kill process: ${result.message}`);
+      }
+    } catch (error: any) {
+      console.error('Error killing process:', error);
+      alert(`Error: ${error.message}`);
+    }
+
+    this.isLoading = false;
+    this.render();
+  }
+
   private render() {
     if (!this.shadowRoot) return;
 
+    const isOrphaned = this.server?.orphaned || false;
     const isRunning = this.server?.running || false;
-    const buttonText = this.isLoading ? 'Loading...' : (isRunning ? 'Stop' : 'Start');
-    const buttonClass = isRunning ? 'btn-danger' : 'btn-success';
+
+    let buttonText: string;
+    let buttonClass: string;
+
+    if (this.isLoading) {
+      buttonText = 'Loading...';
+      buttonClass = isOrphaned ? 'btn-warning' : (isRunning ? 'btn-danger' : 'btn-success');
+    } else if (isOrphaned) {
+      buttonText = 'Force Kill';
+      buttonClass = 'btn-warning';
+    } else if (isRunning) {
+      buttonText = 'Stop';
+      buttonClass = 'btn-danger';
+    } else {
+      buttonText = 'Start';
+      buttonClass = 'btn-success';
+    }
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -133,6 +191,15 @@ export class ServerController extends HTMLElement {
 
         .btn-danger:hover:not(:disabled) {
           background: #dc2626;
+        }
+
+        .btn-warning {
+          background: #f59e0b;
+          color: white;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+          background: #d97706;
         }
 
         .spinner {

@@ -22,30 +22,19 @@ class AgentAChat:
     def check_for_new_messages(self):
         """Check for new messages and display them"""
         try:
-            messages = inbox(topic=self.topic, limit=20)
+            messages = inbox(topic=self.topic, limit=20, render=False)
 
             for msg in messages:
-                msg_id = f"{msg.metadata.get('timestamp', '')}_{msg.metadata.get('source', '')}"
+                msg_timestamp = msg.timestamp.isoformat() if msg.timestamp else ''
+                msg_id = f"{msg_timestamp}_{msg.sender}"
 
                 if msg_id not in self.seen_messages:
                     self.seen_messages.add(msg_id)
 
-                    sender = msg.metadata.get('source', 'unknown')
-                    timestamp = msg.metadata.get('timestamp', '')
-
-                    if timestamp:
-                        try:
-                            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
-                            time_str = dt.strftime('%H:%M:%S')
-                        except:
-                            time_str = timestamp[:8] if len(timestamp) >= 8 else timestamp
-                    else:
-                        time_str = datetime.now().strftime('%H:%M:%S')
-
+                    sender = msg.sender or 'unknown'
+                    timestamp_dt = msg.timestamp
+                    time_str = timestamp_dt.strftime('%H:%M:%S') if timestamp_dt else datetime.now().strftime('%H:%M:%S')
                     content = msg.content
-                    if '**From**:' in content:
-                        lines = content.split('\n')
-                        content = '\n'.join(lines[4:]) if len(lines) > 4 else content
 
                     # Only show new messages
                     if len(self.seen_messages) > 1:

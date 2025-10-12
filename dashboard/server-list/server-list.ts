@@ -9,6 +9,9 @@ interface Server {
   id: string;
   name: string;
   running: boolean;
+  orphaned: boolean;
+  orphanedPid?: string;
+  color: string;
 }
 
 export class ServerList extends HTMLElement {
@@ -84,6 +87,21 @@ export class ServerList extends HTMLElement {
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
+        .server-card.orphaned {
+          background-color: #fee2e2 !important;
+          border-color: #fca5a5;
+        }
+
+        .orphaned-badge {
+          background-color: #ef4444;
+          color: white;
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          font-weight: 500;
+          margin-left: 0.5rem;
+        }
+
         .server-info {
           display: flex;
           align-items: center;
@@ -147,12 +165,18 @@ export class ServerList extends HTMLElement {
         ` : `
           <div class="server-grid">
             ${this.servers.map(server => `
-              <div class="server-card">
+              <div class="server-card ${server.orphaned ? 'orphaned' : ''}" style="background-color: ${server.orphaned ? '#fee2e2' : server.color};">
                 <div class="server-info">
                   <div class="status-indicator ${server.running ? 'running' : 'stopped'}"></div>
                   <div>
-                    <div class="server-name">${server.name}</div>
-                    <div class="server-id">${server.id}</div>
+                    <div class="server-name">
+                      ${server.name}
+                      ${server.orphaned ? '<span class="orphaned-badge">ORPHANED</span>' : ''}
+                    </div>
+                    <div class="server-id">
+                      ${server.id}
+                      ${server.orphanedPid ? ` (PID: ${server.orphanedPid})` : ''}
+                    </div>
                   </div>
                 </div>
                 <server-controller server-id="${server.id}"></server-controller>

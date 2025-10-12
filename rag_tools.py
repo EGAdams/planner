@@ -5,15 +5,19 @@ Import this for instant access to memory functions in any script
 """
 
 from typing import Optional
+from datetime import datetime
 from rag_system.core.document_manager import DocumentManager
 from rag_system.core.context_provider import ContextProvider
 from rich.console import Console
+
+from agent_messaging_interface import AgentMessage, get_agent_messenger
 
 console = Console()
 
 # Global instances - initialized on first use
 _doc_manager = None
 _context_provider = None
+_agent_messenger = None
 
 def _get_managers():
     """Lazy initialization of managers"""
@@ -189,6 +193,15 @@ def memory_stats():
 # AGENT-TO-AGENT MESSAGING
 # ============================================================================
 
+def _get_agent_messenger():
+    """Lazy initialization for the agent messaging backend."""
+    global _agent_messenger
+    if not _agent_messenger:
+        dm, _ = _get_managers()
+        _agent_messenger = get_agent_messenger(doc_manager=dm)
+    return _agent_messenger
+
+
 def send_agent_message(message: str, topic: str = "general", from_agent: str = "claude", priority: str = "normal"):
     """
     Send a message to other agents via shared message board
@@ -198,20 +211,49 @@ def send_agent_message(message: str, topic: str = "general", from_agent: str = "
         send_agent_message("Deployment at 3pm", topic="ops", priority="high")
     """
     try:
-        from agent_messaging import post_message
-        return post_message(message, topic=topic, from_agent=from_agent)
+        messenger = _get_agent_messenger()
+        agent_message = messenger.send(
+            message,
+            topic=topic,
+            sender=from_agent,
+            priority=priority,
+        )
+        console.print(
+            f"✅ Message sent to topic '{agent_message.topic}'", style="green"
+        )
+        return agent_message
     except Exception as e:
         console.print(f"❌ Error sending message: {e}", style="red")
         console.print("💡 Using memory-based fallback...", style="dim")
 
-        # Fallback: use regular memory
-        return remember(
+        # Fallback: use regular memory so the note is still saved somewhere
+        topic_name = topic or "general"
+        note_id = remember(
             f"[MESSAGE from {from_agent}] {message}",
-            f"Agent Message: {topic}",
+            f"Agent Message: {topic_name}",
             priority=priority
         )
 
-def read_agent_messages(topic: Optional[str] = None, limit: int = 10):
+        return AgentMessage(
+            id=note_id,
+            document_id=note_id,
+            content=message,
+            topic=topic_name,
+            sender=from_agent,
+            priority=priority,
+            timestamp=datetime.utcnow(),
+            metadata={
+                "fallback": True,
+                "topic": topic_name,
+                "sender": from_agent,
+                "priority": priority,
+                "document_id": note_id,
+            },
+            score=1.0,
+            raw=None,
+        )
+
+def read_agent_messages(topic: Optional[str] = None, limit: int = 10, *, render: bool = True):
     """
     Read messages from other agents
 
@@ -220,14 +262,57 @@ def read_agent_messages(topic: Optional[str] = None, limit: int = 10):
         read_agent_messages(topic="debugging")  # Specific topic
     """
     try:
-        from agent_messaging import read_messages
-        return read_messages(topic=topic, limit=limit)
+        messenger = _get_agent_messenger()
+        messages = messenger.receive(topic=topic, limit=limit)
+        if render:
+            _render_agent_messages(messages)
+        return messages
     except Exception as e:
         console.print(f"❌ Error reading messages: {e}", style="red")
 
         # Fallback: search memory
         query = f"agent message {topic}" if topic else "agent message"
-        return recall(query, limit=limit)
+        results = recall(query, limit=limit)
+
+        fallback_messages = []
+        for result in results:
+            metadata = dict(result.metadata)
+            topic_name = metadata.get("topic") or metadata.get("project_name") or topic or "general"
+            sender_name = metadata.get("sender") or metadata.get("source") or "unknown"
+            priority_level = metadata.get("priority") or "normal"
+            fallback_messages.append(
+                AgentMessage(
+                    id=metadata.get("document_id", result.document_id),
+                    document_id=result.document_id,
+                    content=result.content,
+                    topic=topic_name,
+                    sender=sender_name,
+                    priority=priority_level,
+                    timestamp=datetime.utcnow(),
+                    metadata=metadata,
+                    score=getattr(result, "score", 1.0),
+                    raw=result,
+                )
+            )
+
+        if render:
+            _render_agent_messages(fallback_messages)
+        return fallback_messages
+
+
+def _render_agent_messages(messages: Optional[list[AgentMessage]]) -> None:
+    """Pretty-print messages for interactive use."""
+
+    if not messages:
+        console.print("📭 No messages found.", style="yellow")
+        return
+
+    for msg in messages:
+        timestamp = msg.timestamp.strftime('%Y-%m-%d %H:%M:%S') if msg.timestamp else '--'
+        console.print(
+            f"[dim]{timestamp}[/dim] [cyan]{msg.sender or 'unknown'}[/cyan] → "
+            f"[bold]{msg.topic or 'general'}[/bold]: {msg.content.strip()}"
+        )
 
 # ============================================================================
 # LETTA SHARED MEMORY INTEGRATION

@@ -18,6 +18,9 @@ interface ProcessInfo {
   protocol: string;
   program: string;
   command: string;
+  color?: string;
+  serverId?: string;
+  orphaned?: boolean;
 }
 
 interface ServerConfig {
@@ -25,6 +28,8 @@ interface ServerConfig {
   command: string;
   cwd: string;
   env?: Record<string, string>;
+  color: string;
+  ports: number[];
 }
 
 // Server registry - define all servers that can be managed
@@ -33,20 +38,50 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     name: 'LiveKit Server',
     command: './livekit-server --dev --bind 0.0.0.0',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+    color: '#DBEAFE',
+    ports: [7880, 7881], // Only track main TCP ports; UDP ports are dynamic
   },
   'livekit-voice-agent': {
     name: 'LiveKit Voice Agent',
     command: 'uv run python livekit_mcp_agent.py dev',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+    color: '#D1FAE5',
+    ports: [],
   },
   'pydantic-web-server': {
     name: 'Pydantic Web Server',
     command: '.venv/bin/python pydantic_web_server.py',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+    color: '#E9D5FF',
+    ports: [8000],
   },
 };
 
 const runningServers: Map<string, ChildProcess> = new Map();
+
+function getServerByPort(port: string): { serverId: string; color: string } | null {
+  const portNum = parseInt(port, 10);
+  for (const [serverId, config] of Object.entries(SERVER_REGISTRY)) {
+    if (config.ports.includes(portNum)) {
+      return { serverId, color: config.color };
+    }
+  }
+  return null;
+}
+
+function getServerByProgramName(programName: string): { serverId: string; color: string } | null {
+  // Normalize program name (remove path, extension, etc.)
+  const normalizedProgram = programName.toLowerCase().trim();
+
+  for (const [serverId, config] of Object.entries(SERVER_REGISTRY)) {
+    // Check if the program name contains the server ID or command name
+    if (normalizedProgram.includes(serverId.toLowerCase()) ||
+        config.command.toLowerCase().includes(normalizedProgram)) {
+      return { serverId, color: config.color };
+    }
+  }
+  return null;
+}
 
 async function getListeningPorts(): Promise<ProcessInfo[]> {
   try {
@@ -77,12 +112,25 @@ async function getListeningPorts(): Promise<ProcessInfo[]> {
       }
 
       if (portMatch && pidMatch) {
+        const programName = programMatch ? programMatch[1] : 'unknown';
+
+        // Try to match by port first, then fall back to program name
+        let serverInfo = getServerByPort(portMatch[1]);
+        if (!serverInfo) {
+          serverInfo = getServerByProgramName(programName);
+        }
+
+        const isOrphaned = serverInfo ? !runningServers.has(serverInfo.serverId) : false;
+
         processes.push({
           pid: pidMatch[1],
           port: portMatch[1],
           protocol: parts[0] || '',
-          program: programMatch ? programMatch[1] : 'unknown',
-          command: await getCommandForPid(pidMatch[1])
+          program: programName,
+          command: await getCommandForPid(pidMatch[1]),
+          color: serverInfo?.color,
+          serverId: serverInfo?.serverId,
+          orphaned: isOrphaned ? true : undefined
         });
       }
     }
@@ -190,12 +238,35 @@ function stopServer(serverId: string): { success: boolean; message: string } {
   }
 }
 
-function getServerStatus(): Array<{ id: string; name: string; running: boolean }> {
-  return Object.entries(SERVER_REGISTRY).map(([id, config]) => ({
-    id,
-    name: config.name,
-    running: runningServers.has(id)
-  }));
+async function getServerStatus(ports?: ProcessInfo[]): Promise<Array<{ id: string; name: string; running: boolean; orphaned: boolean; orphanedPid?: string; color: string }>> {
+  // Get current port usage if not provided
+  const currentPorts = ports || await getListeningPorts();
+
+  return Object.entries(SERVER_REGISTRY).map(([id, config]) => {
+    const isManaged = runningServers.has(id);
+
+    // Check if any of the server's ports are in use
+    const portInUse = config.ports.some(port =>
+      currentPorts.some(p => parseInt(p.port) === port)
+    );
+
+    // Find the PID if port is in use
+    const orphanedProcess = config.ports.length > 0
+      ? currentPorts.find(p => config.ports.includes(parseInt(p.port)))
+      : null;
+
+    // Server is orphaned if port is in use but not managed by dashboard
+    const isOrphaned = portInUse && !isManaged;
+
+    return {
+      id,
+      name: config.name,
+      running: isManaged || portInUse,
+      orphaned: isOrphaned,
+      orphanedPid: isOrphaned && orphanedProcess ? orphanedProcess.pid : undefined,
+      color: config.color
+    };
+  });
 }
 
 // SSE clients for real-time updates
@@ -217,7 +288,7 @@ setInterval(async () => {
   const ports = await getListeningPorts();
   broadcastUpdate('ports', ports);
 
-  const servers = getServerStatus();
+  const servers = await getServerStatus(ports);
   broadcastUpdate('servers', servers);
 }, 5000);
 
@@ -245,7 +316,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === '/api/servers' && req.method === 'GET') {
-    const servers = getServerStatus();
+    const servers = await getServerStatus();
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(servers));
     return;
@@ -268,7 +339,8 @@ const server = http.createServer(async (req, res) => {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(result));
-    broadcastUpdate('servers', getServerStatus());
+    const servers = await getServerStatus();
+    broadcastUpdate('servers', servers);
     return;
   }
 
@@ -311,7 +383,7 @@ const server = http.createServer(async (req, res) => {
 
     // Send initial data
     const ports = await getListeningPorts();
-    const servers = getServerStatus();
+    const servers = await getServerStatus(ports);
     res.write(`event: ports\ndata: ${JSON.stringify(ports)}\n\n`);
     res.write(`event: servers\ndata: ${JSON.stringify(servers)}\n\n`);
 
