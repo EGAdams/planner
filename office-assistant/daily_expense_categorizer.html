@@ -219,7 +219,8 @@
 <script type="module" src="/office/js/main.js"></script>
 <script>
 // ----- Configuration -----
-const API_BASE = 'http://localhost:8080/api';
+// Auto-detect API base URL from current window location (works for localhost and WSL2 IP)
+const API_BASE = `${window.location.protocol}//${window.location.host}/api`;
 
 // ----- Global data -----
 let allTransactions = [];

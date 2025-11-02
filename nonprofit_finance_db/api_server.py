@@ -130,8 +130,14 @@ async def get_transactions(
                 return None
             path = []
             current_id = cat_id
+            visited = set()  # Track visited categories to prevent infinite loops
             # Traverse up the hierarchy
             while current_id is not None:
+                # Detect circular reference
+                if current_id in visited:
+                    break  # Stop if we've seen this category before
+                visited.add(current_id)
+
                 cat = category_map.get(current_id)
                 if not cat:
                     break

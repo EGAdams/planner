@@ -8,8 +8,7 @@ docling>=2.0.0
 ofxparse==0.21
 
 # Duplicate detection dependencies
-fuzzywuzzy==0.18.0
-python-Levenshtein==0.21.1
+rapidfuzz
 
 # Data validation and processing
 python-dateutil==2.8.2

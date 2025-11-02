@@ -1,6 +1,6 @@
 # ===== RAG System & Memory =====
-chromadb==0.4.18
-sentence-transformers==2.2.2
+chromadb==1.3.0
+sentence-transformers==5.1.2
 
 # ===== Core Utilities =====
 python-dotenv==1.0.0
@@ -18,8 +18,7 @@ docling>=2.0.0
 ofxparse==0.21
 
 # ===== Duplicate Detection =====
-fuzzywuzzy==0.18.0
-python-Levenshtein==0.21.1
+rapidfuzz
 
 # ===== Data Validation & Processing =====
 python-dateutil==2.8.2

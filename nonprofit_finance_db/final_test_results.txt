@@ -1,0 +1,57 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.4.2, pluggy-1.6.0 -- /home/adamsl/planner/nonprofit_finance_db/venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/adamsl/planner/nonprofit_finance_db
+configfile: pytest.ini
+plugins: Faker-37.12.0, anyio-4.11.0, cov-4.1.0, mock-3.12.0, asyncio-1.2.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 48 items
+
+tests/test_api_server.py::TestHelperFunctions::test_convert_value_date PASSED [  2%]
+tests/test_api_server.py::TestHelperFunctions::test_convert_value_datetime PASSED [  4%]
+tests/test_api_server.py::TestHelperFunctions::test_convert_value_decimal PASSED [  6%]
+tests/test_api_server.py::TestHelperFunctions::test_convert_value_passthrough PASSED [  8%]
+tests/test_api_server.py::TestRootEndpoint::test_api_root_returns_200 PASSED [ 10%]
+tests/test_api_server.py::TestRootEndpoint::test_api_root_returns_json PASSED [ 12%]
+tests/test_api_server.py::TestRootEndpoint::test_api_root_contains_expected_fields PASSED [ 14%]
+tests/test_api_server.py::TestTransactionsEndpoint::test_get_transactions_returns_200 PASSED [ 16%]
+tests/test_api_server.py::TestTransactionsEndpoint::test_get_transactions_returns_list PASSED [ 18%]
+tests/test_api_server.py::TestTransactionsEndpoint::test_get_transactions_with_data PASSED [ 20%]
+tests/test_api_server.py::TestTransactionsEndpoint::test_get_transactions_with_date_filters PASSED [ 22%]
+tests/test_api_server.py::TestTransactionsEndpoint::test_get_transactions_category_hierarchy PASSED [ 25%]
+tests/test_api_server.py::TestTransactionsEndpoint::test_get_transactions_database_error PASSED [ 27%]
+tests/test_api_server.py::TestTransactionsEndpoint::test_get_transactions_serializes_dates_correctly PASSED [ 29%]
+tests/test_api_server.py::TestCategoriesEndpoint::test_get_categories_returns_200 PASSED [ 31%]
+tests/test_api_server.py::TestCategoriesEndpoint::test_get_categories_returns_list PASSED [ 33%]
+tests/test_api_server.py::TestCategoriesEndpoint::test_get_categories_with_data PASSED [ 35%]
+tests/test_api_server.py::TestCategoriesEndpoint::test_get_categories_filters_active_expense_only PASSED [ 37%]
+tests/test_api_server.py::TestCategoriesEndpoint::test_get_categories_database_error PASSED [ 39%]
+tests/test_api_server.py::TestUpdateCategoryEndpoint::test_update_category_returns_200 PASSED [ 41%]
+tests/test_api_server.py::TestUpdateCategoryEndpoint::test_update_category_success_response PASSED [ 43%]
+tests/test_api_server.py::TestUpdateCategoryEndpoint::test_update_category_not_found PASSED [ 45%]
+tests/test_api_server.py::TestUpdateCategoryEndpoint::test_update_category_calls_database PASSED [ 47%]
+tests/test_api_server.py::TestUpdateCategoryEndpoint::test_update_category_null_value PASSED [ 50%]
+tests/test_api_server.py::TestUpdateCategoryEndpoint::test_update_category_database_error PASSED [ 52%]
+tests/test_api_server.py::TestUpdateCategoryEndpoint::test_update_category_invalid_json PASSED [ 54%]
+tests/test_api_server.py::TestRecentDownloadsEndpoint::test_recent_downloads_returns_200 PASSED [ 56%]
+tests/test_api_server.py::TestRecentDownloadsEndpoint::test_recent_downloads_returns_list PASSED [ 58%]
+tests/test_api_server.py::TestRecentDownloadsEndpoint::test_recent_downloads_empty_when_no_directory PASSED [ 60%]
+tests/test_api_server.py::TestRecentDownloadsEndpoint::test_recent_downloads_with_files PASSED [ 62%]
+tests/test_api_server.py::TestRecentDownloadsEndpoint::test_recent_downloads_error_handling PASSED [ 64%]
+tests/test_api_server.py::TestImportPDFEndpoint::test_import_pdf_file_not_found PASSED [ 66%]
+tests/test_api_server.py::TestImportPDFEndpoint::test_import_pdf_invalid_file_type PASSED [ 68%]
+tests/test_api_server.py::TestImportPDFEndpoint::test_import_pdf_requires_filepath PASSED [ 70%]
+tests/test_api_server.py::TestImportPDFEndpoint::test_import_pdf_fallback_mode PASSED [ 72%]
+tests/test_api_server.py::TestImportPDFEndpoint::test_import_pdf_script_failure PASSED [ 75%]
+tests/test_api_server.py::TestCORSConfiguration::test_cors_middleware_configured PASSED [ 77%]
+tests/test_api_server.py::TestCORSConfiguration::test_cors_options_request PASSED [ 79%]
+tests/test_api_server.py::TestStaticFileServing::test_root_endpoint_exists PASSED [ 81%]
+tests/test_api_server.py::TestStaticFileServing::test_ui_mount_point_exists PASSED [ 83%]
+tests/test_api_server.py::TestStaticFileServing::test_office_mount_point_exists PASSED [ 85%]
+tests/test_api_server.py::TestErrorHandling::test_404_for_invalid_endpoint PASSED [ 87%]
+tests/test_api_server.py::TestErrorHandling::test_405_for_wrong_method PASSED [ 89%]
+tests/test_api_server.py::TestErrorHandling::test_422_for_invalid_request_body PASSED [ 91%]
+tests/test_api_server.py::TestEdgeCases::test_transactions_with_null_category PASSED [ 93%]
+tests/test_api_server.py::TestEdgeCases::test_transactions_with_empty_vendor PASSED [ 95%]
+tests/test_api_server.py::TestEdgeCases::test_transactions_with_zero_amount PASSED [ 97%]
+tests/test_api_server.py::TestEdgeCases::test_category_circular_reference_handling 

@@ -4,7 +4,67 @@
 
 You now have multiple powerful ways to view and analyze your transaction data, from quick summaries to detailed interactive exploration.
 
-## 🚀 Quick Start
+## 🌐 Web Interface (Daily Expense Categorizer)
+
+### Starting the Web Server
+
+**WSL2 Users (Windows)**: See special access instructions below.
+
+```bash
+# From the nonprofit_finance_db directory
+source venv/bin/activate
+export NON_PROFIT_PASSWORD=tinman  # Or your MySQL password
+python api_server.py
+```
+
+### Accessing the Web Interface
+
+#### WSL2 on Windows - IMPORTANT
+
+You **CANNOT** use `localhost:8080` from Windows browser when running in WSL2.
+
+**Solution 1: Use WSL2 IP Address (Recommended)**
+
+1. Get your WSL2 IP address:
+   ```bash
+   hostname -I | awk '{print $1}'
+   ```
+   Example: `172.30.171.179`
+
+2. Open in Windows browser:
+   ```
+   http://172.30.171.179:8080
+   ```
+
+**Solution 2: Port Forwarding (Optional)**
+
+In Windows PowerShell (Administrator):
+```powershell
+# Replace 172.30.171.179 with your WSL2 IP
+netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=172.30.171.179
+```
+
+Then you can use: `http://localhost:8080`
+
+**Note**: WSL2 IP changes after restart - you'll need to update port forwarding if using Solution 2.
+
+### Available Web Endpoints
+
+- **Main App**: `http://[WSL2_IP]:8080/` - Daily Expense Categorizer
+- **API Documentation**: `http://[WSL2_IP]:8080/docs` - Interactive API docs
+- **Category Picker**: `http://[WSL2_IP]:8080/ui` - Category management UI
+- **Office Assistant**: `http://[WSL2_IP]:8080/office` - Office integration
+
+### Web Features
+
+- 📊 Interactive transaction table with real-time data
+- 🗓️ Month-by-month navigation
+- 📁 115 hierarchical categories for expense tracking
+- 💰 Running totals and balances
+- 🔍 Quick category assignment with dropdown menus
+- 📄 PDF import and parsing capabilities
+
+## 🚀 Quick Start (CLI Tools)
 
 ### 1. Interactive Dashboard (Recommended)
 ```bash

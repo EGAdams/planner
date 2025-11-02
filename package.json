@@ -12,14 +12,15 @@
     "build-installer": "node build-msi.js",
     "build-native": "electron-builder --publish=never",
     "dist": "electron-builder --win --x64",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "electron": "^38.1.2",
-    "electron-builder": "^26.0.12"
+    "electron-builder": "^26.0.12",
+    "jasmine": "^5.1.1"
   },
   "build": {
     "appId": "com.planner.app",

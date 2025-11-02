@@ -82,6 +82,65 @@ A comprehensive bank statement parsing and integration system for nonprofit orga
    python scripts/init_db.py
    ```
 
+## WSL2 Access Configuration (Windows Users)
+
+**IMPORTANT**: If you're running this application in WSL2 on Windows, you cannot access the web interface using `localhost` from your Windows browser. You must use the WSL2 IP address.
+
+### Quick Access Method
+
+1. **Get your WSL2 IP address:**
+   ```bash
+   hostname -I | awk '{print $1}'
+   ```
+   Example output: `172.30.171.179`
+
+2. **Access from Windows browser:**
+   ```
+   http://[YOUR_WSL2_IP]:8080
+   ```
+   Example: `http://172.30.171.179:8080`
+
+3. **Verify server is accessible:**
+   ```bash
+   curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://$(hostname -I | awk '{print $1}'):8080/
+   ```
+
+### Permanent localhost Solution (Optional)
+
+To make `localhost:8080` work from Windows, add port forwarding in **Windows PowerShell (Administrator)**:
+
+```powershell
+# Get WSL2 IP first (run in WSL2 terminal)
+# Example: 172.30.171.179
+
+# Add port forwarding (run in Windows PowerShell as Admin)
+netsh interface portproxy add v4tov4 listenport=8080 listenaddress=0.0.0.0 connectport=8080 connectaddress=172.30.171.179
+```
+
+**Note**: WSL2 IP addresses can change after restarting WSL2. If `localhost` stops working, you'll need to:
+1. Get the new WSL2 IP: `hostname -I | awk '{print $1}'`
+2. Delete old port forward: `netsh interface portproxy delete v4tov4 listenport=8080 listenaddress=0.0.0.0`
+3. Add new port forward with updated IP
+
+**View all port forwards:**
+```powershell
+netsh interface portproxy show all
+```
+
+### Starting the Web Server
+
+```bash
+# From the nonprofit_finance_db directory
+source venv/bin/activate
+export NON_PROFIT_PASSWORD=tinman  # Or your MySQL password
+python api_server.py
+```
+
+Server will be available at:
+- Main App: `http://[WSL2_IP]:8080/`
+- API Documentation: `http://[WSL2_IP]:8080/docs`
+- Category Picker: `http://[WSL2_IP]:8080/ui`
+
 ## Configuration
 
 ### Environment Variables
