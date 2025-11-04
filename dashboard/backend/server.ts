@@ -10,6 +10,7 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const execAsync = promisify(exec);
 const PORT = process.env.ADMIN_PORT || 3030;
+const HOST = process.env.ADMIN_HOST || '127.0.0.1';
 const SUDO_PASSWORD = process.env.SUDO_PASSWORD || '';
 
 interface ProcessInfo {
@@ -322,6 +323,55 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/docling-report' && req.method === 'POST') {
+    try {
+      const repoRoot = path.join(__dirname, '../../..');
+      const scriptPath = path.join(repoRoot, 'docling', 'test_january_statement.py');
+      const pythonCandidates = [
+        path.join(repoRoot, 'venv', 'bin', 'python'),
+        path.join(repoRoot, 'venv', 'bin', 'python3'),
+        path.join(repoRoot, 'venv', 'Scripts', 'python.exe'),
+        'python3',
+        'python'
+      ];
+
+      const pythonExecutable = pythonCandidates.find(candidate =>
+        candidate.startsWith('python') ? true : fs.existsSync(candidate)
+      );
+
+      if (!pythonExecutable) {
+        throw new Error('Unable to locate Python executable for Docling report.');
+      }
+
+      const command = pythonExecutable.startsWith('python')
+        ? `${pythonExecutable} "${scriptPath}"`
+        : `"${pythonExecutable}" "${scriptPath}"`;
+
+      const { stdout } = await execAsync(command, {
+        cwd: repoRoot,
+        maxBuffer: 10 * 1024 * 1024
+      });
+
+      const trimmed = stdout.trim();
+      const payload = JSON.parse(trimmed);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(payload));
+    } catch (error: any) {
+      console.error('Docling report error:', error);
+
+      const message = error?.stderr?.toString() || error?.message || 'Unknown error';
+
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: false,
+        message: 'Failed to generate Docling report',
+        details: message
+      }));
+    }
+    return;
+  }
+
   if (pathname.startsWith('/api/servers/') && req.method === 'POST') {
     const serverId = pathname.split('/')[3];
     const action = parsedUrl.query.action as string;
@@ -430,6 +480,6 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Admin dashboard server running on http://localhost:${PORT}`);
+server.listen(Number(PORT), HOST, () => {
+  console.log(`Admin dashboard server running on http://${HOST}:${PORT}`);
 });

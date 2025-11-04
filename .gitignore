@@ -18,3 +18,4 @@ category-picker/node_modules/*
 
 nonprofit_finance_db/.claude-collective/node_modules/
 nonprofit_finance_db/tmp_mysql/
+.claude-collective/node_modules/
