@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "/home/adamsl/tools/run-chrome-devtools.sh",
+      "args": [
+        "--browser-url=http://127.0.0.1:9222"
+      ],
+      "env": {
+        "DEBUG": "mcp:*",
+        "DEBUG_COLORS": "false"
+      }
+    }
+  }
+}

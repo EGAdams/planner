@@ -1,0 +1,52 @@
+[
+  {
+    "id": 101,
+    "date": "2025-01-03",
+    "vendor": "Great Lakes Energy",
+    "amount": 128.42,
+    "category": null,
+    "category_id": null,
+    "method": "ACH Withdrawal",
+    "paid_by": "Operating"
+  },
+  {
+    "id": 102,
+    "date": "2025-01-03",
+    "vendor": "Grand Hardware Supply",
+    "amount": 64.12,
+    "category": null,
+    "category_id": null,
+    "method": "Debit Card",
+    "paid_by": "Operating"
+  },
+  {
+    "id": 103,
+    "date": "2025-01-04",
+    "vendor": "Hope Thrift Store",
+    "amount": 47.91,
+    "category": "Housing / Upkeep",
+    "category_id": 207,
+    "method": "Credit Card",
+    "paid_by": "RM"
+  },
+  {
+    "id": 104,
+    "date": "2025-01-04",
+    "vendor": "City of Grand Rapids Water",
+    "amount": 89.55,
+    "category": "Housing / Utilities / Water",
+    "category_id": 204,
+    "method": "ACH Withdrawal",
+    "paid_by": "Operating"
+  },
+  {
+    "id": 105,
+    "date": "2025-01-05",
+    "vendor": "Priority Health",
+    "amount": 215.37,
+    "category": null,
+    "category_id": null,
+    "method": "ACH Withdrawal",
+    "paid_by": "Operating"
+  }
+]

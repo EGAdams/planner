@@ -1,0 +1,380 @@
+{
+  "account": {
+    "type": "53 MOMENTUM CHECKING",
+    "number": "3686285",
+    "period_start": "2024-12-14",
+    "period_end": "2025-01-15"
+  },
+  "summary_reported": {
+    "beginning_balance": 36652.72,
+    "ending_balance": 43231.28,
+    "checks_count": 24,
+    "checks_total": 3878.07,
+    "withdrawals_count": 15,
+    "withdrawals_total": 8630.41,
+    "deposits_count": 17,
+    "deposits_total": 19087.04
+  },
+  "line_items": {
+    "checks": [
+      {
+        "number": "2359 i",
+        "date": "12/30",
+        "amount": -150.0,
+        "date_iso": "2024-12-30"
+      },
+      {
+        "number": "11005 i",
+        "date": "12/23",
+        "amount": -28.25,
+        "date_iso": "2024-12-23"
+      },
+      {
+        "number": "11013 i",
+        "date": "01/06",
+        "amount": -100.0,
+        "date_iso": "2025-01-06"
+      },
+      {
+        "number": "2360 i",
+        "date": "12/24",
+        "amount": -300.0,
+        "date_iso": "2024-12-24"
+      },
+      {
+        "number": "11006 i",
+        "date": "12/30",
+        "amount": -226.0,
+        "date_iso": "2024-12-30"
+      },
+      {
+        "number": "11017",
+        "date": "01/15",
+        "amount": -299.0,
+        "date_iso": "2025-01-15"
+      },
+      {
+        "number": "10999",
+        "date": "12/23",
+        "amount": -100.0,
+        "date_iso": "2024-12-23"
+      },
+      {
+        "number": "11007 i",
+        "date": "12/20",
+        "amount": -353.0,
+        "date_iso": "2024-12-20"
+      },
+      {
+        "number": "11018 i",
+        "date": "01/14",
+        "amount": -30.0,
+        "date_iso": "2025-01-14"
+      },
+      {
+        "number": "11000 i",
+        "date": "12/24",
+        "amount": -930.16,
+        "date_iso": "2024-12-24"
+      },
+      {
+        "number": "11008 i",
+        "date": "12/18",
+        "amount": -24.76,
+        "date_iso": "2024-12-18"
+      },
+      {
+        "number": "11021",
+        "date": "01/15",
+        "amount": -25.0,
+        "date_iso": "2025-01-15"
+      },
+      {
+        "number": "11001 i",
+        "date": "12/23",
+        "amount": -94.5,
+        "date_iso": "2024-12-23"
+      },
+      {
+        "number": "11009 i",
+        "date": "12/19",
+        "amount": -34.0,
+        "date_iso": "2024-12-19"
+      },
+      {
+        "number": "11022 i",
+        "date": "01/13",
+        "amount": -226.0,
+        "date_iso": "2025-01-13"
+      },
+      {
+        "number": "11002 i",
+        "date": "12/20",
+        "amount": -48.0,
+        "date_iso": "2024-12-20"
+      },
+      {
+        "number": "11010 i",
+        "date": "12/19",
+        "amount": -225.0,
+        "date_iso": "2024-12-19"
+      },
+      {
+        "number": "11023 i",
+        "date": "01/13",
+        "amount": -25.0,
+        "date_iso": "2025-01-13"
+      },
+      {
+        "number": "11003 i",
+        "date": "12/19",
+        "amount": -43.3,
+        "date_iso": "2024-12-19"
+      },
+      {
+        "number": "11011 i",
+        "date": "12/18",
+        "amount": -26.1,
+        "date_iso": "2024-12-18"
+      },
+      {
+        "number": "11024 i",
+        "date": "01/15",
+        "amount": -100.0,
+        "date_iso": "2025-01-15"
+      },
+      {
+        "number": "11004 i",
+        "date": "12/24",
+        "amount": -290.0,
+        "date_iso": "2024-12-24"
+      },
+      {
+        "number": "11012 i",
+        "date": "12/18",
+        "amount": -100.0,
+        "date_iso": "2024-12-18"
+      },
+      {
+        "number": "11027",
+        "date": "01/14",
+        "amount": -100.0,
+        "date_iso": "2025-01-14"
+      }
+    ],
+    "withdrawals": [
+      {
+        "date": "12/17",
+        "amount": -65.0,
+        "description": "5/3 ONLINE PYMT TO GUIDING LI- ACCT 255",
+        "date_iso": "2024-12-17"
+      },
+      {
+        "date": "12/19",
+        "amount": -136.77,
+        "description": "5/3 ONLINE PYMT TO AT&T MOBIL- ACCT XXXXXXXX5668",
+        "date_iso": "2024-12-19"
+      },
+      {
+        "date": "12/20",
+        "amount": -800.0,
+        "description": "5/3 ONLINE TRANSFER TO CK: XXXXXX5938 REF # 01078762412",
+        "date_iso": "2024-12-20"
+      },
+      {
+        "date": "12/23",
+        "amount": -140.91,
+        "description": "5/3 ONLINE PYMT TO CONSUMERS- ACCT XXXXXXXX3762",
+        "date_iso": "2024-12-23"
+      },
+      {
+        "date": "12/23",
+        "amount": -1000.0,
+        "description": "5/3 ONLINE TRANSFER TO CK: XXXXXX5938 REF # 01079870543",
+        "date_iso": "2024-12-23"
+      },
+      {
+        "date": "12/27",
+        "amount": -1800.0,
+        "description": "5/3 ONLINE TRANSFER TO CK: XXXXXX5938 REF # 01080233293",
+        "date_iso": "2024-12-27"
+      },
+      {
+        "date": "12/30",
+        "amount": -67.0,
+        "description": "5/3 ONLINE PYMT TO PRIORITY H- ACCT XXXXX9392",
+        "date_iso": "2024-12-30"
+      },
+      {
+        "date": "12/30",
+        "amount": -91.39,
+        "description": "5/3 ONLINE PYMT TO PRIORITY H- ACCT XXXXX7890",
+        "date_iso": "2024-12-30"
+      },
+      {
+        "date": "12/30",
+        "amount": -204.1,
+        "description": "5/3 ONLINE PYMT TO AMERICAN E- ACCT XXXXXXXXXXX3009",
+        "date_iso": "2024-12-30"
+      },
+      {
+        "date": "01/03",
+        "amount": -1800.0,
+        "description": "5/3 ONLINE TRANSFER TO CK: XXXXXX5938 REF # 01080233495",
+        "date_iso": "2025-01-03"
+      },
+      {
+        "date": "01/07",
+        "amount": -80.24,
+        "description": "5/3 ONLINE PYMT TO AT&T U-VER- ACCT XXXXX6008",
+        "date_iso": "2025-01-07"
+      },
+      {
+        "date": "01/10",
+        "amount": -70.0,
+        "description": "5/3 ONLINE PYMT TO GUIDING LI- ACCT 255",
+        "date_iso": "2025-01-10"
+      },
+      {
+        "date": "01/10",
+        "amount": -375.0,
+        "description": "5/3 ONLINE PYMT TO SAMARITAN'- ACCT 8855",
+        "date_iso": "2025-01-10"
+      },
+      {
+        "date": "01/10",
+        "amount": -1800.0,
+        "description": "5/3 ONLINE TRANSFER TO CK: XXXXXX5938 REF # 01080233871",
+        "date_iso": "2025-01-10"
+      },
+      {
+        "date": "01/13",
+        "amount": -200.0,
+        "description": "5/3 ONLINE PYMT TO AT&T U-VER- ACCT XXXXX8457",
+        "date_iso": "2025-01-13"
+      }
+    ],
+    "deposits": [
+      {
+        "date": "12/16",
+        "amount": 4770.0,
+        "description": "DEPOSIT",
+        "date_iso": "2024-12-16"
+      },
+      {
+        "date": "12/19",
+        "amount": 134.0,
+        "description": "WEB INITIATED PAYMENT AT USAA EXT-INTRNT TRANSFER R Patterson 121924",
+        "date_iso": "2024-12-19"
+      },
+      {
+        "date": "12/19",
+        "amount": 302.0,
+        "description": "DEPOSIT",
+        "date_iso": "2024-12-19"
+      },
+      {
+        "date": "12/20",
+        "amount": 93.74,
+        "description": "SHS OF WEST MICH PAY 731682 6semk34l784 122024",
+        "date_iso": "2024-12-20"
+      },
+      {
+        "date": "12/23",
+        "amount": 25.0,
+        "description": "WEB INITIATED PAYMENT AT USAA EXT-INTRNT TRANSFER R Patterson 122324",
+        "date_iso": "2024-12-23"
+      },
+      {
+        "date": "12/23",
+        "amount": 1956.0,
+        "description": "DEPOSIT",
+        "date_iso": "2024-12-23"
+      },
+      {
+        "date": "12/26",
+        "amount": 33.56,
+        "description": "SHS OF WEST MICH PAY 890258 6semk36550q 122624",
+        "date_iso": "2024-12-26"
+      },
+      {
+        "date": "12/30",
+        "amount": 227.0,
+        "description": "WEB INITIATED PAYMENT AT USAA EXT-INTRNT TRANSFER V Patterson 123024",
+        "date_iso": "2024-12-30"
+      },
+      {
+        "date": "12/30",
+        "amount": 3211.0,
+        "description": "DEPOSIT",
+        "date_iso": "2024-12-30"
+      },
+      {
+        "date": "12/31",
+        "amount": 344.0,
+        "description": "DEPOSIT",
+        "date_iso": "2024-12-31"
+      },
+      {
+        "date": "01/02",
+        "amount": 416.0,
+        "description": "DEPOSIT",
+        "date_iso": "2025-01-02"
+      },
+      {
+        "date": "01/03",
+        "amount": 1231.73,
+        "description": "DEPOSIT",
+        "date_iso": "2025-01-03"
+      },
+      {
+        "date": "01/03",
+        "amount": 1250.0,
+        "description": "5/3 ONLINE TRANSFER FROM CK: XXXXXX5938 REF # 01080234599",
+        "date_iso": "2025-01-03"
+      },
+      {
+        "date": "01/06",
+        "amount": 2933.01,
+        "description": "DEPOSIT",
+        "date_iso": "2025-01-06"
+      },
+      {
+        "date": "01/09",
+        "amount": 84.0,
+        "description": "WEB INITIATED PAYMENT AT USAA EXT-INTRNT TRANSFER R Patterson 010925",
+        "date_iso": "2025-01-09"
+      },
+      {
+        "date": "01/09",
+        "amount": 411.0,
+        "description": "DEPOSIT",
+        "date_iso": "2025-01-09"
+      },
+      {
+        "date": "01/13",
+        "amount": 1665.0,
+        "description": "DEPOSIT",
+        "date_iso": "2025-01-13"
+      }
+    ]
+  },
+  "totals_from_line_items": {
+    "checks": -3878.07,
+    "withdrawals": -8630.41,
+    "deposits": 19087.04,
+    "net_from_flows": 6578.56
+  },
+  "reconciliation": {
+    "beginning": 36652.72,
+    "ending_reported": 43231.28,
+    "ending_computed_from_line_items": 43231.28,
+    "reconciles": true,
+    "ending_minus_beginning": 6578.56,
+    "proof_deposits_minus_outflows": 6578.56,
+    "difference": 0.0
+  },
+  "daily_balances_provided": {},
+  "daily_balances_computed": {},
+  "daily_balance_diffs": {}
+}

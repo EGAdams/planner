@@ -11,7 +11,7 @@ export class SSEManager {
   private reconnectTimeout: number = 5000;
   private reconnectTimer: number | null = null;
 
-  constructor(apiUrl: string = 'http://localhost:3030') {
+  constructor(apiUrl: string = 'http://localhost:3000') {
     this.apiUrl = apiUrl;
   }
 

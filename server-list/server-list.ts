@@ -39,13 +39,29 @@ export class ServerList extends HTMLElement {
   private setupEventListeners() {
     // Subscribe to servers updates from the EventBus
     this.unsubscribe = eventBus.on('servers-updated', (data) => {
-      this.servers = data;
+      this.servers = this.normalizeServerData(data);
       this.render();
     });
   }
 
+  private normalizeServerData(data: unknown): Server[] {
+    if (Array.isArray(data)) {
+      return data;
+    }
+
+    if (data && typeof data === 'object') {
+      return Object.values(data as Record<string, Server>);
+    }
+
+    return [];
+  }
+
   private render() {
     if (!this.shadowRoot) return;
+
+    const servers = Array.isArray(this.servers)
+      ? this.servers
+      : this.normalizeServerData(this.servers as unknown);
 
     this.shadowRoot.innerHTML = `
       <style>
@@ -155,7 +171,7 @@ export class ServerList extends HTMLElement {
       <div class="container">
         <h2>Managed Servers</h2>
 
-        ${this.servers.length === 0 ? `
+        ${servers.length === 0 ? `
           <div class="empty-state">
             <div class="empty-state-title">No servers configured</div>
             <div class="empty-state-text">
@@ -164,7 +180,7 @@ export class ServerList extends HTMLElement {
           </div>
         ` : `
           <div class="server-grid">
-            ${this.servers.map(server => `
+            ${servers.map(server => `
               <div class="server-card ${server.orphaned ? 'orphaned' : ''}" style="background-color: ${server.orphaned ? '#fee2e2' : server.color};">
                 <div class="server-info">
                   <div class="status-indicator ${server.running ? 'running' : 'stopped'}"></div>

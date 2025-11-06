@@ -180,9 +180,6 @@
   </style>
 </head>
 <body>
-  <!-- <div style="position: fixed; top: 0; left: 0; right: 0; background: red; color: white; padding: 20px; z-index: 99999; font-size: 24px;">
-    PAGE IS LOADING - If you see this, HTML is working!
-  </div> -->
   <header>
     <h1>Daily Expense Categorizer</h1>
     <div class="meta">
@@ -193,7 +190,7 @@
     </div>
   </header>
 
-  <div id="loadingMsg" class="loading" style="background: yellow; color: red; font-size: 24px; padding: 40px; border: 5px solid red;">LOADING... If you see this for more than 2 seconds, check console for errors!</div>
+  <div id="loadingMsg" class="loading">Loading transactions from database...</div>
   <div id="fallbackNotice" class="info" style="display:none;"></div>
   <div id="errorMsg" class="error" style="display:none;"></div>
 
@@ -228,18 +225,8 @@
     </div>
   </div>
 
-<script type="module" src="/office/js/main.js" onerror="console.error('[DEBUG] Failed to load main.js module!')"></script>
+<script type="module" src="/office/js/main.js"></script>
 <script>
-console.log('[DEBUG] Script starting execution...');
-window.addEventListener('error', (e) => {
-  console.error('[DEBUG] Global error:', e.error || e.message, e);
-});
-window.addEventListener('unhandledrejection', (e) => {
-  console.error('[DEBUG] Unhandled promise rejection:', e.reason);
-});
-console.log('[DEBUG] Window location:', window.location.href);
-console.log('[DEBUG] Window port:', window.location.port);
-
 // ----- Configuration -----
 // Auto-detect API base URL from current window location (works for localhost and WSL2 IP)
 // Since API server is running on port 8080, point to it explicitly
@@ -412,28 +399,21 @@ async function updateTransactionCategory(transactionId, categoryId) {
 
 // ----- Data Loading -----
 async function loadData() {
-  console.log('[DEBUG] loadData() called');
   try {
-    console.log('[DEBUG] Starting data load...');
     usedFallbackData = false;
     fallbackReason = "";
     loadingMsg.style.display = 'block';
     errorMsg.style.display = 'none';
     mainTable.style.display = 'none';
     updateFallbackBanner();
-    console.log('[DEBUG] UI elements initialized');
 
     // Load transactions and categories in parallel
-    console.log('[DEBUG] Fetching transactions and categories...');
-    console.log('[DEBUG] API_BASE:', API_BASE);
     [allTransactions, categoryOptions] = await Promise.all([
       fetchTransactions(),
       fetchCategories()
     ]);
 
-    console.log('[DEBUG] Loaded transactions:', allTransactions.length);
-    console.log('[DEBUG] Loaded categories:', categoryOptions.length);
-    console.log('[DEBUG] Sample transaction:', allTransactions[0]);
+    console.log('Loaded transactions:', allTransactions);
 
     if (allTransactions.length === 0) {
       errorMsg.textContent = 'No transactions found in database.';
@@ -472,16 +452,13 @@ async function loadData() {
     state.dayIdx = datesByMonth[state.month].length - 1; // Most recent day
     monthSelect.value = state.month;
 
-    console.log('[DEBUG] Rendering table...');
     loadingMsg.style.display = 'none';
     mainTable.style.display = 'table';
     render();
     updateFallbackBanner();
-    console.log('[DEBUG] Render complete!');
 
   } catch (error) {
-    console.error('[DEBUG ERROR] Error loading data:', error);
-    console.error('[DEBUG ERROR] Stack:', error.stack);
+    console.error('Error loading data:', error);
     errorMsg.textContent = `Error loading data: ${error.message}. Make sure the API server is running at ${API_BASE}`;
     errorMsg.style.display = 'block';
     loadingMsg.style.display = 'none';
@@ -680,10 +657,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Initial load
-console.log('[DEBUG] Calling loadData()...');
-loadData().catch(err => {
-  console.error('[DEBUG] Unhandled error in loadData:', err);
-});
+loadData();
 </script>
 </body>
 </html>

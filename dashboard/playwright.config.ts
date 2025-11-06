@@ -11,7 +11,7 @@ export default defineConfig({
     ['list']
   ],
   use: {
-    baseURL: 'http://localhost:3030',
+    baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
@@ -26,7 +26,7 @@ export default defineConfig({
 
   webServer: {
     command: 'node backend/dist/server.js',
-    url: 'http://localhost:3030',
+    url: 'http://localhost:3000',
     reuseExistingServer: true,
     stdout: 'pipe',
     stderr: 'pipe',

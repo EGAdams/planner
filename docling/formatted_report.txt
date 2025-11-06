@@ -1,0 +1,35 @@
+FIFTH THIRD STATEMENT RECONCILIATION REPORT
+============================================
+Account: 53 MOMENTUM CHECKING  #3686285
+Period: 2024-12-14 to 2025-01-15
+
+Reported Summary:
+  Beginning Balance: $36,652.72
+  Checks (24): $3,878.07
+  Withdrawals (15): $8,630.41
+  Deposits (17): $19,087.04
+  Ending Balance: $43,231.28
+
+Line-Item Totals (from parsed tables):
+  Checks total: -$3,878.07
+  Withdrawals total: -$8,630.41
+  Deposits total: $19,087.04
+
+Reconciliation Proof:
+  Ending (computed) = Beginning + Deposits + Checks + Withdrawals
+                    = $36,652.72 + $19,087.04 + -$3,878.07 + -$8,630.41
+                    = $43,231.28
+  Ending (reported) = $43,231.28
+  Match? OK ✅
+  Difference (reported - computed): $0.00
+
+  Net change from flows = Deposits + Checks + Withdrawals = $6,578.56
+  Net change (Ending - Beginning) = $6,578.56
+  Cross-check match? OK ✅
+
+Daily Balance Verification: (insufficient data to compute)
+
+Appendix: Counts
+  Checks parsed: 24
+  Withdrawals parsed: 15
+  Deposits parsed: 17

@@ -9,10 +9,19 @@
     form { display:flex; flex-direction:column; gap:16px; }
     .log{ border:1px solid #ddd; padding:10px; border-radius:8px; max-width: 760px; }
     pre{ margin:0; white-space:pre-wrap; word-break:break-word; }
+    .instructions{ border:1px dashed #94a3b8; background:#f8fafc; padding:12px 16px; border-radius:10px; max-width:760px; margin-bottom:18px; }
   </style>
 </head>
 <body>
   <h1>Category Picker (Web Component)</h1>
+
+  <div id="server-instructions" class="instructions" hidden>
+    <p data-message>No categorized expenses loaded yet.</p>
+    <p>Start the local static server so the expense taxonomy can be fetched:</p>
+    <pre>cd /home/adamsl/planner/category-picker
+npm run serve</pre>
+    <p>Then open <code>http://127.0.0.1:8080/index.html</code> in your browser.</p>
+  </div>
 
   <form id="demo-form" onsubmit="return false;">
     <label>Expense Category:</label>
@@ -30,6 +39,10 @@
 
   <script type="module" src="./js/main.js"></script>
   <script type="module">
+    const instructions = document.getElementById('server-instructions');
+    const instructionsMessage = instructions?.querySelector('[data-message]');
+    const picker = document.querySelector('category-picker');
+
     const log = document.getElementById('log');
     function add(line){ log.textContent += line + "\n"; }
 
@@ -40,13 +53,49 @@
       add("categorized => " + JSON.stringify(ev.detail));
     });
 
+    function showInstructions(reason) {
+      if (!instructions) return;
+      instructions.hidden = false;
+      if (instructionsMessage) {
+        instructionsMessage.textContent = reason
+          ? `No categorized expenses loaded (${reason}).`
+          : "No categorized expenses loaded yet.";
+      }
+    }
+
+    function hideInstructions() {
+      if (!instructions) return;
+      instructions.hidden = true;
+    }
+
+    picker?.addEventListener("taxonomy-updated", (event) => {
+      const detail = event instanceof CustomEvent ? event.detail || {} : {};
+      if (detail.empty) {
+        showInstructions();
+      } else {
+        hideInstructions();
+      }
+    });
+
+    picker?.addEventListener("taxonomy-error", (event) => {
+      const detail = event instanceof CustomEvent ? event.detail || {} : {};
+      const reason = detail.message ? String(detail.message) : undefined;
+      showInstructions(reason);
+    });
+
+    if (picker?.hasAttribute("data-empty")) {
+      showInstructions();
+    }
+
     document.getElementById('submit').addEventListener('click', () => {
       const form = document.getElementById('demo-form');
-      const fd = new FormData(form as HTMLFormElement);
+      if (!(form instanceof HTMLFormElement)) return;
+
+      const fd = new FormData(form);
       // This will include the <category-picker> value when finalized
       console.log("FormData entries:");
-      for (const [k,v] of fd.entries()) console.log(k, "=>", v);
-      add("FormData => " + JSON.stringify(Object.fromEntries(fd as any)));
+      for (const [k, v] of fd.entries()) console.log(k, "=>", v);
+      add("FormData => " + JSON.stringify(Object.fromEntries(fd.entries())));
     });
   </script>
 </body>

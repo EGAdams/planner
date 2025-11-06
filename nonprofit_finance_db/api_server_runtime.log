@@ -1,0 +1,13 @@
+INFO:     Will watch for changes in these directories: ['/home/adamsl/planner/nonprofit_finance_db']
+ERROR:    [Errno 98] Address already in use
+🚀 Starting Daily Expense Categorizer on http://localhost:8080
+   Main App:         http://localhost:8080/
+   API Documentation: http://localhost:8080/docs
+   API Endpoints:
+   - GET  /api/transactions
+   - GET  /api/categories
+   - PUT  /api/transactions/<id>/category
+   - GET  /api/recent-downloads
+   - POST /api/import-pdf
+   Category Picker:  http://localhost:8080/ui
+   Office Assistant: http://localhost:8080/office

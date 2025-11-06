@@ -57,8 +57,9 @@ export class ServerController extends HTMLElement {
 
   private setupEventListeners() {
     // Subscribe to servers updates from the EventBus
-    this.unsubscribe = eventBus.on('servers-updated', (data: Server[]) => {
-      this.server = data.find(s => s.id === this.serverId) || null;
+    this.unsubscribe = eventBus.on('servers-updated', (data: Server[] | Record<string, Server>) => {
+      const servers = Array.isArray(data) ? data : Object.values(data || {});
+      this.server = servers.find(s => s.id === this.serverId) || null;
       this.render();
     });
   }

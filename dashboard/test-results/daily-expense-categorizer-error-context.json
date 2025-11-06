@@ -1,0 +1,108 @@
+{
+  "timestamp": "2025-11-06T19:24:31.534Z",
+  "errorContext": {
+    "pageTitle": "Daily Expense Categorizer",
+    "httpStatus": 200,
+    "elementsFound": {
+      "h1": 1,
+      "serverMonitors": 0,
+      "forms": 0
+    },
+    "consoleMessageCount": 20,
+    "errorCount": 0,
+    "failedNetworkRequests": 0,
+    "visibleTextLength": 50609
+  },
+  "consoleMessages": [
+    {
+      "type": "log",
+      "text": "[DEBUG] Script starting execution..."
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Window location: http://localhost:8080/office/daily_expense_categorizer.html"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Window port: 8080"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Calling loadData()..."
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] loadData() called"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Starting data load..."
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] UI elements initialized"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Fetching transactions and categories..."
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] API_BASE: http://localhost:8080/api"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Loaded transactions: 192"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Loaded categories: 2"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Sample transaction: {id: 241, date: 2024-01-02, vendor: DEPOSIT, amount: 416, category: Church}"
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Rendering table..."
+    },
+    {
+      "type": "log",
+      "text": "[DEBUG] Render complete!"
+    },
+    {
+      "type": "log",
+      "text": "Setting picker value for transaction 96 : Church / Utilities / Church Gas Bill"
+    },
+    {
+      "type": "log",
+      "text": "Picker state after setting: done"
+    },
+    {
+      "type": "log",
+      "text": "Setting picker value for transaction 103 : Housing / Upkeep / Outdoor & Lawn Care"
+    },
+    {
+      "type": "log",
+      "text": "Picker state after setting: done"
+    },
+    {
+      "type": "log",
+      "text": "Setting picker value for transaction 207 : Church / Education / Music / TV / Amazon"
+    },
+    {
+      "type": "log",
+      "text": "Picker state after setting: done"
+    },
+    {
+      "type": "log",
+      "text": "=== ERROR CONTEXT SUMMARY ==="
+    },
+    {
+      "type": "log",
+      "text": "{\n  \"pageTitle\": \"Daily Expense Categorizer\",\n  \"httpStatus\": 200,\n  \"elementsFound\": {\n    \"h1\": 1,\n    \"serverMonitors\": 0,\n    \"forms\": 0\n  },\n  \"consoleMessageCount\": 20,\n  \"errorCount\": 0,\n  \"failedNetworkRequests\": 0,\n  \"visibleTextLength\": 50609\n}"
+    }
+  ],
+  "pageErrors": [],
+  "failedResponses": []
+}

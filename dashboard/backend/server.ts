@@ -221,12 +221,7 @@ async function broadcastServerUpdate() {
   const ports = await getListeningPorts();
   broadcastUpdate('ports', ports);
 
-  const serverArray = await orchestrator.getServerStatus(ports);
-  // Convert array to object with server id as key for frontend compatibility
-  const servers: Record<string, any> = {};
-  serverArray.forEach(server => {
-    servers[server.id] = server;
-  });
+  const servers = await orchestrator.getServerStatus(ports);
   broadcastUpdate('servers', servers);
 }
 
@@ -260,12 +255,7 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/api/servers' && req.method === 'GET') {
     const ports = await getListeningPorts();
-    const serverArray = await orchestrator.getServerStatus(ports);
-    // Convert array to object with server id as key for frontend compatibility
-    const servers: Record<string, any> = {};
-    serverArray.forEach(server => {
-      servers[server.id] = server;
-    });
+    const servers = await orchestrator.getServerStatus(ports);
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(servers));
     return;
@@ -381,12 +371,7 @@ const server = http.createServer(async (req, res) => {
 
     // Send initial data
     const ports = await getListeningPorts();
-    const serverArray = await orchestrator.getServerStatus(ports);
-    // Convert array to object with server id as key for frontend compatibility
-    const servers: Record<string, any> = {};
-    serverArray.forEach(server => {
-      servers[server.id] = server;
-    });
+    const servers = await orchestrator.getServerStatus(ports);
     res.write(`event: ports\ndata: ${JSON.stringify(ports)}\n\n`);
     res.write(`event: servers\ndata: ${JSON.stringify(servers)}\n\n`);
 

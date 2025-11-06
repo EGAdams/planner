@@ -1,0 +1,18 @@
+[
+  { "id": 200, "name": "Housing", "parent_id": null },
+  { "id": 201, "name": "Housing Payment", "parent_id": 200 },
+  { "id": 202, "name": "Mortgage", "parent_id": 201 },
+  { "id": 203, "name": "Utilities", "parent_id": 200 },
+  { "id": 204, "name": "Water", "parent_id": 203 },
+  { "id": 205, "name": "Electric", "parent_id": 203 },
+  { "id": 206, "name": "Taxes & Insurance", "parent_id": 200 },
+  { "id": 207, "name": "Upkeep", "parent_id": 200 },
+  { "id": 208, "name": "Services", "parent_id": 200 },
+  { "id": 209, "name": "Miscellaneous", "parent_id": 200 },
+  { "id": 300, "name": "Church", "parent_id": null },
+  { "id": 301, "name": "Facility Payment", "parent_id": 300 },
+  { "id": 302, "name": "Facility Upkeep", "parent_id": 300 },
+  { "id": 303, "name": "Education & Music", "parent_id": 300 },
+  { "id": 304, "name": "Travel & Transportation", "parent_id": 300 },
+  { "id": 305, "name": "Vehicle Maintenance", "parent_id": 304 }
+]

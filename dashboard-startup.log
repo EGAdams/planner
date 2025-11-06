@@ -51,3 +51,6 @@ Process management enabled with persistent state
 Server orchestrator initialized
 Verification:
 ✓ Admin Dashboard Server is running on port 3000
+
+Shutting down gracefully...
+Server closed

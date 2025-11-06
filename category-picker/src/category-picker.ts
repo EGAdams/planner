@@ -122,10 +122,13 @@ export class CategoryPicker extends HTMLElement {
           this.setTaxonomy(data);
         } catch (e) {
           console.error("[category-picker] Failed to parse inline JSON:", e);
+          const message = e instanceof Error ? e.message : String(e);
+          this.notifyTaxonomy(true, message);
         }
       } else {
         // No data provided — still render empty selector
         this.renderOptions([]);
+        this.notifyTaxonomy(true);
       }
     }
 
@@ -142,7 +145,9 @@ export class CategoryPicker extends HTMLElement {
         break;
       case "placeholder":
         this.placeholder = val || this.placeholder;
-        this.renderOptions(this.currentOptions);
+        if (this.isConnected && this.selectEl) {
+          this.renderOptions(this.currentOptions);
+        }
         break;
       case "disabled":
         this.reflectDisabled();
@@ -163,6 +168,7 @@ export class CategoryPicker extends HTMLElement {
     this.renderOptions(this.taxonomy);
     this.updateStatus();
     this.markIncomplete();
+    this.notifyTaxonomy(this.taxonomy.length === 0);
   }
 
   /** Fetch JSON taxonomy from URL */
@@ -175,6 +181,8 @@ export class CategoryPicker extends HTMLElement {
     } catch (e) {
       console.error("[category-picker] Failed to load data-src:", e);
       this.renderOptions([]);
+      const message = e instanceof Error ? e.message : String(e);
+      this.notifyTaxonomy(true, message);
     }
   }
 
@@ -314,6 +322,17 @@ export class CategoryPicker extends HTMLElement {
       this.selectEl.remove();
       this.resetBtn.hidden = false;
     }
+  }
+
+  private notifyTaxonomy(empty: boolean, errorMessage?: string) {
+    this.toggleAttribute("data-empty", empty);
+    const eventName = errorMessage ? "taxonomy-error" : "taxonomy-updated";
+    const detail = errorMessage ? { empty, message: errorMessage } : { empty };
+    this.dispatchEvent(new CustomEvent(eventName, {
+      detail,
+      bubbles: true,
+      composed: true
+    }));
   }
 
   get value(): string { return this._value; }
