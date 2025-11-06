@@ -1,144 +1,140 @@
-# RAG Project Management System
+# Planner - System Administration Dashboard
 
-A memory-enhanced project management system built with RAG (Retrieval-Augmented Generation) technology to help freelance AI consultants track projects, clients, and conversations.
+A comprehensive system administration dashboard for managing multiple servers and services across your development environment.
 
-## 🎯 Purpose
+## 🎯 Quick Start
 
-This system serves as your **persistent memory** for project management, allowing you to:
-- Store and retrieve project information instantly
-- Remember client details and preferences across conversations
-- Track task progress and project status
-- Build institutional knowledge over time
-- Enhance Claude conversations with relevant context
-
-## 🚀 Quick Start
-
-1. **Setup**:
-   ```bash
-   python setup_and_test.py
-   ```
-
-2. **Initialize the system**:
-   ```bash
-   python main.py init
-   ```
-
-3. **Add your first document**:
-   ```bash
-   python main.py ingest /path/to/document.md --doc_type=client_profile
-   ```
-
-4. **Search your knowledge base**:
-   ```bash
-   python main.py search "project status"
-   ```
-
-## 📋 Core Features
-
-### Document Management
-- **Auto-detection** of document types (client profiles, meeting notes, tasks, etc.)
-- **Intelligent chunking** for optimal retrieval
-- **Metadata extraction** from content (client names, projects, priorities)
-- **Tag extraction** from hashtags and mentions
-
-### Smart Retrieval  
-- **Semantic search** using sentence transformers
-- **Context-aware** responses based on query intent
-- **Client/project filtering** for targeted information
-- **Relevance scoring** for result ranking
-
-### Memory Enhancement
-- **Conversation logging** for building context over time
-- **Automatic context injection** for Claude interactions
-- **Project dashboards** showing comprehensive status
-- **Client overviews** with interaction history
-
-## 🛠️ CLI Commands
-
+### Automated Startup
 ```bash
-# System management
-python main.py init                    # Initialize system
-python main.py status                  # Show system statistics
-python main.py types                   # List document types
-
-# Document operations  
-python main.py ingest file.md          # Add document
-python main.py note "content" "title"  # Quick note
-python main.py search "query"          # Search documents
-
-# Project management
-python main.py project "ProjectName"   # Project overview
-python main.py client "ClientName"     # Client summary  
-python main.py recent                  # Recent activities
-python main.py context "query"         # Get context for query
+/home/adamsl/planner/start_sys_admin_dash.sh
 ```
 
-## 🔧 Architecture
-
-```
-rag_system/
-├── core/
-│   ├── rag_engine.py         # ChromaDB + embeddings
-│   ├── document_manager.py   # High-level document operations
-│   ├── context_provider.py   # Context retrieval and formatting
-│   └── claude_integration.py # Claude conversation enhancement
-├── models/
-│   └── document.py          # Data models and schemas
-├── utils/
-│   └── text_processing.py   # Text cleaning and analysis
-└── storage/                 # ChromaDB persistence
+### Manual Startup
+```bash
+cd /home/adamsl/planner/dashboard
+env ADMIN_PORT=3000 npm start
 ```
 
-## 📊 Document Types
+### Access Dashboard
+- **URL**: http://localhost:3000
+- **Dashboard Port**: 3000 (consolidated, stable)
 
-- **client_profile**: Client information and contacts
-- **project_details**: Project specs and requirements  
-- **meeting_notes**: Meeting summaries and action items
-- **task_update**: Task progress and status updates
-- **decision_log**: Important decisions and rationale
-- **code_snippet**: Code examples and technical notes
-- **template**: Reusable templates and boilerplates
-- **conversation**: Chat logs and discussions
+## 📋 What's Included
 
-## 🧠 How It Enhances Your Work
+### System Administration Dashboard
+- Real-time server monitoring and management
+- Process orchestration for managed services
+- Server-Sent Events (SSE) for live updates
+- RESTful API for server control
+- Health checks and status monitoring
 
-### Before RAG System:
-- ❌ Forget client preferences between conversations
-- ❌ Lose track of project status and next steps
-- ❌ Repeat questions about past decisions
-- ❌ No institutional memory across projects
+### Managed Services
+The dashboard controls three main services:
 
-### With RAG System:
-- ✅ **Instant recall** of any project detail
-- ✅ **Context-aware** responses in every conversation
-- ✅ **Automatic suggestions** for next steps
-- ✅ **Knowledge accumulation** that improves over time
+1. **LiveKit Server** (ports 7880, 7881)
+   - Real-time media server for voice/video communication
+   - Location: `/home/adamsl/ottomator-agents/livekit-agent`
 
-## 🔮 Future Enhancements
+2. **LiveKit Voice Agent** (dynamic ports)
+   - Voice interaction agent powered by LiveKit
+   - Location: `/home/adamsl/ottomator-agents/livekit-agent`
 
-The system is designed for incremental improvements:
+3. **Pydantic Web Server** (port 8001)
+   - Pydantic AI agent web endpoint
+   - Location: `/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version`
 
-- [ ] Web interface for easier document management
-- [ ] Integration with external tools (Slack, GitHub, etc.)
-- [ ] Automated report generation
-- [ ] Advanced analytics and insights
-- [ ] Multi-modal support (images, PDFs, audio)
+## 🚀 Features
 
-## 🤝 Integration with Claude
+- **Single Port Architecture**: Consolidated from dual-port setup for stability
+- **Process Management**: Start/stop/restart managed services via API
+- **Real-time Monitoring**: Live status updates using Server-Sent Events
+- **Health Checks**: Automatic health monitoring for all services
+- **Process State Persistence**: Maintains service state across restarts
+- **Responsive UI**: Works on desktop and mobile browsers
 
-Use `claude_helper.py` for seamless integration:
+## 🔧 Core Technologies
 
-```python
-# Get context for a query
-python claude_helper.py context "project status" --client="Acme Corp"
+- **Backend**: TypeScript, Node.js, Express
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Process Management**: ServerOrchestrator, ProcessManager, ProcessMonitor
+- **Testing**: Jest (TDD validated)
+- **Communication**: Server-Sent Events (SSE)
 
-# Save conversation to memory  
-python claude_helper.py save-conversation "Planning Session" --project="Website"
+## 📊 Project Structure
 
-# Quick memory addition
-python claude_helper.py quick-add "Bug fixed in auth module" "update" "Auth Fix"
 ```
+planner/
+├── dashboard/
+│   ├── backend/
+│   │   ├── server.ts              # Main backend server
+│   │   ├── services/              # Business logic modules
+│   │   ├── __tests__/             # Jest test suite
+│   │   └── dist/                  # Compiled output
+│   ├── public/                    # Frontend assets
+│   ├── package.json              # Dependencies
+│   └── .env                       # Port configuration
+├── start_sys_admin_dash.sh        # Automated startup script
+├── start-dashboard.bat            # Windows startup batch file
+├── dashboard-startup.log          # Startup logs
+└── CLAUDE.md                      # Development instructions
+```
+
+## ✅ Architecture Status
+
+**Single Server Architecture**: ✅ Complete
+- Port 3000: Main consolidated server (ACTIVE)
+- Port 3030: Deprecated (no longer used)
+- Test coverage: 8/8 passing (100%)
+- Stability: Production-ready
+
+## 🛠️ Configuration
+
+### Environment Variables
+```bash
+ADMIN_PORT=3000          # Dashboard port (default)
+NODE_ENV=production      # Environment mode
+```
+
+### Port Configuration
+- Dashboard: `3000` (consolidated)
+- LiveKit: `7880, 7881`
+- Pydantic: `8001`
+
+All ports are explicitly configured in `start_sys_admin_dash.sh` to prevent conflicts with system environment variables.
+
+## 🐛 Troubleshooting
+
+### Server Won't Start
+1. Check port 3000 is available: `lsof -i :3000`
+2. Kill conflicting process: `kill -9 <PID>`
+3. Check logs: `cat dashboard-startup.log`
+
+### Managed Services Not Starting
+1. Verify service directories exist
+2. Check required dependencies (livekit-server, Python venv)
+3. Review ProcessOrchestrator configuration in `server.ts`
+
+### Environment Variable Override
+If server still binds to port 3030:
+```bash
+unset ADMIN_PORT
+export ADMIN_PORT=3000
+```
+
+## 📚 Documentation
+
+- **SERVER_ARCHITECTURE.md**: Technical architecture, server consolidation details
+- **PROCESS_MANAGEMENT_STRATEGY.md**: Process management, startup automation, troubleshooting
+
+## 🚀 Next Steps
+
+1. Run startup script and verify dashboard loads
+2. Test managed service start/stop via dashboard UI
+3. Monitor logs for any errors
+4. Consider systemd service for production deployment
 
 ---
 
-**Built for Claude Code users** - This system transforms Claude from a stateless assistant into a memory-enhanced project management partner. 🚀# planner
+**Status**: Production Ready
+**Last Updated**: November 6, 2025
+**Port**: 3000 (Consolidated & Stable)
