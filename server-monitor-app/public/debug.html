@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Console</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            margin: 0;
+        }
+        #log {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .log-entry {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #007acc;
+            padding-left: 10px;
+        }
+        .log-error {
+            border-left-color: #f48771;
+            color: #f48771;
+        }
+        .log-success {
+            border-left-color: #4ec9b0;
+            color: #4ec9b0;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        .section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Server Monitor - Debug Console</h1>
+
+    <div class="section">
+        <h2>Quick Tests</h2>
+        <button onclick="testConnection()">Test SSE Connection</button>
+        <button onclick="testServerAPI()">Test /api/servers</button>
+        <button onclick="testPortsAPI()">Test /api/ports</button>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+        const logEl = document.getElementById('log');
+
+        function log(message, type = 'info') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+            console.log(`[${type}]`, message);
+        }
+
+        function clearLog() {
+            logEl.innerHTML = '';
+            log('Log cleared', 'success');
+        }
+
+        async function testServerAPI() {
+            log('Testing /api/servers...', 'info');
+            try {
+                const response = await fetch('http://localhost:3030/api/servers');
+                const data = await response.json();
+                log(`✓ /api/servers responded`, 'success');
+                log(`Response: ${JSON.stringify(data, null, 2)}`, 'success');
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPortsAPI() {
+            log('Testing /api/ports...', 'info');
+            try {
+                const response = await fetch('http://localhost:3030/api/ports');
+                const data = await response.json();
+                log(`✓ /api/ports responded`, 'success');
+                log(`Found ${data.length} listening ports`, 'success');
+            } catch (error) {
+                log(`✗ Error: ${error.message}`, 'error');
+            }
+        }
+
+        function testConnection() {
+            log('Testing SSE connection to /api/events...', 'info');
+            const eventSource = new EventSource('http://localhost:3030/api/events');
+
+            const timeout = setTimeout(() => {
+                log(`✗ SSE timeout (no data received after 5 seconds)`, 'error');
+                eventSource.close();
+            }, 5000);
+
+            eventSource.onopen = () => {
+                clearTimeout(timeout);
+                log(`✓ SSE Connection opened`, 'success');
+            };
+
+            eventSource.onerror = (err) => {
+                clearTimeout(timeout);
+                log(`✗ SSE Error: ${err.type}`, 'error');
+                eventSource.close();
+            };
+
+            eventSource.addEventListener('ports', (event) => {
+                log(`✓ Received 'ports' event`, 'success');
+                try {
+                    const data = JSON.parse(event.data);
+                    log(`Ports data: ${JSON.stringify(data).substring(0, 100)}...`, 'success');
+                } catch (e) {
+                    log(`✗ Failed to parse ports data: ${e.message}`, 'error');
+                }
+            });
+
+            eventSource.addEventListener('servers', (event) => {
+                log(`✓ Received 'servers' event`, 'success');
+                try {
+                    const data = JSON.parse(event.data);
+                    log(`Servers data: ${JSON.stringify(data, null, 2)}`, 'success');
+                } catch (e) {
+                    log(`✗ Failed to parse servers data: ${e.message}`, 'error');
+                }
+            });
+        }
+
+        // Auto-test on load
+        window.addEventListener('load', () => {
+            log('Debug console loaded', 'success');
+            log('Click buttons above to test different endpoints', 'info');
+        });
+    </script>
+</body>
+</html>

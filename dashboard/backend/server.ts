@@ -1,15 +1,22 @@
+/**
+ * Admin Dashboard Server - Integrated with Process Management Services
+ *
+ * This version integrates the new process management system with the existing dashboard.
+ */
+
 import * as http from 'http';
 import * as url from 'url';
 import * as path from 'path';
 import * as fs from 'fs';
-import { exec, spawn, ChildProcess } from 'child_process';
+import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as dotenv from 'dotenv';
+import { ServerOrchestrator, ServerConfig } from './services/serverOrchestrator';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const execAsync = promisify(exec);
-const PORT = process.env.ADMIN_PORT || 3030;
+const PORT = process.env.ADMIN_PORT || 3000;
 const HOST = process.env.ADMIN_HOST || '127.0.0.1';
 const SUDO_PASSWORD = process.env.SUDO_PASSWORD || '';
 
@@ -24,15 +31,6 @@ interface ProcessInfo {
   orphaned?: boolean;
 }
 
-interface ServerConfig {
-  name: string;
-  command: string;
-  cwd: string;
-  env?: Record<string, string>;
-  color: string;
-  ports: number[];
-}
-
 // Server registry - define all servers that can be managed
 const SERVER_REGISTRY: Record<string, ServerConfig> = {
   'livekit-server': {
@@ -44,21 +42,49 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
   },
   'livekit-voice-agent': {
     name: 'LiveKit Voice Agent',
-    command: 'uv run python livekit_mcp_agent.py dev',
+    command: '/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
     color: '#D1FAE5',
     ports: [],
   },
   'pydantic-web-server': {
     name: 'Pydantic Web Server',
-    command: '.venv/bin/python pydantic_web_server.py',
-    cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+    command: '/home/adamsl/planner/venv/bin/python pydantic_mcp_agent_endpoint.py',
+    cwd: '/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version',
     color: '#E9D5FF',
-    ports: [8000],
+    ports: [8001],
   },
 };
 
-const runningServers: Map<string, ChildProcess> = new Map();
+// Initialize orchestrator
+const stateDbPath = path.join(__dirname, '../process-state.json');
+const orchestrator = new ServerOrchestrator(stateDbPath, 3000);
+
+// Register all servers
+orchestrator.registerServers(SERVER_REGISTRY);
+
+// Initialize and recover state
+orchestrator.initialize().then(() => {
+  console.log('Server orchestrator initialized');
+}).catch(err => {
+  console.error('Failed to initialize orchestrator:', err);
+});
+
+// Listen for orchestrator events
+orchestrator.on('serverStarted', (data) => {
+  console.log(`Server ${data.serverId} started with PID ${data.pid}`);
+  broadcastServerUpdate();
+});
+
+orchestrator.on('serverStopped', (data) => {
+  console.log(`Server ${data.serverId} stopped`);
+  broadcastServerUpdate();
+});
+
+orchestrator.on('processDied', (data) => {
+  console.log(`Process ${data.id} died unexpectedly`);
+  broadcastServerUpdate();
+});
 
 function getServerByPort(port: string): { serverId: string; color: string } | null {
   const portNum = parseInt(port, 10);
@@ -121,8 +147,6 @@ async function getListeningPorts(): Promise<ProcessInfo[]> {
           serverInfo = getServerByProgramName(programName);
         }
 
-        const isOrphaned = serverInfo ? !runningServers.has(serverInfo.serverId) : false;
-
         processes.push({
           pid: pidMatch[1],
           port: portMatch[1],
@@ -131,7 +155,6 @@ async function getListeningPorts(): Promise<ProcessInfo[]> {
           command: await getCommandForPid(pidMatch[1]),
           color: serverInfo?.color,
           serverId: serverInfo?.serverId,
-          orphaned: isOrphaned ? true : undefined
         });
       }
     }
@@ -180,96 +203,6 @@ async function killProcessOnPort(port: string): Promise<{ success: boolean; mess
   }
 }
 
-function startServer(serverId: string): { success: boolean; message: string } {
-  const config = SERVER_REGISTRY[serverId];
-
-  if (!config) {
-    return { success: false, message: `Server ${serverId} not found in registry` };
-  }
-
-  if (runningServers.has(serverId)) {
-    return { success: false, message: `Server ${serverId} is already running` };
-  }
-
-  try {
-    const [command, ...args] = config.command.split(' ');
-    const child = spawn(command, args, {
-      cwd: config.cwd,
-      env: { ...process.env, ...config.env },
-      detached: true,
-      stdio: 'ignore'
-    });
-
-    // Handle process exit to update tracking
-    child.on('exit', (code, signal) => {
-      console.log(`Server ${serverId} exited with code ${code}, signal ${signal}`);
-      runningServers.delete(serverId);
-      broadcastUpdate('servers', getServerStatus());
-    });
-
-    // Handle process errors
-    child.on('error', (error) => {
-      console.error(`Server ${serverId} error:`, error);
-      runningServers.delete(serverId);
-      broadcastUpdate('servers', getServerStatus());
-    });
-
-    child.unref();
-    runningServers.set(serverId, child);
-
-    return { success: true, message: `Server ${serverId} started successfully` };
-  } catch (error: any) {
-    return { success: false, message: error.message };
-  }
-}
-
-function stopServer(serverId: string): { success: boolean; message: string } {
-  const child = runningServers.get(serverId);
-
-  if (!child) {
-    return { success: false, message: `Server ${serverId} is not running` };
-  }
-
-  try {
-    child.kill();
-    runningServers.delete(serverId);
-    return { success: true, message: `Server ${serverId} stopped successfully` };
-  } catch (error: any) {
-    return { success: false, message: error.message };
-  }
-}
-
-async function getServerStatus(ports?: ProcessInfo[]): Promise<Array<{ id: string; name: string; running: boolean; orphaned: boolean; orphanedPid?: string; color: string }>> {
-  // Get current port usage if not provided
-  const currentPorts = ports || await getListeningPorts();
-
-  return Object.entries(SERVER_REGISTRY).map(([id, config]) => {
-    const isManaged = runningServers.has(id);
-
-    // Check if any of the server's ports are in use
-    const portInUse = config.ports.some(port =>
-      currentPorts.some(p => parseInt(p.port) === port)
-    );
-
-    // Find the PID if port is in use
-    const orphanedProcess = config.ports.length > 0
-      ? currentPorts.find(p => config.ports.includes(parseInt(p.port)))
-      : null;
-
-    // Server is orphaned if port is in use but not managed by dashboard
-    const isOrphaned = portInUse && !isManaged;
-
-    return {
-      id,
-      name: config.name,
-      running: isManaged || portInUse,
-      orphaned: isOrphaned,
-      orphanedPid: isOrphaned && orphanedProcess ? orphanedProcess.pid : undefined,
-      color: config.color
-    };
-  });
-}
-
 // SSE clients for real-time updates
 const sseClients: http.ServerResponse[] = [];
 
@@ -284,13 +217,22 @@ function broadcastUpdate(event: string, data: any) {
   });
 }
 
-// Periodic updates
-setInterval(async () => {
+async function broadcastServerUpdate() {
   const ports = await getListeningPorts();
   broadcastUpdate('ports', ports);
 
-  const servers = await getServerStatus(ports);
+  const serverArray = await orchestrator.getServerStatus(ports);
+  // Convert array to object with server id as key for frontend compatibility
+  const servers: Record<string, any> = {};
+  serverArray.forEach(server => {
+    servers[server.id] = server;
+  });
   broadcastUpdate('servers', servers);
+}
+
+// Periodic updates
+setInterval(async () => {
+  await broadcastServerUpdate();
 }, 5000);
 
 const server = http.createServer(async (req, res) => {
@@ -317,7 +259,13 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === '/api/servers' && req.method === 'GET') {
-    const servers = await getServerStatus();
+    const ports = await getListeningPorts();
+    const serverArray = await orchestrator.getServerStatus(ports);
+    // Convert array to object with server id as key for frontend compatibility
+    const servers: Record<string, any> = {};
+    serverArray.forEach(server => {
+      servers[server.id] = server;
+    });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(servers));
     return;
@@ -378,9 +326,9 @@ const server = http.createServer(async (req, res) => {
 
     let result;
     if (action === 'start') {
-      result = startServer(serverId);
+      result = await orchestrator.startServer(serverId);
     } else if (action === 'stop') {
-      result = stopServer(serverId);
+      result = await orchestrator.stopServer(serverId);
     } else {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: false, message: 'Invalid action' }));
@@ -389,8 +337,9 @@ const server = http.createServer(async (req, res) => {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(result));
-    const servers = await getServerStatus();
-    broadcastUpdate('servers', servers);
+
+    // Broadcast update after action
+    await broadcastServerUpdate();
     return;
   }
 
@@ -415,8 +364,7 @@ const server = http.createServer(async (req, res) => {
       res.end(JSON.stringify(result));
 
       if (result.success) {
-        const ports = await getListeningPorts();
-        broadcastUpdate('ports', ports);
+        await broadcastServerUpdate();
       }
     });
     return;
@@ -433,7 +381,12 @@ const server = http.createServer(async (req, res) => {
 
     // Send initial data
     const ports = await getListeningPorts();
-    const servers = await getServerStatus(ports);
+    const serverArray = await orchestrator.getServerStatus(ports);
+    // Convert array to object with server id as key for frontend compatibility
+    const servers: Record<string, any> = {};
+    serverArray.forEach(server => {
+      servers[server.id] = server;
+    });
     res.write(`event: ports\ndata: ${JSON.stringify(ports)}\n\n`);
     res.write(`event: servers\ndata: ${JSON.stringify(servers)}\n\n`);
 
@@ -480,6 +433,26 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('\nShutting down gracefully...');
+  await orchestrator.shutdown();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', async () => {
+  console.log('\nShutting down gracefully...');
+  await orchestrator.shutdown();
+  server.close(() => {
+    console.log('Server closed');
+    process.exit(0);
+  });
+});
+
 server.listen(Number(PORT), HOST, () => {
   console.log(`Admin dashboard server running on http://${HOST}:${PORT}`);
+  console.log(`Process management enabled with persistent state`);
 });

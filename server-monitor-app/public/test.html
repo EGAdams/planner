@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Browser Test</title>
+</head>
+<body>
+    <h1>Testing Dashboard Connection</h1>
+    <div id="status">Connecting...</div>
+    <div id="output"></div>
+
+    <script>
+        const status = document.getElementById('status');
+        const output = document.getElementById('output');
+
+        function log(msg) {
+            const p = document.createElement('p');
+            p.textContent = msg;
+            output.appendChild(p);
+            console.log(msg);
+        }
+
+        // Test EventSource
+        log('Creating EventSource connection to /api/events...');
+        const eventSource = new EventSource('http://localhost:3000/api/events');
+
+        const timeout = setTimeout(() => {
+            log('ERROR: EventSource timeout - no data received');
+            eventSource.close();
+            status.textContent = 'FAILED - Timeout';
+        }, 8000);
+
+        eventSource.onopen = () => {
+            clearTimeout(timeout);
+            log('✓ EventSource opened');
+            status.textContent = 'Connected';
+        };
+
+        eventSource.onerror = (err) => {
+            clearTimeout(timeout);
+            log(`✗ EventSource error: ${err.type}`);
+            status.textContent = 'ERROR';
+        };
+
+        eventSource.addEventListener('servers', (event) => {
+            log('✓ Received servers event');
+            try {
+                const servers = JSON.parse(event.data);
+                log(`Servers: ${JSON.stringify(servers, null, 2)}`);
+
+                // Test rendering like the real script does
+                const serverList = document.createElement('div');
+                for (const serverId in servers) {
+                    const server = servers[serverId];
+                    const card = document.createElement('div');
+                    card.style.border = '1px solid #ccc';
+                    card.style.padding = '10px';
+                    card.style.margin = '10px';
+                    card.innerHTML = `
+                        <h3>${server.name}</h3>
+                        <p>Status: ${server.running ? 'running' : 'stopped'}</p>
+                        <p>Orphaned: ${server.orphaned}</p>
+                    `;
+                    serverList.appendChild(card);
+                }
+                output.appendChild(serverList);
+            } catch (e) {
+                log(`ERROR parsing servers: ${e.message}`);
+            }
+        });
+
+        eventSource.addEventListener('ports', (event) => {
+            log(`✓ Received ports event with ${JSON.parse(event.data).length} ports`);
+        });
+    </script>
+</body>
+</html>

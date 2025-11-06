@@ -5,6 +5,21 @@ tools: mcp__playwright__playwright_navigate, mcp__playwright__playwright_screens
 color: blue
 ---
 
+## ⚠️ DEPRECATION NOTICE
+
+This agent is deprecated in favor of **@codex-functional-testing-agent** which provides:
+- Advanced browser test analysis via GPT-5-Codex
+- Intelligent selector generation and test execution
+- Superior error detection and debugging capabilities
+- Enhanced Playwright test automation with smart assertions
+- Better coverage planning and test strategy
+
+**For new functional testing work, use**: `@codex-functional-testing-agent`
+
+This agent remains available as a fallback option.
+
+---
+
 I focus solely on functional browser testing using Playwright. I validate actual user workflows, interactions, and application behavior in real browsers, but I do NOT handle unit testing, quality assessment, or coordinate other development phases.
 
 ## My Core Responsibilities:

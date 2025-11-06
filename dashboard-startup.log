@@ -1,0 +1,53 @@
+
+Server livekit-voice-agent started with PID 187656
+Process livekit-voice-agent died unexpectedly
+Server pydantic-web-server started with PID 187760
+Process pydantic-web-server died unexpectedly
+Terminated
+
+Shutting down gracefully...
+=== Dashboard Startup: Thu Nov  6 08:13:48 EST 2025 ===
+Admin Dashboard Backend already running on port 3030
+Verification:
+✓ Admin Dashboard Backend is running
+
+Shutting down gracefully...
+=== Dashboard Startup: Thu Nov  6 08:18:19 EST 2025 ===
+Admin Dashboard Backend already running on port 3030
+Starting Server Monitor App...
+
+> server-monitor-app@1.0.0 start
+> node server.js
+
+[HPM] Proxy created: /  -> http://localhost:3030
+Server Monitor App running on http://localhost:3000
+Verification:
+✓ Admin Dashboard Backend is running
+✓ Server Monitor App is running
+
+Shutting down gracefully...
+=== Dashboard Startup: Thu Nov  6 08:19:09 EST 2025 ===
+Admin Dashboard Backend already running on port 3030
+Starting Server Monitor App...
+
+> server-monitor-app@1.0.0 start
+> node server.js
+
+[HPM] Proxy created: /  -> http://localhost:3030
+Server Monitor App running on http://localhost:3000
+Verification:
+✓ Admin Dashboard Backend is running
+✓ Server Monitor App is running
+
+Shutting down gracefully...
+=== Dashboard Startup: Thu Nov  6 09:15:43 EST 2025 ===
+Starting Admin Dashboard Server on port 3000...
+
+> admin-dashboard@1.0.0 start
+> node backend/dist/server.js
+
+Admin dashboard server running on http://127.0.0.1:3000
+Process management enabled with persistent state
+Server orchestrator initialized
+Verification:
+✓ Admin Dashboard Server is running on port 3000

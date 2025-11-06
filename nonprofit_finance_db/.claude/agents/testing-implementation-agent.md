@@ -5,6 +5,20 @@ tools: Read, Write, Edit, MultiEdit, Bash, Glob, Grep, mcp__task-master__get_tas
 color: yellow
 ---
 
+## ⚠️ DEPRECATION NOTICE
+
+This agent is deprecated in favor of **@codex-test-implementation-agent** which provides:
+- Advanced code analysis via GPT-5-Codex
+- Intelligent test generation and pattern recognition
+- Superior error detection capabilities
+- Enhanced test quality through Codex-powered understanding
+
+**For new testing work, use**: `@codex-test-implementation-agent`
+
+This agent remains available as a fallback option for compatibility purposes.
+
+---
+
 ## Testing Implementation Agent - TDD Test Creation
 
 I create comprehensive test suites using **Test-Driven Development (TDD)** principles, focusing on testing existing implementations and creating robust test coverage.

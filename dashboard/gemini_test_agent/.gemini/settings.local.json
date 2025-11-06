@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(chmod:*)",
+      "Bash(./.gemini/tests/routing/test-agent-routing.sh:*)",
+      "Bash(bash:*)",
+      "Bash(./.gemini/scripts/show-routing-status.sh:*)",
+      "Bash(./.gemini/scripts/switch-testing-agent.sh:*)",
+      "Bash(cat:*)",
+      "Bash(/home/adamsl/planner/nonprofit_finance_db/.gemini/tests/routing/test-functional-testing-routing.sh)",
+      "Bash(/home/adamsl/planner/nonprofit_finance_db/.gemini/scripts/show-functional-testing-status.sh:*)",
+      "Bash(/home/adamsl/planner/nonprofit_finance_db/.gemini/scripts/switch-functional-testing-agent.sh:*)",
+      "Bash(find:*)",
+      "Bash(/home/adamsl/codex_test_agent/.gemini/scripts/check-agent-registration.sh:*)",
+      "Bash(./.gemini/scripts/check-agent-registration.sh:*)",
+      "Bash(/home/adamsl/planner/dashboard/.gemini/scripts/verify-setup.sh:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

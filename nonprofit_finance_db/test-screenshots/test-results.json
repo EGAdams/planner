@@ -1,0 +1,103 @@
+{
+  "test_suite": "Daily Expense Categorizer Button Testing",
+  "url": "http://localhost:8080/",
+  "timestamp": "2025-11-04 20:26:06",
+  "tests": [
+    {
+      "name": "Initial Load",
+      "status": "PASS",
+      "details": "Application loaded successfully",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/01-initial-load.png"
+    },
+    {
+      "name": "Header Display",
+      "status": "PASS",
+      "details": "Month: June 2025, Date: 2025-06-20, Uncategorized: 1, Total: $3,683.44",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/02-header-display.png"
+    },
+    {
+      "name": "Month Selector Visible",
+      "status": "PASS",
+      "details": "Month selector has 6 options",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/03-month-selector.png"
+    },
+    {
+      "name": "Month Selector Change",
+      "status": "PASS",
+      "details": "Successfully changed month, new date: 2024-01-02",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/03b-month-changed.png"
+    },
+    {
+      "name": "First Button Click",
+      "status": "WARN",
+      "details": "Button is disabled (already at first day)",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/04-first-button.png"
+    },
+    {
+      "name": "Last Button Click",
+      "status": "PASS",
+      "details": "Button clicked. Date changed from 2024-01-02 to 2024-01-15",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/05-last-button.png"
+    },
+    {
+      "name": "Last Button State",
+      "status": "PASS",
+      "details": "Button correctly disabled after navigating to last day",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/05-last-button.png"
+    },
+    {
+      "name": "Previous Button Click",
+      "status": "PASS",
+      "details": "Button clicked. Date changed from 2024-01-15 to 2024-01-14",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/06-previous-button.png"
+    },
+    {
+      "name": "Next Button Click",
+      "status": "PASS",
+      "details": "Button clicked. Date changed from 2024-01-14 to 2024-01-15",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/07-next-button.png"
+    },
+    {
+      "name": "Keyboard Left Arrow",
+      "status": "PASS",
+      "details": "Date changed from 2024-01-15 to 2024-01-14",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/08-keyboard-left.png"
+    },
+    {
+      "name": "Keyboard Right Arrow",
+      "status": "PASS",
+      "details": "Date changed from 2024-01-14 to 2024-01-15",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/08b-keyboard-right.png"
+    },
+    {
+      "name": "Transaction Table Rows",
+      "status": "PASS",
+      "details": "Table has 3 transaction rows",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/09-transaction-table.png"
+    },
+    {
+      "name": "Transaction Row Structure",
+      "status": "PASS",
+      "details": "Row has correct number of cells (5)",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/09-transaction-table.png"
+    },
+    {
+      "name": "Console Errors",
+      "status": "FAIL",
+      "details": "Found 1 errors: ['[error] Failed to load resource: the server responded with a status of 404 (Not Found)']",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/10-final-state.png"
+    },
+    {
+      "name": "Console Warnings",
+      "status": "PASS",
+      "details": "No console warnings detected",
+      "screenshot": "/home/adamsl/planner/nonprofit_finance_db/test-screenshots/10-final-state.png"
+    }
+  ],
+  "summary": {
+    "total": 15,
+    "passed": 13,
+    "failed": 1,
+    "warnings": 1
+  }
+}

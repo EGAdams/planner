@@ -1,0 +1,8 @@
+[
+  "[log] Loaded transactions: [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object]",
+  "[log] Setting picker value for transaction 96 : Church / Utilities / Church Gas Bill",
+  "[log] Picker state after setting: done",
+  "[log] Setting picker value for transaction 103 : Housing / Upkeep / Outdoor & Lawn Care",
+  "[log] Picker state after setting: done",
+  "[error] Failed to load resource: the server responded with a status of 404 (Not Found)"
+]

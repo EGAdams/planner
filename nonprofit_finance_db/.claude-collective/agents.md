@@ -4,13 +4,15 @@
 - **@component-implementation-agent** - UI components with TDD, modern framework research integration
 - **@feature-implementation-agent** - Business logic with TDD, API research patterns
 - **@infrastructure-implementation-agent** - Build systems with TDD, tooling research
-- **@testing-implementation-agent** - Comprehensive test suites with TDD methodology
+- **@codex-test-implementation-agent** - 🤖 **[PRIMARY]** GPT-5-Codex powered testing with advanced code analysis and intelligent test generation
+- **@testing-implementation-agent** - ⚠️ **[LEGACY]** Claude-based comprehensive test suites with TDD methodology (use Codex version for new work)
 - **@polish-implementation-agent** - Performance optimization with TDD quality approach
 
 ## ⚡ QUALITY & VALIDATION SPECIALISTS
 - **@quality-agent** - Code review, security analysis, compliance validation
 - **@devops-agent** - Deployment, CI/CD, infrastructure management
-- **@functional-testing-agent** - Real browser testing with Playwright validation
+- **@codex-functional-testing-agent** - 🤖 **[PRIMARY]** GPT-5-Codex powered real browser testing with Playwright validation and intelligent test execution
+- **@functional-testing-agent** - ⚠️ **[LEGACY]** Claude-based real browser testing with Playwright (use Codex version for new work)
 
 ## 💻 RESEARCH & COORDINATION
 - **@research-agent** - Context7-powered technical research and documentation

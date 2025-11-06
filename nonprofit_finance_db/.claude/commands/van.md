@@ -15,6 +15,17 @@ description: 🚐 Fast routing engine for intelligent agent selection and reques
 Request → 🧠 Quick Analysis → 🎯 Agent Selection → ⚡ Task Delegation
 ```
 
+## ⚠️ CRITICAL ROUTING POLICY
+
+**ABSOLUTE RULE: NEVER use legacy agents (@functional-testing-agent, @testing-implementation-agent)**
+
+- If Codex agent hits rate limits → Inform user and STOP
+- If Codex agent encounters errors → Debug the Codex agent
+- NEVER fallback to Claude-based legacy agents
+- Legacy agents exist only for historical reference
+
+**Violation of this policy is a system failure.**
+
 ## 🚀 DUAL-MODE ROUTING PROTOCOL
 
 ### **🎯 USER IMPLEMENTATION MODE** (Direct Agent Routing - DEFAULT)
@@ -40,7 +51,7 @@ Request → 🧠 Quick Analysis → 🎯 Agent Selection → ⚡ Task Delegation
 | **"implement from PRD"** | **@prd-parser-agent** | Parse PRD → research → generate tasks |
 | **"execute tasks"** | **@task-orchestrator** | Coordinate existing TaskMaster tasks |
 | **"fix/debug/resolve X"** | **@feature-implementation-agent** | Direct problem-solving |
-| **"test/validate X"** | **@testing-implementation-agent** | Direct testing workflow |
+| **"test/validate X"** | **@codex-test-implementation-agent** OR **@codex-functional-testing-agent** | Direct testing workflow (unit tests vs browser testing) |
 | **"optimize/polish X"** | **@polish-implementation-agent** | Direct improvement |
 | **"research/analyze/compare X"** | **@research-agent** | Direct research needed |
 | **"setup/configure build"** | **@infrastructure-implementation-agent** | Direct infrastructure work |
@@ -56,7 +67,7 @@ Request → 🧠 Quick Analysis → 🎯 Agent Selection → ⚡ Task Delegation
 | Request Category | Analysis Approach | Agent Selection Strategy |
 |------------------|-------------------|--------------------------| 
 | **🔧 Implementation & Features** | Assess UI vs logic complexity | UI-focused → `@component-implementation-agent`, Logic-focused → `@feature-implementation-agent`, Full-stack → both |
-| **🧪 Testing & Quality** | Scope and current state | New tests → `@testing-implementation-agent`, Quality check → `@quality-agent`, Performance → `@polish-implementation-agent` |
+| **🧪 Testing & Quality** | Scope and current state | Unit tests → `@codex-test-implementation-agent`, Browser tests → `@codex-functional-testing-agent`, Quality check → `@quality-agent`, Performance → `@polish-implementation-agent` |
 | **🏗️ Infrastructure & Build** | Setup vs maintenance | New project → `@infrastructure-implementation-agent`, Deployment → `@devops-agent` |
 | **📚 Research & Analysis** | Information vs implementation | Pure research → `@research-agent`, Research + implementation → `@prd-research-agent` |
 | **🌟 Multi-Domain/Epic** | Decomposition and coordination needs | Always → `@task-orchestrator` with TaskMaster integration |
@@ -68,7 +79,8 @@ Request Analysis
 ├── PRD Document? → @prd-parser-agent → @research-agent → @task-generator-agent → @task-orchestrator
 ├── UI/Component Focus? → @component-implementation-agent
 ├── Business Logic Focus? → @feature-implementation-agent  
-├── Testing Focus? → @testing-implementation-agent
+├── Unit Testing Focus? → @codex-test-implementation-agent
+├── Browser Testing Focus? → @codex-functional-testing-agent
 ├── Infrastructure Focus? → @infrastructure-implementation-agent
 ├── Quality Focus? → @quality-agent OR @polish-implementation-agent
 ├── Research Focus? → @research-agent
