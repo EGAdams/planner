@@ -22,3 +22,6 @@ nonprofit_finance_db/tmp_mysql/
 server-monitor-app/node_modules/
 
 *Zone.Identifier
+.codex-collective/node_modules/
+.codex-collective/.env
+.codex-collective/tmp_mysql/
