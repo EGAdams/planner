@@ -33,3 +33,8 @@ Appendix: Counts
   Checks parsed: 24
   Withdrawals parsed: 15
   Deposits parsed: 17
+
+
+(venv) adamsl@DESKTOP-SHDBATI:~/planner/docling$ cat temp_test_january_statement_raw.txt | python3 g5_statement_filter.py
+
+
