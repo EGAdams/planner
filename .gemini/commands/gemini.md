@@ -9,67 +9,31 @@ description: 🚀 Fast routing engine for intelligent agent selection and reques
 
 **Fast Agent Selection** - analyze user requests and route to the optimal specialized agent using proven patterns and decision matrices.
 
-## 🚀 DUAL-MODE ROUTING PROTOCOL
+## 🚀 DYNAMIC ROUTING PROTOCOL V2
 
-### **🎯 USER IMPLEMENTATION MODE** (Direct Agent Routing - DEFAULT)
-**Triggers**: Feature implementation, code creation, bug fixes, testing, research  
-**Pattern**: Direct routing to specialized implementation agents  
-**No TaskMaster**: Bypass research coordination for practical development  
+The system has been upgraded to a dynamic, file-system-based routing protocol. Static routing tables and decision trees are deprecated. The new protocol enables **Progressive Disclosure**, allowing the system to adapt to new capabilities without modifying its core logic.
 
-### **🔬 RESEARCH COORDINATION MODE** (TaskMaster Integration - RARE)
-**Triggers**: System management, research project coordination, collective enhancement  
-**Pattern**: Complex coordination through TaskMaster workflows  
-**Full Orchestration**: Use enhanced TaskMaster agents (task-orchestrator → task-executor → task-checker)  
+### 🎯 DYNAMIC CAPABILITY ANALYSIS
 
-## 🧠 IMMEDIATE AGENT ROUTING
+When a request is received, the routing engine performs the following steps:
 
-**Bypass analysis for obvious requests:**
+1.  **Scan for Capabilities:** The engine scans the `/home/adamsl/planner/.gemini/agents/` and `/home/adamsl/planner/.gemini/skills/` directories to discover all available agents and skills. This provides a real-time inventory of the system's capabilities.
 
-| User Says | Instant Agent | Why Skip Analysis |
-|-----------|---------------|-------------------|
-| **"build/create/implement X"** | **@component-implementation-agent** OR **@feature-implementation-agent** | Direct implementation needed |
-| **"build app from PRD"** | **@prd-parser-agent** | Parse PRD → research → generate tasks |
-| **"create app from PRD"** | **@prd-parser-agent** | Parse PRD → research → generate tasks |
-| **"create application using PRD"** | **@prd-parser-agent** | Parse PRD → research → generate tasks |
-| **"implement from PRD"** | **@prd-parser-agent** | Parse PRD → research → generate tasks |
-| **"execute tasks"** | **@task-orchestrator** | Coordinate existing TaskMaster tasks |
-| **"fix/debug/resolve X"** | **@feature-implementation-agent** | Direct problem-solving |
-| **"test/validate X"** | **@testing-implementation-agent** | Direct testing workflow |
-| **"optimize/polish X"** | **@polish-implementation-agent** | Direct improvement |
-| **"research/analyze/compare X"** | **@research-agent** | Direct research needed |
-| **"setup/configure build"** | **@infrastructure-implementation-agent** | Direct infrastructure work |
-| **"review/check quality"** | **@quality-agent** | Direct quality validation |
-| **"deploy/setup devops"** | **@devops-agent** | Direct deployment work |
-| **"enhance collective"** | **@task-orchestrator** | System-level coordination |
-| **"coordinate complex project"** | **@task-orchestrator** | Multi-agent orchestration |
-| **"migrate/convert agent to gemini"** | **@convert-llm-gemini-to-codex** | Automated LLM migration |
+2.  **Analyze Capabilities:** The engine reads the content or metadata of each discovered file to understand its purpose.
+    *   For **Agents** (`.md` files), it extracts the `description:` field.
+    *   For **Skills** (`.sh`, `.py`, etc.), it relies on descriptive filenames and internal comments.
 
-## 📊 COMPLEX REQUEST ANALYSIS
+3.  **Match Request to Capability:** The engine analyzes the user's prompt and compares it against the descriptions of the discovered agents and skills to find the best match. This is a semantic match, not just a keyword search.
 
-**When routing isn't obvious:**
+4.  **Select and Execute:**
+    *   If the best match is an **Agent**, the engine delegates the task to that agent (e.g., `Task(subagent_type="feature-implementation-agent", ...)`).
+    *   If the best match is a **Skill**, the engine executes the skill using the `run_shell_command` tool (e.g., `run_shell_command(command="/home/adamsl/planner/.gemini/skills/my_skill.sh")`).
 
-| Request Category | Analysis Approach | Agent Selection Strategy |
-|------------------|-------------------|--------------------------| 
-| **🔧 Implementation & Features** | Assess UI vs logic complexity | UI-focused → `@component-implementation-agent`, Logic-focused → `@feature-implementation-agent`, Full-stack → both |
-| **🧪 Testing & Quality** | Scope and current state | New tests → `@testing-implementation-agent`, Quality check → `@quality-agent`, Performance → `@polish-implementation-agent` |
-| **🏗️ Infrastructure & Build** | Setup vs maintenance | New project → `@infrastructure-implementation-agent`, Deployment → `@devops-agent` |
-| **📚 Research & Analysis** | Information vs implementation | Pure research → `@research-agent`, Research + implementation → `@prd-research-agent` |
-| **🌟 Multi-Domain/Epic** | Decomposition and coordination needs | Always → `@task-orchestrator` with TaskMaster integration |
+### ✨ Benefits of this Approach
 
-## 🎯 SMART ROUTING DECISION TREE
-
-```
-Request Analysis
-├── PRD Document? → @prd-parser-agent → @research-agent → @task-generator-agent → @task-orchestrator
-├── UI/Component Focus? → @component-implementation-agent
-├── Business Logic Focus? → @feature-implementation-agent  
-├── Testing Focus? → @testing-implementation-agent
-├── Infrastructure Focus? → @infrastructure-implementation-agent
-├── Quality Focus? → @quality-agent OR @polish-implementation-agent
-├── Research Focus? → @research-agent
-├── Multi-Domain Complex? → @task-orchestrator
-└── System Enhancement? → @task-orchestrator + TaskMaster
-```
+*   **Extensibility:** New capabilities can be added by simply creating a new agent or skill file. The system discovers and uses them automatically.
+*   **Efficiency:** The system is no longer burdened with a large, static list of rules.
+*   **Adaptability:** The system can learn and evolve as new skills are created by agents.
 
 ## 🎮 ORCHESTRATION PATTERNS
 

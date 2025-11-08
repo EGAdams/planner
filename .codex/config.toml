@@ -1,0 +1,64 @@
+# MCP Server Configuration Template for Codex Telegram Bot
+# This file will be processed to substitute environment variables
+# and written to ~/.codex/config.toml at container startup
+
+# ========================================
+# Base Configuration - Permissions & Model
+# ========================================
+
+# Sandbox mode: read-only | workspace-write | danger-full-access
+sandbox_mode = "workspace-write"
+
+# Approval policy: untrusted | on-request | on-failure | never
+approval_policy = "never"
+
+# Model settings
+model = "gpt-5-codex"
+model_provider = "openai"
+
+# Mark /workspace as trusted (no git repo required)
+[projects."/workspace"]
+trust_level = "trusted"
+
+# Enable network access for workspace-write mode (required for git/gh)
+[sandbox_workspace_write]
+network_access = true
+
+# ========================================
+# Shell Environment Policy
+# ========================================
+# Allow Codex to access container environment variables like GH_TOKEN
+
+[shell_environment_policy]
+# Inherit all environment variables from the parent process
+inherit = "all"
+
+# Disable default filtering of *KEY*, *SECRET*, *TOKEN*
+# By default, Codex blocks variables containing these patterns for security
+# We need GH_TOKEN, BROWSERBASE_API_KEY, OPENAI_API_KEY to pass through
+ignore_default_excludes = true
+
+# ========================================
+# MCP Servers
+# ========================================
+[mcp_servers.task-master]
+command = "npx"
+args = ["-y", "task-master-ai"]
+
+[mcp_servers.sequential-thinking]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+
+[mcp_servers.stagehand]
+command = "npx"
+args = ["-y", "@browserbasehq/mcp-server-browserbase"]
+startup_timeout_ms = 30_000
+
+[mcp_servers.stagehand.env]
+BROWSERBASE_API_KEY = "${BROWSERBASE_API_KEY}"
+BROWSERBASE_PROJECT_ID = "${BROWSERBASE_PROJECT_ID}"
+OPENAI_API_KEY = "${OPENAI_API_KEY}"
+
+[mcp_servers.mcp__context7]
+command = "npx"
+args = ["-y", "@modelcontextprotocol/mcp__context7"]
