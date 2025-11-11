@@ -1,152 +1,183 @@
-# Copyright 2025 Google LLC
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-# @title Import necessary libraries
-from google.adk.agents import Agent
-from google.adk.models.lite_llm import LiteLlm # For multi-model support
-from google.adk.sessions import InMemorySessionService
-from google.adk.runners import Runner
-from google.genai import types # For creating message Content/Parts
+# adk_subagents.py
+import os
+import asyncio
 from typing import Optional
 
-# Use one of the model constants defined earlier
+# ADK core
+from google.adk.agents import Agent
+from google.adk.runners import InMemoryRunner
+from google.adk.sessions import InMemorySessionService
+
+# Gemini SDK types for Content/Part and configs
+from google import genai
+from google.genai import types  # Content/Part for messages
+
+# Optional multi-model support (OpenAI via LiteLLM); fallback to Gemini if not present
+try:
+    from google.adk.models.lite_llm import LiteLlm  # pip install litellm
+    HAS_LITELLM = True
+except Exception:
+    LiteLlm = None  # type: ignore
+    HAS_LITELLM = False
+
+# ---------- Models ----------
 MODEL_GEMINI_2_0_FLASH = "gemini-2.0-flash"
+MODEL_GEMINI_2_5_FLASH = os.getenv("GEMINI_RAG_MODEL", "gemini-2.5-flash")  # for RAG agent reasoning + answers
+MODEL_OPENAI_DEFAULT = "gpt-4o-mini"
 
-# @title Define the get_weather Tool
+def pick_model():
+    if HAS_LITELLM:
+        print(f"🔁 Using OpenAI via LiteLlm with model '{MODEL_OPENAI_DEFAULT}'.")
+        return LiteLlm(model=MODEL_OPENAI_DEFAULT)
+    else:
+        print(f"🔁 Using Gemini model '{MODEL_GEMINI_2_0_FLASH}'.")
+        return MODEL_GEMINI_2_0_FLASH
+
+# ---------- Tools ----------
 def get_weather(city: str) -> dict:
-    """Retrieves the current weather report for a specified city.
-
-    Args:
-        city (str): The name of the city (e.g., "New York", "London", "Tokyo").
-
-    Returns:
-        dict: A dictionary containing the weather information.
-              Includes a 'status' key ('success' or 'error').
-              If 'success', includes a 'report' key with weather details.
-              If 'error', includes an 'error_message' key.
-    """
-    print(f"--- Tool: get_weather called for city: {city} ---") # Log tool execution
-    city_normalized = city.lower().replace(" ", "") # Basic normalization
-
-    # Mock weather data
-    mock_weather_db = {
+    """Mock weather tool."""
+    print(f"--- Tool: get_weather called for city: {city} ---")
+    city_key = city.lower().replace(" ", "")
+    mock = {
         "newyork": {"status": "success", "report": "The weather in New York is sunny with a temperature of 25°C."},
         "london": {"status": "success", "report": "It's cloudy in London with a temperature of 15°C."},
         "tokyo": {"status": "success", "report": "Tokyo is experiencing light rain and a temperature of 18°C."},
     }
+    return mock.get(city_key, {"status": "error", "error_message": f"Sorry, no weather info for '{city}'."})
 
-    if city_normalized in mock_weather_db:
-        return mock_weather_db[city_normalized]
-    else:
-        return {"status": "error", "error_message": f"Sorry, I don't have weather information for '{city}'."}
-      
-def say_hello(name: Optional[str] = None) -> str: 
-    """Provides a simple greeting. If a name is provided, it will be used.
-
-    Args:
-        name (str, optional): The name of the person to greet. Defaults to a generic greeting if not provided.
-
-    Returns:
-        str: A friendly greeting message.
-    """
+def say_hello(name: Optional[str] = None) -> str:
     if name:
-        greeting = f"Hello, {name}!"
         print(f"--- Tool: say_hello called with name: {name} ---")
-    else:
-        greeting = "Hello there!" # Default greeting if name is None or not explicitly passed
-        print(f"--- Tool: say_hello called without a specific name (name_arg_value: {name}) ---")
-    return greeting
+        return f"Hello, {name}!"
+    print(f"--- Tool: say_hello called without a specific name (name_arg_value: {name}) ---")
+    return "Hello there!"
 
 def say_goodbye() -> str:
-    """Provides a simple farewell message to conclude the conversation."""
     print(f"--- Tool: say_goodbye called ---")
     return "Goodbye! Have a great day."
 
 print("Greeting and Farewell tools defined.")
 
-# --- Greeting Agent ---
-greeting_agent = None
-try:
-    greeting_agent = Agent(
-        # Using a potentially different/cheaper model for a simple task
-        model = MODEL_GEMINI_2_0_FLASH,
-        # model=LiteLlm(model=MODEL_GPT_4O), # If you would like to experiment with other models 
-        name="greeting_agent",
-        instruction="You are the Greeting Agent. Your ONLY task is to provide a friendly greeting to the user. "
-                    "Use the 'say_hello' tool to generate the greeting. "
-                    "If the user provides their name, make sure to pass it to the tool. "
-                    "Do not engage in any other conversation or tasks.",
-        description="Handles simple greetings and hellos using the 'say_hello' tool.", # Crucial for delegation
-        tools=[say_hello],
-    )
-    print(f"✅ Agent '{greeting_agent.name}' created using model '{greeting_agent.model}'.")
-except Exception as e:
-    print(f"❌ Could not create Greeting agent. Check API Key ({greeting_agent.model}). Error: {e}")
+# ---------- Gemini RAG tool (Gemini SDK File Search) ----------
+# Requires: export GOOGLE_API_KEY=...  (or GEMINI_API_KEY)
+# Also set:  export GEMINI_FILE_SEARCH_STORE="fileSearchStores/your-store-id"
+GEMINI_FILE_SEARCH_STORE = os.getenv("GEMINI_FILE_SEARCH_STORE")
 
-# --- Farewell Agent ---
-farewell_agent = None
-try:
-    farewell_agent = Agent(
-        # Can use the same or a different model
-        model = MODEL_GEMINI_2_0_FLASH,
-        # model=LiteLlm(model=MODEL_GPT_4O), # If you would like to experiment with other models
-        name="farewell_agent",
-        instruction="You are the Farewell Agent. Your ONLY task is to provide a polite goodbye message. "
-                    "Use the 'say_goodbye' tool when the user indicates they are leaving or ending the conversation "
-                    "(e.g., using words like 'bye', 'goodbye', 'thanks bye', 'see you'). "
-                    "Do not perform any other actions.",
-        description="Handles simple farewells and goodbyes using the 'say_goodbye' tool.", # Crucial for delegation
-        tools=[say_goodbye],
-    )
-    print(f"✅ Agent '{farewell_agent.name}' created using model '{farewell_agent.model}'.")
-except Exception as e:
-    print(f"❌ Could not create Farewell agent. Check API Key ({farewell_agent.model}). Error: {e}")
-    
-    
+def gemini_rag_answer(query: str, file_search_store: Optional[str] = None) -> str:
+    """
+    Uses Gemini API File Search (managed RAG) to answer questions grounded in your File Search store.
+    Args:
+        query: user question
+        file_search_store: optional override; if not provided, uses GEMINI_FILE_SEARCH_STORE env var
+    Returns:
+        str: grounded answer text, or an error banner if misconfigured
+    """
+    store = (file_search_store or GEMINI_FILE_SEARCH_STORE or "").strip()
+    if not store:
+        return ("[RAG not configured] Set GEMINI_FILE_SEARCH_STORE env var to your File Search store name "
+                "(e.g., 'fileSearchStores/my-file-store').")
+
+    client = genai.Client()  # picks up GOOGLE_API_KEY / GEMINI_API_KEY automatically
+    try:
+        # Use dict configs (SDK accepts dicts OR typed models)
+        resp = client.models.generate_content(
+            model=MODEL_GEMINI_2_5_FLASH,
+            contents=query,
+            config={
+                "tools": [
+                    {"fileSearch": {"fileSearchStoreNames": [store]}}
+                ]
+            },
+        )
+        return resp.text or "(empty response)"
+    except Exception as e:
+        return f"[RAG error] {e!s}"
+
+print("Gemini RAG tool defined.")
+
+# ---------- Sub-agents ----------
+MODEL_FOR_AGENTS = pick_model()
+
+diagram_agent = Agent(
+    model=MODEL_FOR_AGENTS,
+    name="diagram_agent",
+    instruction=("You are the Diagram Agent. ONLY provide Mermaid diagrams when a diagram is requested. "
+                 "Output valid Mermaid code blocks with no prose."),
+    description="Handles diagram requests.",
+    tools=[say_hello],  # keeping original example tool; agent still outputs Mermaid per instruction
+)
+print(f"✅ Agent '{diagram_agent.name}' created.")
+
+farewell_agent = Agent(
+    model=MODEL_FOR_AGENTS,
+    name="farewell_agent",
+    instruction=("You are the Farewell Agent. ONLY provide a polite goodbye using the 'say_goodbye' tool "
+                 "when the user ends the conversation. Do not do anything else."),
+    description="Handles simple farewells via 'say_goodbye'.",
+    tools=[say_goodbye],
+)
+print(f"✅ Agent '{farewell_agent.name}' created.")
+
+# New: Gemini RAG agent (uses Gemini for reasoning + tool for File Search answers)
+gemini_rag_agent = Agent(
+    model=MODEL_GEMINI_2_5_FLASH,  # ensure Gemini is used for this agent even if LiteLLM is enabled elsewhere
+    name="gemini_rag_agent",
+    instruction=(
+        "You are the Gemini RAG Agent. Use the 'gemini_rag_answer' tool to answer knowledge questions grounded in the "
+        "configured File Search store. Never fabricate; if the store isn't configured or retrieval fails, state that."
+    ),
+    description="Answers knowledge/KB/doc questions using Gemini API File Search (managed RAG).",
+    tools=[gemini_rag_answer],
+)
+print(f"✅ Agent '{gemini_rag_agent.name}' created.")
+
+# ---------- Root agent ----------
 root_agent = Agent(
-    name="weather_agent_v2", # Give it a new version name
-    model=MODEL_GEMINI_2_0_FLASH,
-    description="The main coordinator agent. Handles weather requests and delegates greetings/farewells to specialists.",
-    instruction="You are the main Weather Agent coordinating a team. Your primary responsibility is to provide weather information. "
-                "Use the 'get_weather' tool ONLY for specific weather requests (e.g., 'weather in London'). "
-                "You have specialized sub-agents: "
-                "1. 'greeting_agent': Handles simple greetings like 'Hi', 'Hello'. Delegate to it for these. "
-                "2. 'farewell_agent': Handles simple farewells like 'Bye', 'See you'. Delegate to it for these. "
-                "Analyze the user's query. If it's a greeting, delegate to 'greeting_agent'. If it's a farewell, delegate to 'farewell_agent'. "
-                "If it's a weather request, handle it yourself using 'get_weather'. "
-                "For anything else, respond appropriately or state you cannot handle it.",
-    tools=[get_weather], # Root agent still needs the weather tool for its core task
-    # Key change: Link the sub-agents here!
-    sub_agents=[greeting_agent, farewell_agent]
+    name="orchestrator_agent",
+    model=MODEL_FOR_AGENTS,
+    description="Main coordinator: handles weather; delegates diagrams/farewells/RAG.",
+    instruction=(
+        "You are the main Orchestrator Agent coordinating a team. Route requests to the correct sub-agent.\n"
+        "- Use the 'get_weather' tool ONLY for specific weather requests.\n"
+        "- Sub-agents:\n"
+        "  1) 'diagram_agent': Outputs Mermaid diagrams.\n"
+        "  2) 'farewell_agent': Handles simple farewells like 'Bye', 'See you'.\n"
+        "  3) 'gemini_rag_agent': For questions that require knowledge from a document store, KB, PDF, or 'our docs'.\n"
+        "If the user asks for grounded answers from documents/KB/policies/specs—or mentions 'docs', 'kb', 'handbook', "
+        "'pdf', or 'file'—delegate to 'gemini_rag_agent'. Otherwise respond yourself or say you cannot handle it."
+    ),
+    tools=[get_weather],
+    sub_agents=[diagram_agent, farewell_agent, gemini_rag_agent],
 )
 
-# Sample queries to test the agent: 
+# ---------- Test run using ADK sessions + runner ----------
+async def main():
+    print("\n--- Testing orchestrator with a diagram request ---")
+    app_name = "root_app"
+    user_id = "local_user"
+    session_id = "test_session_1"
 
-# # Agent will give weather information for the specified cities.
-# # What's the weather in Tokyo?
-# # What is the weather like in London?
-# # Tell me the weather in New York?
+    runner = InMemoryRunner(app_name=app_name, agent=root_agent)
+    session_service: InMemorySessionService = runner.session_service  # type: ignore
+    await session_service.create_session(app_name=app_name, user_id=user_id, session_id=session_id)
 
-# # Agent will not have information for the specified city.
-# # How about Paris?  
+    # 1) Diagram test
+    user_content = types.Content(role="user", parts=[types.Part(text="draw a mermaid diagram of Agent to Agent communication using websockets")])
+    final_text: Optional[str] = None
+    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=user_content):
+        if event.is_final_response() and event.content and event.content.parts:
+            final_text = event.content.parts[0].text
+    print(f"Root Agent Response (diagram): {final_text}")
 
-# # Agent will delegate greetings to the greeting_agent.
-# # Hi there!
-# # Hello!
-# # Hello,  this is alice
+    # 2) RAG test (will return a config warning unless GEMINI_FILE_SEARCH_STORE is set and populated)
+    print("\n--- Testing orchestrator with a RAG question ---")
+    rag_query = "Summarize the onboarding policy in our KB and cite key steps."
+    user_content = types.Content(role="user", parts=[types.Part(text=rag_query)])
+    final_text = None
+    async for event in runner.run_async(user_id=user_id, session_id=session_id, new_message=user_content):
+        if event.is_final_response() and event.content and event.content.parts:
+            final_text = event.content.parts[0].text
+    print(f"Root Agent Response (RAG): {final_text}")
 
-# # Agent will delegate farewells to the farewell_agent.
-# # Bye!
-# # See you later!
-# # Thanks, bye!
+if __name__ == "__main__":
+    asyncio.run(main())
