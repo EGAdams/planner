@@ -16,8 +16,8 @@ import { ServerOrchestrator, ServerConfig } from './services/serverOrchestrator'
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const execAsync = promisify(exec);
-const PORT = process.env.ADMIN_PORT || 3000;
-const HOST = process.env.ADMIN_HOST || '127.0.0.1';
+const PORT = process.env.ADMIN_PORT || 3030;
+const HOST = process.env.ADMIN_HOST || '0.0.0.0';
 const SUDO_PASSWORD = process.env.SUDO_PASSWORD || '';
 
 interface ProcessInfo {

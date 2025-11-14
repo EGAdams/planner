@@ -15,5 +15,5 @@
     "sourceMap": true
   },
   "include": ["backend/**/*"],
-  "exclude": ["node_modules", "backend/dist"]
+  "exclude": ["node_modules", "backend/dist", "backend/__tests__"]
 }
