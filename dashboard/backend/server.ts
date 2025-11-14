@@ -44,7 +44,7 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     name: 'LiveKit Voice Agent',
     command: '/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
-    color: '#D1FAE5',
+    color: '#c5cd3eff',
     ports: [],
   },
   'pydantic-web-server': {
@@ -337,24 +337,59 @@ const server = http.createServer(async (req, res) => {
     let body = '';
     req.on('data', chunk => body += chunk.toString());
     req.on('end', async () => {
-      const { pid, port } = JSON.parse(body);
+      try {
+        // Parse and validate JSON body
+        const { pid, port } = JSON.parse(body);
 
-      let result;
-      if (pid) {
-        result = await killProcess(pid, true);
-      } else if (port) {
-        result = await killProcessOnPort(port);
-      } else {
+        // Validate that at least one parameter is provided
+        if (!pid && !port) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, message: 'Either pid or port is required' }));
+          return;
+        }
+
+        // Validate PID format if provided (must be positive integer)
+        if (pid && (!/^\d+$/.test(pid) || parseInt(pid) <= 0)) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, message: 'Invalid PID format. Must be a positive integer.' }));
+          return;
+        }
+
+        // Validate port format if provided (must be valid port number)
+        if (port && (!/^\d+$/.test(port) || parseInt(port) < 1 || parseInt(port) > 65535)) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, message: 'Invalid port number. Must be between 1 and 65535.' }));
+          return;
+        }
+
+        // Security check: Prevent killing critical system processes (PID < 1000)
+        if (pid && parseInt(pid) < 1000) {
+          res.writeHead(403, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, message: 'Cannot kill system processes (PID < 1000)' }));
+          return;
+        }
+
+        let result;
+        if (pid) {
+          result = await killProcess(pid, true);
+        } else {
+          result = await killProcessOnPort(port);
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(result));
+
+        if (result.success) {
+          await broadcastServerUpdate();
+        }
+      } catch (error: any) {
+        // Handle JSON parsing errors or other exceptions
+        console.error('Error in /api/kill:', error);
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, message: 'Either pid or port is required' }));
-        return;
-      }
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify(result));
-
-      if (result.success) {
-        await broadcastServerUpdate();
+        res.end(JSON.stringify({
+          success: false,
+          message: error.message || 'Invalid request format. Expected JSON body with pid or port.'
+        }));
       }
     });
     return;

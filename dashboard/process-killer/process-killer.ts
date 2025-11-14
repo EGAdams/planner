@@ -60,17 +60,29 @@ export class ProcessKiller extends HTMLElement {
         body: JSON.stringify({ pid, port })
       });
 
-      const result = await response.json();
-
-      if (result.success) {
-        this.lastMessage = result.message;
-        this.lastMessageType = 'success';
-      } else {
-        this.lastMessage = `Failed: ${result.message}`;
+      // Check if response is ok (status 200-299)
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({
+          success: false,
+          message: `HTTP ${response.status}: ${response.statusText}`
+        }));
+        this.lastMessage = `Failed: ${result.message || 'Unknown error'}`;
         this.lastMessageType = 'error';
+      } else {
+        const result = await response.json();
+
+        if (result.success) {
+          this.lastMessage = result.message || `Process ${pid} killed successfully`;
+          this.lastMessageType = 'success';
+        } else {
+          this.lastMessage = `Failed: ${result.message || 'Unknown error'}`;
+          this.lastMessageType = 'error';
+        }
       }
     } catch (error: any) {
-      this.lastMessage = `Error: ${error.message}`;
+      // Network error or fetch failed
+      console.error('Kill process error:', error);
+      this.lastMessage = `Network Error: ${error.message}. Check that server is running on ${this.apiUrl}`;
       this.lastMessageType = 'error';
     }
 

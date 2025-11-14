@@ -46,7 +46,7 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     name: 'LiveKit Voice Agent',
     command: 'uv run python livekit_mcp_agent.py dev',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
-    color: '#D1FAE5',
+    color: '#c5cd3eff',
     ports: [],
   },
   'pydantic-web-server': {

@@ -82,7 +82,7 @@ curl http://172.26.163.131:3030/api/servers
 
 ### `.env` - Environment Variables
 ```ini
-SUDO_PASSWORD=sep02@Th
+SUDO_PASSWORD=[ from .env file ]
 ADMIN_PORT=3030
 # ADMIN_HOST=0.0.0.0  (default, listen on all interfaces)
 ```

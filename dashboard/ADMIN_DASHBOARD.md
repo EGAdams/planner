@@ -306,7 +306,7 @@ interface ServerConfig {
 
 **Recommended color palette:**
 - `#DBEAFE` - Blue (infrastructure services)
-- `#D1FAE5` - Green (application servers)
+- `#AEEAE5` - Green (application servers)
 - `#E9D5FF` - Purple (API services)
 - `#FEF3C7` - Yellow (monitoring/utilities)
 - `#FED7AA` - Orange (databases)

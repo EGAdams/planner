@@ -50,7 +50,7 @@ The dashboard uses the `.env` file for configuration:
 ```ini
 ADMIN_PORT=3030                    # Dashboard server port
 ADMIN_HOST=127.0.0.1               # Dashboard server host
-SUDO_PASSWORD=sep02@Th             # Password for privileged operations
+SUDO_PASSWORD=             # Password for privileged operations
 ```
 
 **Status**: ✅ Already configured

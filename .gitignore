@@ -25,3 +25,4 @@ server-monitor-app/node_modules/
 .codex-collective/node_modules/
 .codex-collective/.env
 .codex-collective/tmp_mysql/
+.env
