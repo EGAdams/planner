@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard</title>
   <link rel="stylesheet" href="/styles/output.css">
 </head>
+
 <body class="bg-gray-100 min-h-screen">
   <div class="container mx-auto px-4 py-8">
     <!-- Header -->
@@ -16,6 +18,17 @@
 
     <!-- Dashboard Grid -->
     <div class="grid gap-6 mb-6">
+
+      <!-- Server Management Section -->
+      <section>
+        <server-list></server-list>
+      </section>
+
+      <!-- Port Monitor Section -->
+      <section>
+        <port-monitor></port-monitor>
+      </section>
+
       <!-- Docling Report Section -->
       <section class="rounded-3xl border border-indigo-100 bg-white p-6 shadow-sm">
         <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -26,25 +39,13 @@
               directly in your browser. Useful for quick validation and visual smoke testing.
             </p>
           </div>
-          <button
-            id="run-docling-report"
+          <button id="run-docling-report"
             class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-500/40 transition hover:scale-[1.03] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:cursor-not-allowed disabled:opacity-70"
-            type="button"
-          >
+            type="button">
             <span class="text-xl">📄</span>
             <span>Run Docling Statement Report</span>
           </button>
         </div>
-      </section>
-
-      <!-- Server Management Section -->
-      <section>
-        <server-list></server-list>
-      </section>
-
-      <!-- Port Monitor Section -->
-      <section>
-        <port-monitor></port-monitor>
       </section>
     </div>
 
@@ -65,32 +66,24 @@
   <script type="module" src="/dist/main.js"></script>
 
   <!-- Docling Report Modal -->
-  <div
-    id="docling-modal"
+  <div id="docling-modal"
     class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm px-4 py-8"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="docling-modal-title"
-  >
+    role="dialog" aria-modal="true" aria-labelledby="docling-modal-title">
     <div class="relative w-full max-w-5xl">
       <div class="relative overflow-hidden rounded-3xl border border-indigo-200/60 bg-white shadow-2xl">
         <div class="h-2 w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-        <button
-          id="docling-modal-close"
+        <button id="docling-modal-close"
           class="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-gray-600 shadow hover:bg-indigo-50 hover:text-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-          aria-label="Close Docling report"
-          type="button"
-        >
+          aria-label="Close Docling report" type="button">
           ✕
         </button>
-        <div
-          id="docling-modal-content"
-          class="max-h-[72vh] overflow-y-auto px-8 py-10 bg-gradient-to-b from-white via-white to-indigo-50"
-        >
+        <div id="docling-modal-content"
+          class="max-h-[72vh] overflow-y-auto px-8 py-10 bg-gradient-to-b from-white via-white to-indigo-50">
           <div class="flex flex-col items-center gap-4 text-center text-gray-600">
             <span class="text-3xl">📄</span>
             <p class="text-lg font-semibold">Docling parser results will appear here.</p>
-            <p class="text-sm text-gray-500">Run the report to generate a fresh analysis of the January ROL statement.</p>
+            <p class="text-sm text-gray-500">Run the report to generate a fresh analysis of the January ROL statement.
+            </p>
           </div>
         </div>
       </div>
@@ -155,11 +148,10 @@
               </div>
             </div>
           </div>
-          ${
-            details
-              ? `<pre class="max-h-60 overflow-y-auto rounded-xl bg-slate-900/90 p-4 text-sm text-rose-100 shadow-inner whitespace-pre-wrap">${escapeHtml(details)}</pre>`
-              : ''
-          }
+          ${details
+          ? `<pre class="max-h-60 overflow-y-auto rounded-xl bg-slate-900/90 p-4 text-sm text-rose-100 shadow-inner whitespace-pre-wrap">${escapeHtml(details)}</pre>`
+          : ''
+        }
         </div>
       `;
     };
@@ -306,4 +298,5 @@
     });
   </script>
 </body>
+
 </html>

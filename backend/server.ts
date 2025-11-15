@@ -55,6 +55,13 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     color: '#E9D5FF',
     ports: [8001],
   },
+  'api-server': {
+    name: 'Office Assistant API',
+    command: '/home/adamsl/planner/venv/bin/python nonprofit_finance_db/api_server.py',
+    cwd: '/home/adamsl/planner/',
+    color: '#D1FAE5',
+    ports: [8080],
+  },
 };
 
 // Initialize orchestrator
