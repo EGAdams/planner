@@ -6,7 +6,7 @@
 import { eventBus } from '../event-bus/event-bus.js';
 
 export class ProcessKiller extends HTMLElement {
-  private apiUrl: string = 'http://localhost:3030';
+  private apiUrl: string = '';
   private isKilling: boolean = false;
   private lastMessage: string = '';
   private lastMessageType: 'success' | 'error' | '' = '';
@@ -21,6 +21,10 @@ export class ProcessKiller extends HTMLElement {
     const apiUrl = this.getAttribute('api-url');
     if (apiUrl) {
       this.apiUrl = apiUrl;
+    } else {
+      // Use current origin if no API URL is specified
+      // The dashboard backend runs on the same host and port as the frontend
+      this.apiUrl = `${window.location.protocol}//${window.location.host}`;
     }
 
     this.setupEventListeners();

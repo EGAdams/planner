@@ -1,1 +1,12 @@
-{}
+{
+  "api-server": {
+    "id": "api-server",
+    "command": "/home/adamsl/planner/venv/bin/python nonprofit_finance_db/api_server.py",
+    "cwd": "/home/adamsl/planner/",
+    "startTime": "2025-11-15T21:46:01.644Z",
+    "status": "running",
+    "ports": [
+      8080
+    ]
+  }
+}

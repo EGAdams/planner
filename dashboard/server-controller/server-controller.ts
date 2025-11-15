@@ -14,7 +14,7 @@ interface Server {
 }
 
 export class ServerController extends HTMLElement {
-  private apiUrl: string = 'http://localhost:3030';
+  private apiUrl: string = '';
   private serverId: string = '';
   private server: Server | null = null;
   private isLoading: boolean = false;
@@ -33,6 +33,10 @@ export class ServerController extends HTMLElement {
     const apiUrl = this.getAttribute('api-url');
     if (apiUrl) {
       this.apiUrl = apiUrl;
+    } else {
+      // Use current origin if no API URL is specified
+      // The dashboard backend runs on the same host and port as the frontend
+      this.apiUrl = `${window.location.protocol}//${window.location.host}`;
     }
 
     this.serverId = this.getAttribute('server-id') || '';
