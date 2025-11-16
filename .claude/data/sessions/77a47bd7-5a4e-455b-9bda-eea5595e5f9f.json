@@ -1,0 +1,7 @@
+{
+  "session_id": "77a47bd7-5a4e-455b-9bda-eea5595e5f9f",
+  "prompts": [
+    "Run git ls-files to understand the codebase.",
+    "Run git ls-files to understand the codebase."
+  ]
+}
