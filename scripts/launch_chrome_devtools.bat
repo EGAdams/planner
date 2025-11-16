@@ -36,7 +36,7 @@ if errorlevel 1 (
   echo Chrome started with remote debugging port %PORT%.
   echo Leave this window running while you connect from WSL using:
   echo   export MCP_BROWSER_URL=http://127.0.0.1:%PORT%
-  echo   npx chrome-devtools-mcp@latest --browser-url "%%MCP_BROWSER_URL%%"
+  echo   npx -y chrome-devtools-mcp --browser-url "%%MCP_BROWSER_URL%%"
 )
 
 endlocal

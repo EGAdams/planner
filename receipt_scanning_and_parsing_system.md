@@ -1,4 +1,4 @@
-# EXPERT REQUEST: Receipt Scanning & Parsing System Implementation
+# Receipt Scanning & Parsing System Implementation
 
 **Project:** Nonprofit Finance Database with Receipt Scanning Integration
 **Date Requested:** November 14, 2025

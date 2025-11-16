@@ -1,4 +1,5 @@
-# Handoff Document: Receipt Parser Builder - November 16, 2025
+# Handoff Document: Receipt Parser Builder
+## Date: November 16, 2025
 
 ## Project Overview
 This project is a Python-based system for parsing and integrating bank statements for nonprofit organizations, with a command-line interface (CLI) for importing bank statements, detecting duplicates, validating data, and automatically categorizing transactions. The current focus is on implementing a new feature for receipt scanning and categorization. The application uses a Python FastAPI backend, a MySQL database, and a JavaScript frontend with web components. The receipt scanning feature will leverage the Google Gemini API for OCR and data extraction.

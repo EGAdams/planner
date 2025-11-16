@@ -72,6 +72,10 @@ EOF
 "${POWERSHELL[@]}" "& '${tmp_ps1}' -Port ${PORT} -ProfileName '${PROFILE_DIR_NAME}'" >/dev/null
 
 WSL_HOME="$(eval echo ~${SUDO_USER:-$USER})"
+WSL_NAMESERVER=""
+if [[ -r /etc/resolv.conf ]]; then
+  WSL_NAMESERVER="$(awk '/^nameserver/ { print $2; exit }' /etc/resolv.conf 2>/dev/null || true)"
+fi
 cat <<EOF
 Chrome has been started on Windows with remote debugging port ${PORT}.
 
@@ -79,9 +83,15 @@ In your WSL shell, you can now run:
 
   export MCP_BROWSER_URL=http://127.0.0.1:${PORT}
   cd /home/adamsl/planner
-  npx chrome-devtools-mcp@latest --browser-url "\${MCP_BROWSER_URL}"
+  npx -y chrome-devtools-mcp --browser-url "\${MCP_BROWSER_URL}"
 
 This reuses the Windows browser and avoids the sandbox limitations inside WSL.
 The first npx call will download the package if required.
 Chrome profile data is isolated in %LOCALAPPDATA%\\${PROFILE_DIR_NAME}.
 EOF
+
+if [[ -n "${WSL_NAMESERVER}" ]]; then
+  echo
+  echo "WSL tip: export MCP_BROWSER_URL=http://${WSL_NAMESERVER}:${PORT}"
+  echo "The nameserver IP above is the Windows host (often 172.*) that WSL can reach."
+fi

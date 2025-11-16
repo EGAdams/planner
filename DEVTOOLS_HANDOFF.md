@@ -36,6 +36,8 @@ If the port test fails, rerun the `.bat` file (as admin) to recreate the firewal
 
 Open `http://localhost:9222/json/version` in any Windows browser tab. You should see JSON containing a `webSocketDebuggerUrl`. If you see an error page instead, let Adam know.
 
+> **WSL tip:** When connecting from WSL, `localhost` may not reach the Windows host. Inspect `/etc/resolv.conf` in WSL for the nameserver entry (typically a `172.*` address) and set `MCP_BROWSER_URL=http://<nameserver>:9222` before running `npx chrome-devtools-mcp ...`.
+
 ## 4. Keep Chrome Running
 
 Leave the Chrome instance open once the checks pass. Adam will connect from WSL using MCP and will tell you when you can close it.
