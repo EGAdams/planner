@@ -205,6 +205,12 @@ pkill -f api_server.py
 pkill -9 -f api_server.py
 ```
 
+## Notes from Recent Debug
+
+- Before running `./start_server.sh`, install the pinned dependencies in `venv` (`pip install -r requirements.txt`) so `mysql-connector-python`, `python-dotenv`, and `uvicorn` are available.
+- When port `8080` is reported as already in use, run `lsof -i :8080` (or `ss -tlnp | grep :8080`) and kill the listed PID(s) before restarting the server.
+- `./start_server.sh` launches a long-lived Uvicorn process, so run it in a dedicated terminal (or background it with `nohup`/`tmux`) to avoid the calling shell timing out waiting for completion.
+
 ## Server Configuration
 
 ### Environment Variables

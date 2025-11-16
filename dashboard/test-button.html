@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Server Controller Button Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .test-section {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .test-results {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 4px;
+    }
+    .pass { color: green; font-weight: bold; }
+    .fail { color: red; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Server Controller Button Test</h1>
+
+  <div class="test-section">
+    <h2>Test 1: Basic Button Rendering</h2>
+    <p>Expected: Button should show "Start" text</p>
+    <server-controller server-id="test-server-1"></server-controller>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 2: Click Response</h2>
+    <p>Click the button below. It should immediately show "Loading..." state.</p>
+    <server-controller server-id="test-server-2"></server-controller>
+    <div class="test-results">
+      <p>Manual Test: Click button and verify "Loading..." appears</p>
+      <p id="click-result">Not tested yet</p>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 3: Event Bus Integration</h2>
+    <p>This button should update when server state changes via EventBus</p>
+    <server-controller server-id="api-server"></server-controller>
+    <button onclick="simulateServerUpdate()">Simulate Server Running</button>
+    <button onclick="simulateServerStopped()">Simulate Server Stopped</button>
+  </div>
+
+  <div class="test-section">
+    <h2>Test 4: Console Debug</h2>
+    <p>Open DevTools console and click the button. Check for errors.</p>
+    <server-controller server-id="debug-server" api-url="http://localhost:3030"></server-controller>
+  </div>
+
+  <script type="module">
+    import { eventBus } from './public/dist/event-bus/event-bus.js';
+    import './public/dist/server-controller/server-controller.js';
+
+    // Make eventBus available globally for testing
+    window.eventBus = eventBus;
+
+    // Test helper functions
+    window.simulateServerUpdate = function() {
+      eventBus.emit('servers-updated', [
+        { id: 'api-server', name: 'API Server', running: true, orphaned: false }
+      ]);
+    };
+
+    window.simulateServerStopped = function() {
+      eventBus.emit('servers-updated', [
+        { id: 'api-server', name: 'API Server', running: false, orphaned: false }
+      ]);
+    };
+
+    // Monitor button clicks
+    document.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON' && e.target.textContent.includes('Start')) {
+        console.log('Start button clicked at:', new Date().toISOString());
+        setTimeout(() => {
+          const result = document.querySelector('#click-result');
+          if (result) {
+            const buttons = document.querySelectorAll('server-controller');
+            let foundLoading = false;
+            buttons.forEach(btn => {
+              const shadow = btn.shadowRoot;
+              if (shadow) {
+                const button = shadow.querySelector('button');
+                if (button && button.textContent.includes('Loading')) {
+                  foundLoading = true;
+                }
+              }
+            });
+            if (foundLoading) {
+              result.innerHTML = '<span class="pass">PASS: Loading state detected!</span>';
+            } else {
+              result.innerHTML = '<span class="fail">FAIL: Loading state not shown</span>';
+            }
+          }
+        }, 100);
+      }
+    });
+
+    console.log('Test page loaded successfully');
+    console.log('EventBus available:', window.eventBus);
+  </script>
+</body>
+</html>

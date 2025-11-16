@@ -35,7 +35,7 @@ interface ProcessInfo {
 const SERVER_REGISTRY: Record<string, ServerConfig> = {
   'api-server': {
     name: 'Office Assistant API',
-    command: '/home/adamsl/planner/venv/bin/python nonprofit_finance_db/api_server.py',
+    command: '/home/adamsl/planner/.venv/bin/python nonprofit_finance_db/api_server.py',
     cwd: '/home/adamsl/planner/',
     color: '#D1FAE5',
     ports: [8080],
@@ -49,14 +49,14 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
   },
   'livekit-voice-agent': {
     name: 'LiveKit Voice Agent',
-    command: '/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev',
+    command: '/usr/bin/python3 livekit_mcp_agent.py dev',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
     color: '#c5cd3eff',
     ports: [],
   },
   'pydantic-web-server': {
     name: 'Pydantic Web Server',
-    command: '/home/adamsl/planner/venv/bin/python pydantic_mcp_agent_endpoint.py',
+    command: '/usr/bin/python3 pydantic_mcp_agent_endpoint.py',
     cwd: '/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version',
     color: '#E9D5FF',
     ports: [8001],
@@ -264,7 +264,7 @@ const server = http.createServer(async (req, res) => {
     const ports = await getListeningPorts();
     const servers = await orchestrator.getServerStatus(ports);
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(servers));
+    res.end(JSON.stringify({ success: true, servers }));
     return;
   }
 

@@ -19,6 +19,7 @@ export class ServerController extends HTMLElement {
   private server: Server | null = null;
   private isLoading: boolean = false;
   private unsubscribe: (() => void) | null = null;
+  private buttonClickHandler: (() => void) | null = null;
 
   static get observedAttributes() {
     return ['server-id'];
@@ -27,6 +28,8 @@ export class ServerController extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    // Bind the toggle method to preserve 'this' context
+    this.buttonClickHandler = () => this.toggleServer();
   }
 
   connectedCallback() {
@@ -40,8 +43,33 @@ export class ServerController extends HTMLElement {
     }
 
     this.serverId = this.getAttribute('server-id') || '';
+
+    // Initialize server data - check if we need to fetch current servers
+    // If this component is created after servers have loaded, we won't have data yet
+    // We'll get it when the next 'servers-updated' event fires
+    console.log('ServerController connected', { serverId: this.serverId, apiUrl: this.apiUrl });
+
     this.setupEventListeners();
+    this.fetchInitialServerState();
     this.render();
+  }
+
+  private async fetchInitialServerState() {
+    // Fetch current server state on initialization
+    try {
+      const response = await fetch(`${this.apiUrl}/api/servers`);
+      const result = await response.json();
+
+      if (result.success && result.servers) {
+        const servers = Array.isArray(result.servers) ? result.servers : Object.values(result.servers || {});
+        this.server = servers.find((s: Server) => s.id === this.serverId) || null;
+        console.log('Initial server state fetched', { serverId: this.serverId, server: this.server });
+        this.render();
+      }
+    } catch (error) {
+      console.error('Failed to fetch initial server state:', error);
+      // Continue - EventBus updates will still work
+    }
   }
 
   disconnectedCallback() {
@@ -69,7 +97,12 @@ export class ServerController extends HTMLElement {
   }
 
   private async toggleServer() {
-    if (this.isLoading || !this.server) return;
+    console.log('toggleServer called', { isLoading: this.isLoading, server: this.server });
+
+    if (this.isLoading || !this.server) {
+      console.warn('toggleServer aborted - loading or no server', { isLoading: this.isLoading, hasServer: !!this.server });
+      return;
+    }
 
     // If server is orphaned, force kill it
     if (this.server.orphaned && this.server.orphanedPid) {
@@ -78,6 +111,7 @@ export class ServerController extends HTMLElement {
     }
 
     const action = this.server.running ? 'stop' : 'start';
+    console.log('Setting isLoading to true, action:', action);
     this.isLoading = true;
     this.render();
 
@@ -158,6 +192,12 @@ export class ServerController extends HTMLElement {
       buttonClass = 'btn-success';
     }
 
+    // Remove old event listener before re-rendering
+    const oldButton = this.shadowRoot.querySelector('button');
+    if (oldButton && this.buttonClickHandler) {
+      oldButton.removeEventListener('click', this.buttonClickHandler);
+    }
+
     this.shadowRoot.innerHTML = `
       <style>
         :host {
@@ -230,9 +270,13 @@ export class ServerController extends HTMLElement {
       </button>
     `;
 
+    // Attach event listener to the new button element
     const button = this.shadowRoot.querySelector('button');
-    if (button) {
-      button.addEventListener('click', () => this.toggleServer());
+    if (button && this.buttonClickHandler) {
+      console.log('Attaching click handler to button', { serverId: this.serverId, buttonText });
+      button.addEventListener('click', this.buttonClickHandler);
+    } else {
+      console.error('Failed to attach click handler', { hasButton: !!button, hasHandler: !!this.buttonClickHandler });
     }
   }
 }

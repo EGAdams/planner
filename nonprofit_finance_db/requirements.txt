@@ -38,6 +38,7 @@ python-json-logger==2.0.7
 flask==3.0.0
 flask-cors==4.0.0
 gunicorn==21.2.0
+uvicorn==0.38.0
 
 # Data export dependencies
 xlsxwriter==3.1.9
