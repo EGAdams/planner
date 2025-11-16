@@ -8,6 +8,9 @@ _pool: Optional[MySQLConnectionPool] = None
 def _ensure_pool() -> MySQLConnectionPool:
     global _pool
     if _pool is None:
+        print(f"Creating MySQL connection pool for: "
+              f"host={settings.host}, port={settings.port}, "
+              f"user={settings.user}, database={settings.database}")
         _pool = MySQLConnectionPool(
             pool_name="np_pool",
             pool_size=settings.pool_size,

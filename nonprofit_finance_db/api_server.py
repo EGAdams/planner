@@ -27,6 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app.db import query_all, query_one, execute
+from app.api.receipt_endpoints import router as receipt_router
 
 app = FastAPI(title="Daily Expense Categorizer API")
 
@@ -42,6 +43,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(receipt_router, prefix="/api")
 
 if FRONTEND_DIR.is_dir():
     app.mount(
@@ -69,7 +72,7 @@ if OFFICE_ASSISTANT_DIR.is_dir():
 class CategoryUpdate(BaseModel):
     category_id: Optional[int] = None
 
-class Transaction(BaseModel):
+class Expense(BaseModel):
     id: int
     date: str
     vendor: str
@@ -106,13 +109,13 @@ def convert_value(val):
 async def root():
     return {"message": "Daily Expense Categorizer API", "status": "running"}
 
-@app.get("/api/transactions", response_model=List[Transaction])
-async def get_transactions(
+@app.get("/api/expenses", response_model=List[Expense])
+async def get_expenses(
     start_date: Optional[str] = None,
     end_date: Optional[str] = None
 ):
     """
-    Get all transactions (expenses) with optional date filtering
+    Get all expenses with optional date filtering
     Query params:
     - start_date: YYYY-MM-DD (optional)
     - end_date: YYYY-MM-DD (optional)
@@ -145,40 +148,42 @@ async def get_transactions(
                 current_id = cat.get('parent_id')
             return ' / '.join(path)
 
-        # Build SQL query for transactions
+        # Build SQL query for expenses
         sql = """
             SELECT
-                t.id,
-                t.transaction_date as date,
-                t.description as vendor,
-                ABS(t.amount) as amount,
-                t.category_id,
-                COALESCE(t.transaction_type, '') as method,
-                '' as paid_by
-            FROM transactions t
+                e.id,
+                e.expense_date as date,
+                e.description as vendor,
+                e.amount,
+                e.category_id,
+                e.method,
+                c.name as paid_by
+            FROM expenses e
+            LEFT JOIN contacts c ON e.paid_by_contact_id = c.id
         """
 
-        conditions = ["t.transaction_type = 'CREDIT'"]  # Only show expenses (transactions marked as CREDIT in your DB)
+        conditions = []
         params = []
 
         if start_date:
-            conditions.append("t.transaction_date >= %s")
+            conditions.append("e.expense_date >= %s")
             params.append(start_date)
 
         if end_date:
-            conditions.append("t.transaction_date <= %s")
+            conditions.append("e.expense_date <= %s")
             params.append(end_date)
 
-        sql += " WHERE " + " AND ".join(conditions)
+        if conditions:
+            sql += " WHERE " + " AND ".join(conditions)
 
-        sql += " ORDER BY t.transaction_date, t.id"
+        sql += " ORDER BY e.expense_date, e.id"
 
         rows = query_all(sql, tuple(params))
 
-        # Convert rows to transaction format with full category path
-        transactions = []
+        # Convert rows to expense format with full category path
+        expenses = []
         for row in rows:
-            transactions.append({
+            expenses.append({
                 "id": row['id'],
                 "date": convert_value(row['date']),
                 "vendor": row['vendor'] or "",
@@ -189,7 +194,7 @@ async def get_transactions(
                 "paid_by": row['paid_by'] or ""
             })
 
-        return transactions
+        return expenses
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -204,32 +209,32 @@ async def get_categories():
             WHERE kind = 'EXPENSE' AND is_active = 1
             ORDER BY parent_id, name
         """
-
+        print(f"Executing SQL for categories: {sql}")
         rows = query_all(sql, ())
-
+        print(f"get_categories returned {len(rows)} rows.")
         return [{"id": row['id'], "name": row['name'], "parent_id": row.get('parent_id')} for row in rows]
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.put("/api/transactions/{transaction_id}/category")
-async def update_category(transaction_id: int, update: CategoryUpdate):
+@app.put("/api/expenses/{expense_id}/category")
+async def update_expense_category(expense_id: int, update: CategoryUpdate):
     """
-    Update the category for a transaction
+    Update the category for an expense
     Body: {"category_id": 123}
     """
     try:
-        # Check if transaction exists
-        transaction = query_one("SELECT id FROM transactions WHERE id = %s", (transaction_id,))
+        # Check if expense exists
+        expense = query_one("SELECT id FROM expenses WHERE id = %s", (expense_id,))
 
-        if not transaction:
-            raise HTTPException(status_code=404, detail="Transaction not found")
+        if not expense:
+            raise HTTPException(status_code=404, detail="Expense not found")
 
         # Update the category
-        execute("UPDATE transactions SET category_id = %s WHERE id = %s",
-                (update.category_id, transaction_id))
+        execute("UPDATE expenses SET category_id = %s WHERE id = %s",
+                (update.category_id, expense_id))
 
-        return {"success": True, "transaction_id": transaction_id}
+        return {"success": True, "expense_id": expense_id}
 
     except HTTPException:
         raise
@@ -493,9 +498,9 @@ if __name__ == "__main__":
     print("   Main App:         http://localhost:8080/")
     print("   API Documentation: http://localhost:8080/docs")
     print("   API Endpoints:")
-    print("   - GET  /api/transactions")
+    print("   - GET  /api/expenses")
     print("   - GET  /api/categories")
-    print("   - PUT  /api/transactions/<id>/category")
+    print("   - PUT  /api/expenses/<id>/category")
     print("   - GET  /api/recent-downloads")
     print("   - POST /api/import-pdf")
     if FRONTEND_DIR.is_dir():

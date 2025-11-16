@@ -173,14 +173,14 @@ class TestDatabaseConnectivity:
         assert results is not None, "query_all returned None"
         assert len(results) == 2, f"Expected 2 results, got {len(results)}"
 
-    def test_transactions_table_exists(self):
-        """Test that transactions table exists and is accessible"""
+    def test_expenses_table_exists(self):
+        """Test that expenses table exists and is accessible"""
         result = query_one(
             "SELECT COUNT(*) as count FROM information_schema.tables "
-            "WHERE table_schema = %s AND table_name = 'transactions'",
+            "WHERE table_schema = %s AND table_name = 'expenses'",
             (settings.database,)
         )
-        assert result["count"] == 1, "transactions table does not exist"
+        assert result["count"] == 1, "expenses table does not exist"
 
     def test_categories_table_exists(self):
         """Test that categories table exists and is accessible"""
@@ -199,23 +199,23 @@ class TestDatabaseConnectivity:
 class TestAPIEndpointsLive:
     """Test that API endpoints work with live database"""
 
-    def test_transactions_endpoint_accessible(self, wait_for_api_server, api_server_url):
+    def test_expenses_endpoint_accessible(self, wait_for_api_server, api_server_url):
         """
-        CRITICAL TEST: Transactions endpoint must be accessible
+        CRITICAL TEST: Expenses endpoint must be accessible
         This addresses: Frontend shows "Showing sample data" message
         """
-        response = requests.get(f"{api_server_url}/api/transactions", timeout=API_TIMEOUT)
+        response = requests.get(f"{api_server_url}/api/expenses", timeout=API_TIMEOUT)
         assert response.status_code == 200, \
-            f"Transactions endpoint returned {response.status_code}"
+            f"Expenses endpoint returned {response.status_code}"
 
-    def test_transactions_endpoint_returns_json(self, wait_for_api_server, api_server_url):
-        """Test that transactions endpoint returns valid JSON"""
-        response = requests.get(f"{api_server_url}/api/transactions", timeout=API_TIMEOUT)
+    def test_expenses_endpoint_returns_json(self, wait_for_api_server, api_server_url):
+        """Test that expenses endpoint returns valid JSON"""
+        response = requests.get(f"{api_server_url}/api/expenses", timeout=API_TIMEOUT)
         assert response.headers["content-type"] == "application/json", \
-            "Transactions endpoint should return JSON"
+            "Expenses endpoint should return JSON"
 
         data = response.json()
-        assert isinstance(data, list), "Transactions endpoint should return a list"
+        assert isinstance(data, list), "Expenses endpoint should return a list"
 
     def test_categories_endpoint_accessible(self, wait_for_api_server, api_server_url):
         """Test that categories endpoint is accessible"""
@@ -246,23 +246,23 @@ class TestAPIEndpointsLive:
 class TestCategoryUpdateLive:
     """Test category update functionality with live API"""
 
-    def test_category_update_endpoint_exists(self, wait_for_api_server, api_server_url):
+    def test_expense_category_update_endpoint_exists(self, wait_for_api_server, api_server_url):
         """
         CRITICAL TEST: Category update endpoint must exist
         This addresses: "Failed to update category: Failed to fetch"
         """
-        # Get a test transaction first
-        response = requests.get(f"{api_server_url}/api/transactions", timeout=API_TIMEOUT)
-        transactions = response.json()
+        # Get a test expense first
+        response = requests.get(f"{api_server_url}/api/expenses", timeout=API_TIMEOUT)
+        expenses = response.json()
 
-        if len(transactions) == 0:
-            pytest.skip("No transactions in database to test update")
+        if len(expenses) == 0:
+            pytest.skip("No expenses in database to test update")
 
-        transaction_id = transactions[0]["id"]
+        expense_id = expenses[0]["id"]
 
         # Attempt to update (we'll test actual update in next test)
         response = requests.put(
-            f"{api_server_url}/api/transactions/{transaction_id}/category",
+            f"{api_server_url}/api/expenses/{expense_id}/category",
             json={"category_id": None},
             timeout=API_TIMEOUT
         )
@@ -275,16 +275,16 @@ class TestCategoryUpdateLive:
         assert response.status_code in [200, 400, 422, 500], \
             f"Unexpected status code {response.status_code}"
 
-    def test_category_update_with_valid_data(self, wait_for_api_server, api_server_url):
+    def test_expense_category_update_with_valid_data(self, wait_for_api_server, api_server_url):
         """Test that category can be updated successfully"""
-        # Get transactions
-        response = requests.get(f"{api_server_url}/api/transactions", timeout=API_TIMEOUT)
-        transactions = response.json()
+        # Get expenses
+        response = requests.get(f"{api_server_url}/api/expenses", timeout=API_TIMEOUT)
+        expenses = response.json()
 
-        if len(transactions) == 0:
-            pytest.skip("No transactions in database to test update")
+        if len(expenses) == 0:
+            pytest.skip("No expenses in database to test update")
 
-        transaction_id = transactions[0]["id"]
+        expense_id = expenses[0]["id"]
 
         # Get categories
         response = requests.get(f"{api_server_url}/api/categories", timeout=API_TIMEOUT)
@@ -297,7 +297,7 @@ class TestCategoryUpdateLive:
 
         # Update category
         response = requests.put(
-            f"{api_server_url}/api/transactions/{transaction_id}/category",
+            f"{api_server_url}/api/expenses/{expense_id}/category",
             json={"category_id": category_id},
             timeout=API_TIMEOUT
         )
@@ -309,18 +309,18 @@ class TestCategoryUpdateLive:
         assert "success" in data, "Response missing 'success' field"
         assert data["success"] is True, "Category update reported failure"
 
-    def test_category_update_returns_json(self, wait_for_api_server, api_server_url):
+    def test_expense_category_update_returns_json(self, wait_for_api_server, api_server_url):
         """Test that category update returns proper JSON response"""
-        response = requests.get(f"{api_server_url}/api/transactions", timeout=API_TIMEOUT)
-        transactions = response.json()
+        response = requests.get(f"{api_server_url}/api/expenses", timeout=API_TIMEOUT)
+        expenses = response.json()
 
-        if len(transactions) == 0:
-            pytest.skip("No transactions in database")
+        if len(expenses) == 0:
+            pytest.skip("No expenses in database")
 
-        transaction_id = transactions[0]["id"]
+        expense_id = expenses[0]["id"]
 
         response = requests.put(
-            f"{api_server_url}/api/transactions/{transaction_id}/category",
+            f"{api_server_url}/api/expenses/{expense_id}/category",
             json={"category_id": None},
             timeout=API_TIMEOUT
         )
@@ -344,7 +344,7 @@ class TestCORSConfiguration:
         # Make request with Origin header (simulates frontend request)
         headers = {"Origin": "http://localhost:8081"}
         response = requests.get(
-            f"{api_server_url}/api/transactions",
+            f"{api_server_url}/api/expenses",
             headers=headers,
             timeout=API_TIMEOUT
         )
@@ -376,7 +376,7 @@ class TestCORSConfiguration:
         }
 
         response = requests.options(
-            f"{api_server_url}/api/transactions/1/category",
+            f"{api_server_url}/api/expenses/1/category",
             headers=headers,
             timeout=API_TIMEOUT
         )
@@ -410,10 +410,10 @@ class TestCORSConfiguration:
 class TestErrorHandlingLive:
     """Test error handling and fallback behavior"""
 
-    def test_invalid_transaction_id_returns_404(self, wait_for_api_server, api_server_url):
-        """Test that updating non-existent transaction returns proper error"""
+    def test_invalid_expense_id_returns_404(self, wait_for_api_server, api_server_url):
+        """Test that updating non-existent expense returns proper error"""
         response = requests.put(
-            f"{api_server_url}/api/transactions/999999/category",
+            f"{api_server_url}/api/expenses/999999/category",
             json={"category_id": 1},
             timeout=API_TIMEOUT
         )
@@ -421,10 +421,10 @@ class TestErrorHandlingLive:
         assert response.status_code == 404, \
             f"Expected 404 for invalid transaction, got {response.status_code}"
 
-    def test_malformed_json_returns_422(self, wait_for_api_server, api_server_url):
-        """Test that malformed JSON returns proper error"""
+    def test_malformed_json_for_expense_returns_422(self, wait_for_api_server, api_server_url):
+        """Test that malformed JSON returns proper error for expense update"""
         response = requests.put(
-            f"{api_server_url}/api/transactions/1/category",
+            f"{api_server_url}/api/expenses/1/category",
             data="invalid json",
             headers={"Content-Type": "application/json"},
             timeout=API_TIMEOUT
@@ -439,11 +439,11 @@ class TestErrorHandlingLive:
         # We can't actually disconnect the database in live tests
         # So we verify the error handling path in the code
 
-        from api_server import get_transactions
+        from api_server import get_expenses
         import inspect
 
         # Check that error handling exists in the endpoint
-        source = inspect.getsource(get_transactions)
+        source = inspect.getsource(get_expenses)
         assert "except" in source, "get_transactions should have exception handling"
         assert "HTTPException" in source, "get_transactions should raise HTTPException"
 
@@ -507,9 +507,9 @@ class TestHealthChecks:
 class TestFrontendIntegration:
     """Test API from frontend perspective to catch integration issues"""
 
-    def test_frontend_workflow_load_transactions(self, wait_for_api_server, api_server_url):
+    def test_frontend_workflow_load_expenses(self, wait_for_api_server, api_server_url):
         """
-        Simulate frontend workflow: Load transactions
+        Simulate frontend workflow: Load expenses
         This is what daily_expense_categorizer.html does on page load
         """
         # Frontend fetches categories first
@@ -520,35 +520,35 @@ class TestFrontendIntegration:
         assert categories_response.status_code == 200, \
             "Frontend cannot load categories"
 
-        # Then fetches transactions
-        transactions_response = requests.get(
-            f"{api_server_url}/api/transactions",
+        # Then fetches expenses
+        expenses_response = requests.get(
+            f"{api_server_url}/api/expenses",
             timeout=API_TIMEOUT
         )
-        assert transactions_response.status_code == 200, \
-            "Frontend cannot load transactions"
+        assert expenses_response.status_code == 200, \
+            "Frontend cannot load expenses"
 
         # Should not show "API unavailable" message
         categories = categories_response.json()
-        transactions = transactions_response.json()
+        expenses = expenses_response.json()
 
         assert isinstance(categories, list), "Categories should be a list"
-        assert isinstance(transactions, list), "Transactions should be a list"
+        assert isinstance(expenses, list), "Expenses should be a list"
 
-    def test_frontend_workflow_categorize_transaction(self, wait_for_api_server, api_server_url):
+    def test_frontend_workflow_categorize_expense(self, wait_for_api_server, api_server_url):
         """
-        Simulate frontend workflow: User categorizes a transaction
+        Simulate frontend workflow: User categorizes an expense
         This addresses: "Failed to update category: Failed to fetch"
         """
-        # Get transactions
-        transactions_response = requests.get(
-            f"{api_server_url}/api/transactions",
+        # Get expenses
+        expenses_response = requests.get(
+            f"{api_server_url}/api/expenses",
             timeout=API_TIMEOUT
         )
-        transactions = transactions_response.json()
+        expenses = expenses_response.json()
 
-        if len(transactions) == 0:
-            pytest.skip("No transactions to test categorization")
+        if len(expenses) == 0:
+            pytest.skip("No expenses to test categorization")
 
         # Get categories
         categories_response = requests.get(
@@ -560,12 +560,12 @@ class TestFrontendIntegration:
         if len(categories) == 0:
             pytest.skip("No categories to test categorization")
 
-        transaction_id = transactions[0]["id"]
+        expense_id = expenses[0]["id"]
         category_id = categories[0]["id"]
 
-        # User categorizes transaction
+        # User categorizes expense
         update_response = requests.put(
-            f"{api_server_url}/api/transactions/{transaction_id}/category",
+            f"{api_server_url}/api/expenses/{expense_id}/category",
             json={"category_id": category_id},
             headers={"Content-Type": "application/json"},
             timeout=API_TIMEOUT
@@ -578,21 +578,21 @@ class TestFrontendIntegration:
         result = update_response.json()
         assert result["success"] is True, "Category update should report success"
 
-    def test_frontend_workflow_reload_after_update(self, wait_for_api_server, api_server_url):
+    def test_frontend_workflow_reload_expenses_after_update(self, wait_for_api_server, api_server_url):
         """
         Simulate frontend workflow: Reload data after categorization
-        Frontend calls reloadTransactions() after successful update
+        Frontend calls reloadExpenses() after successful update
         """
-        # Reload transactions (like frontend does)
+        # Reload expenses (like frontend does)
         response = requests.get(
-            f"{api_server_url}/api/transactions",
+            f"{api_server_url}/api/expenses",
             headers={"Cache-Control": "no-store"},
             timeout=API_TIMEOUT
         )
 
-        assert response.status_code == 200, "Failed to reload transactions"
-        transactions = response.json()
-        assert isinstance(transactions, list), "Reloaded data should be a list"
+        assert response.status_code == 200, "Failed to reload expenses"
+        expenses = response.json()
+        assert isinstance(expenses, list), "Reloaded data should be a list"
 
 
 # ============================================================================

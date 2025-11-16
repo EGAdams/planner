@@ -1,6 +1,47 @@
 import mysql.connector
 from app.config import settings
 
+
+def main():
+    print(f"Attempting to connect to MySQL at {settings.host}:{settings.port} as user {settings.user}")
+    # Connect without specifying a database to allow DROP/CREATE DATABASE
+    root_cnx = mysql.connector.connect(
+        host=settings.host, port=settings.port,
+        user=settings.user, password=settings.password,
+        autocommit=True,
+    )
+    cur = root_cnx.cursor()
+    try:
+        # Execute DROP and CREATE DATABASE separately
+        cur.execute(f"DROP DATABASE IF EXISTS {settings.database};")
+        cur.execute(f"CREATE DATABASE {settings.database} CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;")
+        print(f"✅ Database '{settings.database}' dropped and recreated.")
+    finally:
+        cur.close()
+        root_cnx.close()
+
+    # Reconnect with the newly created database selected
+    print(f"Reconnecting to MySQL at {settings.host}:{settings.port} as user {settings.user} for database {settings.database}")
+    db_cnx = mysql.connector.connect(
+        host=settings.host, port=settings.port,
+        user=settings.user, password=settings.password,
+        database=settings.database, # Specify the database now
+        autocommit=True,
+    )
+    cur = db_cnx.cursor()
+    try:
+        # Execute the rest of the schema
+        for stmt in [s.strip() for s in SCHEMA_SQL.split(';')]:
+            if not stmt or stmt.startswith('--') or stmt.startswith('DROP DATABASE') or stmt.startswith('CREATE DATABASE'):
+                continue
+            cur.execute(stmt)
+        print(f"✅ Schema applied to '{settings.database}'.")
+    finally:
+        cur.close()
+        db_cnx.close()
+
+    print("✅ Database initialized: nonprofit_finance")
+
 SCHEMA_SQL = r"""
 -- Nonprofit finance starter DB (MySQL 8.0+)
 DROP DATABASE IF EXISTS nonprofit_finance;
@@ -80,6 +121,23 @@ CREATE TABLE reports (
   CONSTRAINT chk_report_dates CHECK (start_date <= end_date)
 ) ENGINE=InnoDB;
 
+CREATE TABLE receipt_metadata (
+    id BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    expense_id BIGINT UNSIGNED UNIQUE,
+    model_name VARCHAR(100),
+    model_provider VARCHAR(50),
+    engine_version VARCHAR(50),
+    parsing_confidence FLOAT,
+    field_confidence JSON,
+    raw_response JSON,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (expense_id) REFERENCES expenses(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- New indexes
+CREATE INDEX idx_expenses_receipt_url ON expenses(receipt_url(255));
+CREATE INDEX idx_receipt_metadata_expense_id ON receipt_metadata(expense_id);
+
 CREATE OR REPLACE VIEW vw_balance_by_org AS
 SELECT
   o.id AS org_id,
@@ -156,7 +214,6 @@ INSERT INTO contacts (name, email, phone, contact_type) VALUES
   ('State Grant Office', 'grants@state.example',  NULL, 'ORG'),
   ('Jane Volunteer',   NULL, NULL, 'PERSON');
 
--- Church/Housing category structure
 INSERT INTO categories (id, name, kind, parent_id, is_active) VALUES
   (1, 'Church', 'EXPENSE', NULL, 1),
   (2, 'Housing', 'EXPENSE', NULL, 1),
@@ -326,6 +383,7 @@ VALUES
 """
 
 def main():
+    # Connect without specifying a database to allow DROP/CREATE DATABASE
     root_cnx = mysql.connector.connect(
         host=settings.host, port=settings.port,
         user=settings.user, password=settings.password,
@@ -333,14 +391,45 @@ def main():
     )
     cur = root_cnx.cursor()
     try:
-        for stmt in [s.strip() for s in SCHEMA_SQL.split(';')]:
-            if not stmt or stmt.startswith('--'):
-                continue
-            cur.execute(stmt)
-        print("✅ Database initialized: nonprofit_finance")
+        # Execute DROP and CREATE DATABASE separately
+        cur.execute(f"DROP DATABASE IF EXISTS {settings.database};")
+        print(f"✅ Database '{settings.database}' dropped if it existed.")
+        cur.execute(f"CREATE DATABASE {settings.database} CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;")
+        print(f"✅ Database '{settings.database}' created.")
+    except mysql.connector.Error as err:
+        print(f"Error during initial database setup: {err}")
+        root_cnx.close()
+        return
     finally:
         cur.close()
         root_cnx.close()
+
+    # Reconnect with the newly created database selected
+    db_cnx = mysql.connector.connect(
+        host=settings.host, port=settings.port,
+        user=settings.user, password=settings.password,
+        database=settings.database, # Specify the database now
+        autocommit=True,
+    )
+    cur = db_cnx.cursor()
+    try:
+        # Execute the rest of the schema
+        for stmt in [s.strip() for s in SCHEMA_SQL.split(';')]:
+            print(f"Processing statement: {stmt[:75]}...")
+            if not stmt or stmt.startswith('--') or stmt.startswith('DROP DATABASE') or stmt.startswith('CREATE DATABASE'):
+                continue
+            cur.execute(stmt)
+            print(f"  Executed: {stmt[:75]}... (Rows affected: {cur.rowcount})")
+        print(f"✅ Schema applied to '{settings.database}'.")
+    except mysql.connector.Error as err:
+        print(f"Error applying schema: {err}")
+        db_cnx.close()
+        return
+    finally:
+        cur.close()
+        db_cnx.close()
+
+    print("✅ Database initialized: nonprofit_finance")
 
 if __name__ == "__main__":
     main()

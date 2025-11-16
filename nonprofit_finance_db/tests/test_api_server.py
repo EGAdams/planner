@@ -11,6 +11,7 @@ Tests cover:
 - Static file serving
 - Date/datetime JSON serialization
 """
+import os
 import pytest
 import sys
 from pathlib import Path
@@ -27,9 +28,14 @@ from fastapi.testclient import TestClient
 from api_server import app, convert_value
 
 
-# ============================================================================
+# =============================================================================
 # FIXTURES
 # ============================================================================
+
+@pytest.fixture(autouse=True)
+def set_gemini_api_key(mocker):
+    """Set a dummy GEMINI_API_KEY for tests."""
+    mocker.patch.dict(os.environ, {"GEMINI_API_KEY": "test_gemini_api_key"})
 
 @pytest.fixture
 def client():
@@ -50,8 +56,8 @@ def mock_db_categories():
 
 
 @pytest.fixture
-def mock_db_transactions():
-    """Mock transaction data structure"""
+def mock_db_expenses():
+    """Mock expense data structure"""
     return [
         {
             "id": 1,
@@ -104,7 +110,7 @@ def mock_execute():
         yield mock
 
 
-# ============================================================================
+# =============================================================================
 # UNIT TESTS - Helper Functions
 # ============================================================================
 
@@ -147,7 +153,7 @@ class TestHelperFunctions:
         assert convert_value(test_none) is None
 
 
-# ============================================================================
+# =============================================================================
 # API ENDPOINT TESTS
 # ============================================================================
 
@@ -175,32 +181,32 @@ class TestRootEndpoint:
         assert data["status"] == "running"
 
 
-class TestTransactionsEndpoint:
-    """Test suite for /api/transactions endpoint"""
+class TestExpensesEndpoint:
+    """Test suite for /api/expenses endpoint"""
 
-    def test_get_transactions_returns_200(self, client, mock_query_all):
-        """Test that GET /api/transactions returns 200 OK"""
+    def test_get_expenses_returns_200(self, client, mock_query_all):
+        """Test that GET /api/expenses returns 200 OK"""
         mock_query_all.return_value = []
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         assert response.status_code == 200
 
-    def test_get_transactions_returns_list(self, client, mock_query_all):
-        """Test that GET /api/transactions returns a list"""
+    def test_get_expenses_returns_list(self, client, mock_query_all):
+        """Test that GET /api/expenses returns a list"""
         mock_query_all.return_value = []
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         data = response.json()
         assert isinstance(data, list)
 
-    def test_get_transactions_with_data(self, client, mock_query_all,
-                                       mock_db_transactions, mock_db_categories):
-        """Test that GET /api/transactions returns properly formatted transaction data"""
-        # Setup mocks - first call for categories, second for transactions
+    def test_get_expenses_with_data(self, client, mock_query_all,
+                                       mock_db_expenses, mock_db_categories):
+        """Test that GET /api/expenses returns properly formatted expense data"""
+        # Setup mocks - first call for categories, second for expenses
         mock_query_all.side_effect = [
             mock_db_categories,
-            mock_db_transactions
+            mock_db_expenses
         ]
 
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         assert response.status_code == 200
         data = response.json()
 
@@ -208,25 +214,25 @@ class TestTransactionsEndpoint:
         assert isinstance(data, list)
         assert len(data) == 3
 
-        # Verify first transaction
-        transaction = data[0]
-        assert transaction["id"] == 1
-        assert transaction["vendor"] == "Office Depot"
-        assert transaction["amount"] == 45.99
-        assert transaction["date"] == "2025-10-15"
-        assert transaction["method"] == "CREDIT"
-        assert "category" in transaction
-        assert "category_id" in transaction
+        # Verify first expense
+        expense = data[0]
+        assert expense["id"] == 1
+        assert expense["vendor"] == "Office Depot"
+        assert expense["amount"] == 45.99
+        assert expense["date"] == "2025-10-15"
+        assert expense["method"] == "CREDIT"
+        assert "category" in expense
+        assert "category_id" in expense
 
-    def test_get_transactions_with_date_filters(self, client, mock_query_all,
+    def test_get_expenses_with_date_filters(self, client, mock_query_all,
                                                 mock_db_categories):
-        """Test that GET /api/transactions accepts date filter parameters"""
+        """Test that GET /api/expenses accepts date filter parameters"""
         mock_query_all.side_effect = [
             mock_db_categories,
             []
         ]
 
-        response = client.get("/api/transactions?start_date=2025-10-01&end_date=2025-10-31")
+        response = client.get("/api/expenses?start_date=2025-10-01&end_date=2025-10-31")
         assert response.status_code == 200
 
         # Verify query_all was called with date parameters
@@ -234,13 +240,13 @@ class TestTransactionsEndpoint:
         assert len(calls) == 2
         # Second call should have date parameters
         sql, params = calls[1][0]
-        assert "transaction_date >= %s" in sql
-        assert "transaction_date <= %s" in sql
+        assert "expense_date >= %s" in sql
+        assert "expense_date <= %s" in sql
         assert len(params) == 2
 
-    def test_get_transactions_category_hierarchy(self, client, mock_query_all,
+    def test_get_expenses_category_hierarchy(self, client, mock_query_all,
                                                  mock_db_categories):
-        """Test that transactions return full category path (parent / child)"""
+        """Test that expenses return full category path (parent / child)"""
         mock_query_all.side_effect = [
             mock_db_categories,
             [
@@ -256,20 +262,20 @@ class TestTransactionsEndpoint:
             ]
         ]
 
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         data = response.json()
 
         assert data[0]["category"] == "Operations / Office Supplies"
 
-    def test_get_transactions_database_error(self, client, mock_query_all):
+    def test_get_expenses_database_error(self, client, mock_query_all):
         """Test that database errors are handled gracefully"""
         mock_query_all.side_effect = Exception("Database connection failed")
 
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         assert response.status_code == 500
         assert "detail" in response.json()
 
-    def test_get_transactions_serializes_dates_correctly(self, client, mock_query_all,
+    def test_get_expenses_serializes_dates_correctly(self, client, mock_query_all,
                                                         mock_db_categories):
         """Test that date/datetime objects are serialized to strings"""
         mock_query_all.side_effect = [
@@ -287,7 +293,7 @@ class TestTransactionsEndpoint:
             ]
         ]
 
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         data = response.json()
 
         # Should be serialized as string
@@ -356,14 +362,14 @@ class TestCategoriesEndpoint:
 
 
 class TestUpdateCategoryEndpoint:
-    """Test suite for PUT /api/transactions/{id}/category endpoint"""
+    """Test suite for PUT /api/expenses/{id}/category endpoint"""
 
     def test_update_category_returns_200(self, client, mock_query_one, mock_execute):
-        """Test that PUT /api/transactions/{id}/category returns 200 OK"""
+        """Test that PUT /api/expenses/{id}/category returns 200 OK"""
         mock_query_one.return_value = {"id": 1}
         mock_execute.return_value = 1
 
-        response = client.put("/api/transactions/1/category", json={"category_id": 2})
+        response = client.put("/api/expenses/1/category", json={"category_id": 2})
         assert response.status_code == 200
 
     def test_update_category_success_response(self, client, mock_query_one, mock_execute):
@@ -371,17 +377,17 @@ class TestUpdateCategoryEndpoint:
         mock_query_one.return_value = {"id": 1}
         mock_execute.return_value = 1
 
-        response = client.put("/api/transactions/1/category", json={"category_id": 2})
+        response = client.put("/api/expenses/1/category", json={"category_id": 2})
         data = response.json()
 
         assert data["success"] is True
-        assert data["transaction_id"] == 1
+        assert data["expense_id"] == 1
 
     def test_update_category_not_found(self, client, mock_query_one):
-        """Test that updating non-existent transaction returns 404"""
+        """Test that updating non-existent expense returns 404"""
         mock_query_one.return_value = None
 
-        response = client.put("/api/transactions/999/category", json={"category_id": 2})
+        response = client.put("/api/expenses/999/category", json={"category_id": 2})
         assert response.status_code == 404
         assert "not found" in response.json()["detail"].lower()
 
@@ -390,12 +396,12 @@ class TestUpdateCategoryEndpoint:
         mock_query_one.return_value = {"id": 1}
         mock_execute.return_value = 1
 
-        client.put("/api/transactions/1/category", json={"category_id": 5})
+        client.put("/api/expenses/1/category", json={"category_id": 5})
 
         # Verify execute was called with correct SQL
         call_args = mock_execute.call_args
         sql, params = call_args[0]
-        assert "UPDATE transactions" in sql
+        assert "UPDATE expenses" in sql
         assert "SET category_id = %s" in sql
         assert params == (5, 1)
 
@@ -404,7 +410,7 @@ class TestUpdateCategoryEndpoint:
         mock_query_one.return_value = {"id": 1}
         mock_execute.return_value = 1
 
-        response = client.put("/api/transactions/1/category", json={"category_id": None})
+        response = client.put("/api/expenses/1/category", json={"category_id": None})
         assert response.status_code == 200
 
         # Verify None was passed to database
@@ -417,13 +423,13 @@ class TestUpdateCategoryEndpoint:
         mock_query_one.return_value = {"id": 1}
         mock_execute.side_effect = Exception("Database error")
 
-        response = client.put("/api/transactions/1/category", json={"category_id": 2})
+        response = client.put("/api/expenses/1/category", json={"category_id": 2})
         assert response.status_code == 500
         assert "detail" in response.json()
 
     def test_update_category_invalid_json(self, client):
         """Test that invalid JSON body returns 422"""
-        response = client.put("/api/transactions/1/category",
+        response = client.put("/api/expenses/1/category",
                             content="invalid json",
                             headers={"content-type": "application/json"})
         assert response.status_code == 422
@@ -571,7 +577,7 @@ class TestImportPDFEndpoint:
         assert "import failed" in response.json()["detail"].lower()
 
 
-# ============================================================================
+# =============================================================================
 # INTEGRATION TESTS
 # ============================================================================
 
@@ -598,7 +604,7 @@ class TestCORSConfiguration:
         # Note: FastAPI TestClient doesn't fully emulate CORS middleware behavior
         # In a real server, CORS middleware handles OPTIONS requests
         # TestClient returns 405 for unimplemented OPTIONS, which is expected behavior
-        response = client.options("/api/transactions")
+        response = client.options("/api/expenses")
         # TestClient returns 405 for OPTIONS as it doesn't emulate CORS middleware
         assert response.status_code in [200, 405]
 
@@ -626,7 +632,7 @@ class TestStaticFileServing:
         assert response.status_code in [200, 307, 404]
 
 
-# ============================================================================
+# =============================================================================
 # ERROR HANDLING TESTS
 # ============================================================================
 
@@ -640,7 +646,7 @@ class TestErrorHandling:
 
     def test_405_for_wrong_method(self, client):
         """Test that wrong HTTP methods return 405"""
-        response = client.post("/api/transactions")
+        response = client.post("/api/expenses")
         assert response.status_code == 405
 
     def test_422_for_invalid_request_body(self, client, mock_query_one, mock_execute):
@@ -649,26 +655,26 @@ class TestErrorHandling:
         mock_query_one.return_value = {"id": 1}
 
         # Send request without required body (completely empty)
-        response = client.put("/api/transactions/1/category",
+        response = client.put("/api/expenses/1/category",
                             json={})
         # This should succeed because category_id is Optional[int] with default None
         # Let's test with completely malformed JSON instead
-        response = client.put("/api/transactions/1/category",
+        response = client.put("/api/expenses/1/category",
                             content="not json",
                             headers={"content-type": "application/json"})
         assert response.status_code == 422
 
 
-# ============================================================================
+# =============================================================================
 # EDGE CASES AND BOUNDARY TESTS
 # ============================================================================
 
 class TestEdgeCases:
     """Test suite for edge cases and boundary conditions"""
 
-    def test_transactions_with_null_category(self, client, mock_query_all,
+    def test_expenses_with_null_category(self, client, mock_query_all,
                                             mock_db_categories):
-        """Test transactions with no category assigned"""
+        """Test expenses with no category assigned"""
         mock_query_all.side_effect = [
             mock_db_categories,
             [
@@ -684,15 +690,15 @@ class TestEdgeCases:
             ]
         ]
 
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         data = response.json()
 
         assert data[0]["category"] is None
         assert data[0]["category_id"] is None
 
-    def test_transactions_with_empty_vendor(self, client, mock_query_all,
+    def test_expenses_with_empty_vendor(self, client, mock_query_all,
                                            mock_db_categories):
-        """Test transactions with empty vendor name"""
+        """Test expenses with empty vendor name"""
         mock_query_all.side_effect = [
             mock_db_categories,
             [
@@ -708,14 +714,14 @@ class TestEdgeCases:
             ]
         ]
 
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         data = response.json()
 
         assert data[0]["vendor"] == ""
 
-    def test_transactions_with_zero_amount(self, client, mock_query_all,
+    def test_expenses_with_zero_amount(self, client, mock_query_all,
                                           mock_db_categories):
-        """Test transactions with zero amount"""
+        """Test expenses with zero amount"""
         mock_query_all.side_effect = [
             mock_db_categories,
             [
@@ -731,7 +737,7 @@ class TestEdgeCases:
             ]
         ]
 
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         data = response.json()
 
         assert data[0]["amount"] == 0.0
@@ -760,7 +766,7 @@ class TestEdgeCases:
         ]
 
         # Should not hang or crash (timeout removed - not needed with TestClient)
-        response = client.get("/api/transactions")
+        response = client.get("/api/expenses")
         assert response.status_code == 200
 
 

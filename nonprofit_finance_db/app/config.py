@@ -13,4 +13,13 @@ class Settings:
     database: str = os.getenv("NON_PROFIT_DB_NAME", "nonprofit_finance")
     pool_size: int = int(os.getenv("POOL_SIZE", "5"))
 
+    # Receipt scanning settings
+    RECEIPT_UPLOAD_DIR: str = os.getenv("RECEIPT_UPLOAD_DIR", "/tmp/receipt_uploads")
+    RECEIPT_TEMP_UPLOAD_DIR: str = os.getenv("RECEIPT_TEMP_UPLOAD_DIR", "/tmp/receipt_temp_uploads")
+    RECEIPT_MAX_SIZE_MB: int = int(os.getenv("RECEIPT_MAX_SIZE_MB", "5"))
+    RECEIPT_IMAGE_MAX_WIDTH_PX: int = int(os.getenv("RECEIPT_IMAGE_MAX_WIDTH_PX", "1600"))
+    RECEIPT_IMAGE_MAX_HEIGHT_PX: int = int(os.getenv("RECEIPT_IMAGE_MAX_HEIGHT_PX", "1600"))
+    RECEIPT_PARSE_TIMEOUT_SECONDS: int = int(os.getenv("RECEIPT_PARSE_TIMEOUT_SECONDS", "15"))
+    RECEIPT_RETENTION_DAYS: int = int(os.getenv("RECEIPT_RETENTION_DAYS", "2555")) # 7 years
+
 settings = Settings()
