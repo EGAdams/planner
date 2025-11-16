@@ -1,64 +1,120 @@
-# Gemini Structured Outputs and Agent Orchestration Examples
+
+# Gemini Agents, File Search (RAG), and Structured Outputs
 
 ## Project Overview
 
-This project serves as a collection of Python examples demonstrating the capabilities of Google's Gemini models, particularly focusing on:
+This repository demonstrates:
 
-1.  **Agent Orchestration with Google ADK:** The `adk_subagents.py` file showcases how to build and orchestrate multiple specialized agents (e.g., greeting, farewell, weather) using the Google Agent Development Kit (ADK). It illustrates delegation patterns where a root agent can delegate tasks to sub-agents based on user input, as well as tool usage for specific functionalities like fetching weather information.
-2.  **Structured Output Generation with Pydantic:** The `test_pydantic.py` file demonstrates how to leverage Pydantic models to define and enforce structured JSON outputs from Gemini models. This is particularly useful for tasks like content moderation, where a predictable and parseable response format is crucial.
+1) **Agent Orchestration with Google ADK**  
+   `adk_subagents.py` builds a small agent team using the Google Agent Development Kit (ADK). The **orchestrator** routes requests to specialized sub-agents (diagram, farewell) and now includes a **Gemini RAG agent** that grounds answers with your documents via Gemini’s managed **File Search** tool.
 
-## Technologies Used
+2) **Managed RAG with Gemini File Search**  
+   The new **`gemini_rag_agent`** uses the Gemini API’s **File Search** tool to retrieve, cite, and ground responses from a **File Search store** you control—no separate vector DB required. Use `setup_file_search_store.py` to create a store, upload files, and (optionally) run a smoke test.
 
-*   **Python:** The primary programming language.
-*   **Google ADK (Agent Development Kit):** For building and managing AI agents.
-*   **Google Generative AI:** Interacting with Gemini models.
-*   **Pydantic:** For data validation and defining structured outputs.
+3) **Structured Outputs with Pydantic**  
+   `test_pydantic.py` shows enforcing predictable JSON using schema-driven structured outputs—now first-class in the Gemini API and compatible with libraries like Pydantic/Zod.
 
-## Building and Running
 
-To set up and run these examples, follow these steps:
+## What’s New
 
-1.  **Create a Virtual Environment (Recommended):**
-    ```bash
-    python3 -m venv .venv
-    source .venv/bin/activate
-    ```
+- **Gemini RAG Agent (`gemini_rag_agent`)** wired into `adk_subagents.py`  
+  Delegates knowledge/KB/“our docs” queries to Gemini with **File Search** enabled, returning grounded answers (with citations) from your store.
 
-2.  **Install Dependencies:**
-    This project uses `google-generativeai`, `google-adk`, and `pydantic`. You can install them using pip:
-    ```bash
-    pip install google-generativeai google-adk pydantic
-    ```
-    *(Note: A `requirements.txt` file is not provided, so these are inferred dependencies.)*
+- **Store Setup Utility (`setup_file_search_store.py`)**  
+  Creates or reuses a File Search store, bulk-uploads files (optional chunk config), waits for indexing, and can run a smoke query. Outputs the store name for `GEMINI_FILE_SEARCH_STORE`.
 
-3.  **Set up Google API Key:**
-    Ensure you have your Google API Key set as an environment variable:
-    ```bash
-    export GOOGLE_API_KEY="YOUR_API_KEY"
-    ```
-    Replace `"YOUR_API_KEY"` with your actual Gemini API key.
 
-4.  **Run the Examples:**
+## Tech Stack
 
-    *   **Agent Orchestration Example:**
-        ```bash
-        python adk_subagents.py
-        ```
-        This script will initialize the agents. You can then interact with the `root_agent` by providing inputs that trigger greetings, farewells, or weather requests.
+- **Google ADK (Python)** for multi-agent orchestration: agents, runners, sessions.  
+- **Google Gen AI Python SDK (`google-genai`)** for the Gemini API, including **File Search** and structured outputs.  
+- **Pydantic** (structured validation).  
+- **LiteLLM** (optional) to mix non-Gemini models with ADK.
 
-    *   **Structured Output with Pydantic Example:**
-        ```bash
-        python test_pydantic.py
-        ```
-        This script will demonstrate how to send a prompt to a Gemini model and receive a structured JSON response validated by a Pydantic model.
+
+## Install & Setup
+
+Create a virtual environment (recommended) and install dependencies:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\Activate.ps1
+pip install google-adk google-genai pydantic litellm
+```
+
+Set your API key:
+
+```bash
+export GOOGLE_API_KEY="YOUR_KEY"   # or: export GEMINI_API_KEY="YOUR_KEY"
+```
+
+
+## Preparing Your File Search Store (Managed RAG)
+
+Use the included setup script:
+
+```bash
+python setup_file_search_store.py \
+  --display-name "my-kb-store" \
+  --paths ./kb \
+  --reuse-if-exists
+```
+
+```bash
+# optional smoke test
+python setup_file_search_store.py \
+  --display-name "my-kb-store" \
+  --paths ./kb/**/*.pdf ./policies/*.md \
+  --reuse-if-exists \
+  --chunk-tokens 300 --chunk-overlap 30 \
+  --test-query "Summarize our onboarding policy and list the top steps."
+```
+
+```bash
+export GEMINI_FILE_SEARCH_STORE="fileSearchStores/your-store-id"
+```
+
+
+## Running the Examples
+
+```bash
+python adk_subagents.py
+python test_pydantic.py
+```
+
+
+## How the RAG Agent Works
+
+```mermaid
+flowchart TD
+  U[User] -->|question| O[Orchestrator Agent]
+  O -->|KB/doc intent| RAG[Gemini RAG Agent]
+  subgraph "Gemini API"
+    RAG --> FSQ[File Search Tool]
+    FSQ --> STORE[(File Search Store)]
+    STORE --> FSQ
+    RAG -->|grounded answer + citations| O
+  end
+  O --> U
+```
+
+
+## Configuration Reference
+
+- `GOOGLE_API_KEY` / `GEMINI_API_KEY` – Gemini API auth.
+- `GEMINI_FILE_SEARCH_STORE` – store name, e.g. `fileSearchStores/my-store-123`.
+- Default RAG model: `gemini-2.5-flash`
+
+
+## Troubleshooting
+
+- `ModuleNotFoundError: litellm` – install with `pip install litellm`
+- Use `google-genai`, not the old `google-generativeai`
+- RAG answers look ungrounded? Check that your store is valid and used in tool config
+
 
 ## Development Conventions
 
-*   **Python Best Practices:** Adherence to standard Python coding conventions.
-*   **Pydantic for Data Validation:** Pydantic models are used to define clear data structures and ensure type safety for model inputs and outputs.
-*   **Google ADK for Agent Development:** Agents are designed and orchestrated using the Google ADK framework, promoting modularity and reusability.
-
-## Testing
-
-*(TODO: Add specific testing instructions if a testing framework like `pytest` is introduced and tests are written for the agents or structured outputs.)*
-Currently, the `test_pydantic.py` file serves as a runnable example demonstrating the structured output functionality rather than a formal test suite.
+- Keep agents single-purpose; let orchestrator route.
+- Use structured outputs where possible.
+- Prefer File Search over DIY vector DB for simplicity and citations.
