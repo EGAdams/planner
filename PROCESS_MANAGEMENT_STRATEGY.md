@@ -399,6 +399,20 @@ cd /home/adamsl/ottomator-agents/livekit-agent
    - Create directory: `mkdir -p /home/adamsl/ottomator-agents/livekit-agent`
    - Or update path in configuration
 
+# Chrome DevTools MCP Server
+
+When you need the MCP bridge for inspecting a Chromium instance, the `chrome-devtools-mcp` server (started from `scripts/run_chrome_devtools_mcp.sh`) runs inside a tmux session so it can keep the headless Chrome process alive even after you detach.
+
+```
+tmux new-session -d -s chrome-mcp 'cd /home/adamsl/planner && MCP_BROWSER_URL=http://127.0.0.1:9222 BROWSER_URL= bash scripts/run_chrome_devtools_mcp.sh > /tmp/mcp.log 2>&1'
+```
+
+- Chrome is launched headless (`/opt/google/chrome/chrome … --remote-debugging-port=9222`) and bound to `127.0.0.1:9222`.
+- The MCP proxy runs as `npm exec chrome-devtools-mcp --browser-url http://127.0.0.1:9222`.
+- Output is captured at `/tmp/mcp.log`; `tail -n 20 /tmp/mcp.log` shows the startup messages quoted earlier.
+- Reattach later with `tmux attach -t chrome-mcp` to monitor logs or keep the bridge alive; use `Ctrl-B D` to detach cleanly and `tmux kill-session -t chrome-mcp` when done.
+- Verify connectivity from the host side with `curl http://127.0.0.1:9222/json/version` before triggering tooling that depends on the DevTools MCP.
+
 3. **Python venv not active**:
    - Create/activate venv in dashboard directory
    - Or use full path: `/home/adamsl/planner/venv/bin/python`

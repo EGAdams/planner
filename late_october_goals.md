@@ -2,15 +2,35 @@
 
 A collection of notes, tasks, and links, sorted by date.
 This needs to be one file for now.
-==========================================================
+
+***
+```bash
 start notes for today under this line.  we are letting
 past notes scroll down.  let's see how much it costs to
 save text these days.  let's also see how helpful this
 text file will be when it gets into the Megabytes.
 Now we won't forget nothing.
-==========================================================
+```
+***
 
-This needs to happen:
+## November 17, 2025
+
+* get and set the GEMINI_API_KEY
+
+---
+### TOC:
+D1 - Green Serves if Green Wins    (Dev 1)
+D2 - Red Serves after Green Always (Dev 2)
+---
+###
+
+### Fix three bugs:
+* get rid of the "fast flash"
+* lead up to the distorted two test
+* lead up to the gwgs (dev 2) serve switch to Red 1 bug
+
+We need to open a shell and start the mcp server before an agent can use chrome-devtools-mcp
+
 ```bash
 (planner) adamsl@DESKTOP-2OBSQMC:~/planner$ npx -y chrome-devtools-mcp --browser-url http://127.0.0.1:9222
 chrome-devtools-mcp exposes content of the browser instance to the MCP clients allowing them to inspect,
