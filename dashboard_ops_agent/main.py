@@ -15,6 +15,9 @@ from datetime import datetime
 # Add parent directory to path to import shared modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+# Change working directory to project root to ensure shared resources (like ChromaDB) are accessed correctly
+os.chdir("/home/adamsl/planner")
+
 from agent_messaging import inbox, send, post_message, create_jsonrpc_response
 from rag_system.core.document_manager import DocumentManager
 

@@ -10,3 +10,25 @@ Discovered agent: dashboard-ops-agent in /home/adamsl/planner/dashboard_ops_agen
 Discovered agent: orchestrator-agent in /home/adamsl/planner/orchestrator_agent
 Registered 3 discovered agents
 Server orchestrator initialized
+Server planner-agent started with PID 65991
+Server dashboard-ops-agent started with PID 66370
+Server orchestrator-agent started with PID 66659
+Process planner-agent died unexpectedly
+Server pydantic-web-server started with PID 84360
+Process pydantic-web-server died unexpectedly
+Server api-server started with PID 84968
+Process api-server died unexpectedly
+Server api-server started with PID 86117
+Process api-server died unexpectedly
+Server api-server started with PID 89358
+Process api-server died unexpectedly
+Server api-server started with PID 96631
+Process api-server died unexpectedly
+Server planner-agent started with PID 97312
+Process planner-agent died unexpectedly
+Server api-server started with PID 98301
+Process api-server died unexpectedly
+Server api-server started with PID 99344
+Process api-server died unexpectedly
+Server api-server started with PID 103407
+Process api-server died unexpectedly

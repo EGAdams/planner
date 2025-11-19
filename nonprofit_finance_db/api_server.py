@@ -507,4 +507,4 @@ if __name__ == "__main__":
         print("   Category Picker:  http://localhost:8080/ui")
     if OFFICE_ASSISTANT_DIR.is_dir():
         print("   Office Assistant: http://localhost:8080/office")
-    uvicorn.run("api_server:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("api_server:app", host="0.0.0.0", port=8080, reload=False)

@@ -26,6 +26,9 @@ AGENT_NAME = "orchestrator-agent"
 WORKSPACE_ROOT = "/home/adamsl/planner"
 MODEL_ID = "gemini-2.0-flash"
 
+def log_update(message):
+    print(f"[{AGENT_NAME}] {message}")
+
 class Orchestrator:
     def __init__(self):
         self.known_agents = {}
@@ -86,6 +89,7 @@ Return ONLY valid JSON.
             print(f"[{AGENT_NAME}] Error in decision making: {e}")
             return None
 
+
     def run(self):
         print(f"[{AGENT_NAME}] Started. Listening on topic 'orchestrator'...")
         self.discover_agents()
@@ -97,7 +101,7 @@ Return ONLY valid JSON.
             for msg in messages:
                 try:
                     content = msg.content
-                    # Unwrap markdown if present
+                    # Unwrap markdown if present  # or find a better way to handle this
                     if "```json" in content:
                         content = content.split("```json")[1].split("```")[0].strip()
                     
@@ -106,18 +110,19 @@ Return ONLY valid JSON.
                     # But here we treat the message content as the "User Request"
                     
                     user_request = content
-                    
+
                     # Skip if it looks like a machine response
                     if content.strip().startswith("{") and "jsonrpc" in content:
+                        log_update(f"[{AGENT_NAME}] Skipping machine response: {content[:50]}...")
                         continue
 
-                    print(f"[{AGENT_NAME}] Processing request: {user_request[:50]}...")
+                    log_update(f"[{AGENT_NAME}] Processing request: {user_request[:50]}...")
                     
                     decision = self.decide_route(user_request)
                     
                     if decision and decision.get("target_agent"):
                         target = decision["target_agent"]
-                        print(f"[{AGENT_NAME}] Routing to {target}")
+                        log_update(f"[{AGENT_NAME}] Routing to {target}")
                         
                         # Construct JSON-RPC for the target agent
                         rpc_payload = create_jsonrpc_request(

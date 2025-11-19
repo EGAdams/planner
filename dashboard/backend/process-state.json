@@ -1,1 +1,20 @@
-{}
+{
+  "dashboard-ops-agent": {
+    "id": "dashboard-ops-agent",
+    "pid": 66370,
+    "command": "/home/adamsl/planner/.venv/bin/python main.py",
+    "cwd": "/home/adamsl/planner/dashboard_ops_agent",
+    "startTime": "2025-11-19T22:29:10.191Z",
+    "status": "running",
+    "ports": []
+  },
+  "orchestrator-agent": {
+    "id": "orchestrator-agent",
+    "pid": 66659,
+    "command": "/home/adamsl/planner/.venv/bin/python main.py",
+    "cwd": "/home/adamsl/planner/orchestrator_agent",
+    "startTime": "2025-11-19T22:29:16.707Z",
+    "status": "running",
+    "ports": []
+  }
+}
