@@ -12,6 +12,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as dotenv from 'dotenv';
 import { ServerOrchestrator, ServerConfig } from './services/serverOrchestrator';
+import { AgentDiscoveryService } from './services/agentDiscovery';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
@@ -39,6 +40,7 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     cwd: '/home/adamsl/planner/',
     color: '#D1FAE5',
     ports: [8080],
+    type: 'server',
   },
   'livekit-server': {
     name: 'LiveKit Server',
@@ -46,6 +48,7 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
     color: '#DBEAFE',
     ports: [7880, 7881], // Only track main TCP ports; UDP ports are dynamic
+    type: 'server',
   },
   'livekit-voice-agent': {
     name: 'LiveKit Voice Agent',
@@ -53,6 +56,7 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
     color: '#c5cd3eff',
     ports: [],
+    type: 'server',
   },
   'pydantic-web-server': {
     name: 'Pydantic Web Server',
@@ -60,18 +64,37 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
     cwd: '/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version',
     color: '#E9D5FF',
     ports: [8001],
+    type: 'server',
   },
 };
 
 // Initialize orchestrator
 const stateDbPath = path.join(__dirname, '../process-state.json');
 const orchestrator = new ServerOrchestrator(stateDbPath, 3000);
+const agentDiscovery = new AgentDiscoveryService();
 
-// Register all servers
-orchestrator.registerServers(SERVER_REGISTRY);
+// Initial registration
+async function initializeServers() {
+  // 1. Register static servers
+  orchestrator.registerServers(SERVER_REGISTRY);
+
+  // 2. Discover dynamic agents
+  // Scan current workspace and sibling ottomator-agents
+  const workspaceRoot = path.resolve(__dirname, '../../..');
+  const ottomatorRoot = path.resolve(workspaceRoot, '../ottomator-agents');
+
+  console.log('Discovering agents in:', [workspaceRoot, ottomatorRoot]);
+  const discoveredAgents = await agentDiscovery.discover([workspaceRoot, ottomatorRoot]);
+
+  // Register discovered agents (overwriting static ones if name collides, or we could check)
+  orchestrator.registerServers(discoveredAgents);
+
+  console.log(`Registered ${Object.keys(discoveredAgents).length} discovered agents`);
+}
 
 // Initialize and recover state
-orchestrator.initialize().then(() => {
+orchestrator.initialize().then(async () => {
+  await initializeServers();
   console.log('Server orchestrator initialized');
 }).catch(err => {
   console.error('Failed to initialize orchestrator:', err);
@@ -110,7 +133,7 @@ function getServerByProgramName(programName: string): { serverId: string; color:
   for (const [serverId, config] of Object.entries(SERVER_REGISTRY)) {
     // Check if the program name contains the server ID or command name
     if (normalizedProgram.includes(serverId.toLowerCase()) ||
-        config.command.toLowerCase().includes(normalizedProgram)) {
+      config.command.toLowerCase().includes(normalizedProgram)) {
       return { serverId, color: config.color };
     }
   }
@@ -337,6 +360,76 @@ const server = http.createServer(async (req, res) => {
 
     // Broadcast update after action
     await broadcastServerUpdate();
+    return;
+  }
+
+  if (pathname.startsWith('/api/logs/') && req.method === 'GET') {
+    const serverId = pathname.split('/')[3];
+    const logs = orchestrator.getLogs(serverId);
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, logs }));
+    return;
+  }
+
+
+
+  if (pathname.startsWith('/api/agents/') && pathname.endsWith('/message') && req.method === 'POST') {
+    const pathParts = pathname.split('/');
+    const agentId = pathParts[3];
+
+    let body = '';
+    req.on('data', chunk => body += chunk.toString());
+    req.on('end', async () => {
+      try {
+        const { message } = JSON.parse(body);
+
+        if (!message) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, message: 'Message content is required' }));
+          return;
+        }
+
+        // Send message to agent using agent_messaging system
+        // Script is in the planner root
+        const agentMessagingScript = '/home/adamsl/planner/send_agent_message.py';
+        const escapedMessage = message.replace(/"/g, '\\"').replace(/'/g, "\\'");
+        const command = `/home/adamsl/planner/.venv/bin/python "${agentMessagingScript}" "${agentId}" "${escapedMessage}"`;
+
+        const { stdout, stderr } = await execAsync(command, {
+          cwd: path.join(__dirname, '../..'),
+          timeout: 15000,
+          env: process.env
+        });
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: true,
+          message: 'Message sent to agent',
+          response: stdout.trim()
+        }));
+      } catch (error: any) {
+        console.error('Error sending message to agent:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          message: error.message || 'Failed to send message to agent'
+        }));
+      }
+    });
+    return;
+  }
+
+  if (pathname === '/api/discovery/refresh' && req.method === 'POST') {
+    try {
+      await initializeServers();
+      await broadcastServerUpdate();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, message: 'Agent discovery refreshed' }));
+    } catch (error: any) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, message: error.message }));
+    }
     return;
   }
 

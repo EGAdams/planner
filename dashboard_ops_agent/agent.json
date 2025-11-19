@@ -38,6 +38,38 @@
                     }
                 }
             }
+        },
+        {
+            "name": "start_test_browser",
+            "description": "Launch a test browser instance to verify the dashboard is working correctly.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "URL to open in the browser (defaults to localhost:3000)"
+                    },
+                    "headless": {
+                        "type": "boolean",
+                        "description": "Whether to run in headless mode (defaults to false)"
+                    }
+                }
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "browser_pid": {
+                        "type": "integer",
+                        "description": "Process ID of the launched browser"
+                    }
+                }
+            }
         }
     ],
     "topics": [

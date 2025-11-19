@@ -80,6 +80,93 @@ def start_server():
     except Exception as e:
         return False, str(e)
 
+def start_test_browser(url=None, headless=False):
+    """Launch a browser to test the dashboard"""
+    if url is None:
+        url = f"http://localhost:{PORT}"
+    
+    print(f"[{AGENT_NAME}] Launching test browser for {url}...")
+    
+    # Log intention to memory
+    dm = DocumentManager()
+    dm.add_runtime_artifact(
+        artifact_text=f"Launching test browser: url={url}, headless={headless}",
+        artifact_type="runlog",
+        source=AGENT_NAME,
+        project_name="dashboard"
+    )
+    
+    try:
+        # Detect browser (prefer Chrome/Chromium)
+        browser_candidates = [
+            "google-chrome",
+            "chromium-browser", 
+            "chromium",
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium-browser",
+            "/usr/bin/chromium"
+        ]
+        
+        browser_path = None
+        for candidate in browser_candidates:
+            try:
+                result = subprocess.run(["which", candidate], capture_output=True, text=True)
+                if result.returncode == 0:
+                    browser_path = result.stdout.strip()
+                    break
+            except:
+                continue
+        
+        if not browser_path:
+            msg = "No suitable browser found. Please install Chrome or Chromium."
+            print(f"[{AGENT_NAME}] {msg}")
+            dm.add_runtime_artifact(
+                artifact_text=msg,
+                artifact_type="error",
+                source=AGENT_NAME,
+                project_name="dashboard"
+            )
+            return False, msg, None
+        
+        # Build browser command
+        cmd = [browser_path]
+        if headless:
+            cmd.extend(["--headless", "--disable-gpu"])
+        cmd.extend([
+            "--new-window",
+            "--no-first-run",
+            "--no-default-browser-check",
+            url
+        ])
+        
+        # Launch browser
+        process = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        msg = f"Browser launched successfully (PID: {process.pid})"
+        print(f"[{AGENT_NAME}] {msg}")
+        
+        # Log success
+        dm.add_runtime_artifact(
+            artifact_text=f"Test browser launched: {browser_path} -> {url} (PID: {process.pid})",
+            artifact_type="runlog",
+            source=AGENT_NAME,
+            project_name="dashboard"
+        )
+        
+        return True, msg, process.pid
+        
+    except Exception as e:
+        msg = f"Failed to launch browser: {str(e)}"
+        print(f"[{AGENT_NAME}] {msg}")
+        dm.add_runtime_artifact(
+            artifact_text=msg,
+            artifact_type="error",
+            source=AGENT_NAME,
+            project_name="dashboard"
+        )
+        return False, msg, None
+
+
 def run_agent_loop():
     """Main agent loop"""
     print(f"[{AGENT_NAME}] Agent started. Listening on topic 'ops'...")

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent List Test</title>
+</head>
+
+<body>
+    <h1>Agent List Component Test</h1>
+    <div id="test-container">
+        <agent-list></agent-list>
+    </div>
+
+    <script type="module">
+        import './dist/event-bus/event-bus.js';
+        import './dist/agent-list/agent-list.js';
+
+        // Simulate the servers-updated event
+        setTimeout(() => {
+            fetch('/api/servers')
+                .then(r => r.json())
+                .then(data => {
+                    console.log('API Response:', data);
+                    const agents = data.servers.filter(s => s.type === 'agent');
+                    console.log('Filtered Agents:', agents);
+                });
+        }, 1000);
+    </script>
+</body>
+
+</html>

@@ -4,4 +4,9 @@
 
 Admin dashboard server running on http://0.0.0.0:3000
 Process management enabled with persistent state
+Discovering agents in: [ '/home/adamsl/planner', '/home/adamsl/ottomator-agents' ]
+Discovered agent: planner-agent in /home/adamsl/planner
+Discovered agent: dashboard-ops-agent in /home/adamsl/planner/dashboard_ops_agent
+Discovered agent: orchestrator-agent in /home/adamsl/planner/orchestrator_agent
+Registered 3 discovered agents
 Server orchestrator initialized

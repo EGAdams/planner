@@ -19,6 +19,11 @@
     <!-- Dashboard Grid -->
     <div class="grid gap-6 mb-6">
 
+      <!-- Agent Management Section -->
+      <section>
+        <agent-list></agent-list>
+      </section>
+
       <!-- Server Management Section -->
       <section>
         <server-list></server-list>
@@ -62,6 +67,7 @@
   <process-killer></process-killer>
 
   <!-- Load Components -->
+  <script type="module" src="/dist/agent-list/agent-list.js"></script>
   <script type="module" src="/dist/server-list/server-list.js"></script>
   <script type="module" src="/dist/port-monitor/port-monitor.js"></script>
   <script type="module" src="/dist/process-killer/process-killer.js"></script>

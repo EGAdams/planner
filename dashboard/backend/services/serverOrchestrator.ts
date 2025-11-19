@@ -25,6 +25,7 @@ export interface ServerConfig {
   env?: Record<string, string>;
   color: string;
   ports: number[];
+  type?: 'server' | 'agent';
 }
 
 export interface ServerStatus {
@@ -36,6 +37,7 @@ export interface ServerStatus {
   color: string;
   healthy?: boolean;
   lastCheck?: Date;
+  type?: 'server' | 'agent';
 }
 
 export class ServerOrchestrator extends EventEmitter {
@@ -196,7 +198,8 @@ export class ServerOrchestrator extends EventEmitter {
         orphanedPid: orphanedProcess?.pid,
         color: config.color,
         healthy: monitorStatus?.isHealthy,
-        lastCheck: monitorStatus?.lastCheck
+        lastCheck: monitorStatus?.lastCheck,
+        type: config.type || 'server'
       });
     }
 
@@ -257,6 +260,13 @@ export class ServerOrchestrator extends EventEmitter {
     this.processMonitor.on('healthCheck', (data) => this.emit('healthCheck', data));
     this.processMonitor.on('statusChange', (data) => this.emit('statusChange', data));
     this.processMonitor.on('processDied', (data) => this.emit('processDied', data));
+  }
+
+  /**
+   * Get logs for a server
+   */
+  getLogs(serverId: string): string[] {
+    return this.processManager.getLogs(serverId);
   }
 
   /**

@@ -39,7 +39,8 @@ export class ServerList extends HTMLElement {
   private setupEventListeners() {
     // Subscribe to servers updates from the EventBus
     this.unsubscribe = eventBus.on('servers-updated', (data) => {
-      this.servers = this.normalizeServerData(data);
+      // Filter out agents, keep only servers (type === 'server' or undefined)
+      this.servers = this.normalizeServerData(data).filter((s: any) => s.type !== 'agent');
       this.render();
     });
   }

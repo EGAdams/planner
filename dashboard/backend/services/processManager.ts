@@ -40,6 +40,8 @@ export interface KillResult {
 
 export class ProcessManager extends EventEmitter {
   private processes: Map<string, ProcessInfo> = new Map();
+  private logBuffers: Map<string, string[]> = new Map();
+  private readonly MAX_LOG_LINES = 1000;
 
   /**
    * Spawn a new process and track it
@@ -56,14 +58,32 @@ export class ProcessManager extends EventEmitter {
           cwd: config.cwd,
           env: { ...process.env, ...config.env },
           detached: true,
-          stdio: 'ignore'
+          stdio: ['ignore', 'pipe', 'pipe'] // Capture stdout and stderr
         });
 
         child.unref();
 
+        // Initialize log buffer
+        this.logBuffers.set(config.id, []);
+
+        // Capture stdout
+        if (child.stdout) {
+          child.stdout.on('data', (data) => {
+            this.appendLog(config.id, data.toString());
+          });
+        }
+
+        // Capture stderr
+        if (child.stderr) {
+          child.stderr.on('data', (data) => {
+            this.appendLog(config.id, data.toString());
+          });
+        }
+
         // Handle spawn errors
         child.on('error', (error) => {
           this.processes.delete(config.id);
+          this.logBuffers.delete(config.id);
           this.emit('processError', { id: config.id, error });
           reject(error);
         });
@@ -77,6 +97,8 @@ export class ProcessManager extends EventEmitter {
             this.emit('processExit', { id: config.id, code, signal });
           }
           this.processes.delete(config.id);
+          // Keep logs for a bit or clear them? For now, keep them until restart or explicit clear
+          // this.logBuffers.delete(config.id); 
         });
 
         // Create process info
@@ -102,6 +124,31 @@ export class ProcessManager extends EventEmitter {
         reject(error);
       }
     });
+  }
+
+  private appendLog(id: string, data: string) {
+    const buffer = this.logBuffers.get(id) || [];
+    const lines = data.split('\n');
+
+    for (const line of lines) {
+      if (line.trim()) { // Only store non-empty lines
+        buffer.push(line);
+      }
+    }
+
+    // Trim buffer if needed
+    if (buffer.length > this.MAX_LOG_LINES) {
+      buffer.splice(0, buffer.length - this.MAX_LOG_LINES);
+    }
+
+    this.logBuffers.set(id, buffer);
+  }
+
+  /**
+   * Get logs for a process
+   */
+  getLogs(id: string): string[] {
+    return this.logBuffers.get(id) || [];
   }
 
   /**
@@ -155,6 +202,7 @@ export class ProcessManager extends EventEmitter {
       }
 
       this.processes.delete(id);
+      // Logs are preserved for inspection after kill
 
       return {
         success: true,
