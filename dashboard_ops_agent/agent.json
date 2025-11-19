@@ -1,0 +1,49 @@
+{
+    "name": "dashboard-ops-agent",
+    "version": "1.0.0",
+    "description": "Responsible for maintaining the operational state of the Admin Dashboard. Can check server status and restart services.",
+    "capabilities": [
+        {
+            "name": "check_status",
+            "description": "Check if the dashboard server is running.",
+            "input_schema": {},
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "running",
+                            "stopped"
+                        ]
+                    },
+                    "port": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        {
+            "name": "start_server",
+            "description": "Start the dashboard server if it is not running.",
+            "input_schema": {},
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ],
+    "topics": [
+        "ops",
+        "dashboard",
+        "maintenance"
+    ],
+    "memory_access": "read-write"
+}

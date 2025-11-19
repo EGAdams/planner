@@ -29,8 +29,27 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.table import Table
+import json
+import uuid
 
 console = Console()
+
+def create_jsonrpc_request(method: str, params: Dict, request_id: int = 1) -> str:
+    """Create a JSON-RPC 2.0 request string"""
+    return json.dumps({
+        "jsonrpc": "2.0",
+        "method": method,
+        "params": params,
+        "id": request_id
+    })
+
+def create_jsonrpc_response(result: Dict, request_id: int = 1) -> str:
+    """Create a JSON-RPC 2.0 response string"""
+    return json.dumps({
+        "jsonrpc": "2.0",
+        "result": result,
+        "id": request_id
+    })
 
 class AgentMessenger:
     """Handle agent-to-agent communication"""
@@ -253,14 +272,30 @@ class AgentMessenger:
 
             dm = DocumentManager()
 
+            # Create JSON-RPC message
+            task_id = str(uuid.uuid4())
+            rpc_message = create_jsonrpc_request(
+                method="agent.message",
+                params={
+                    "message": message,
+                    "from_agent": from_agent,
+                    "topic": topic,
+                    "priority": priority,
+                    "timestamp": datetime.now().isoformat()
+                }
+            )
+
             # Create message with metadata
             message_content = f"""
 **From**: {from_agent}
 **Topic**: {topic}
 **Priority**: {priority}
 **Time**: {datetime.now().isoformat()}
+**Protocol**: Google A2A (JSON-RPC 2.0)
 
-{message}
+```json
+{rpc_message}
+```
 """
 
             # Store as runtime artifact
@@ -363,6 +398,10 @@ def list_groups():
     """List all agent groups"""
     messenger = _get_messenger()
     return messenger.list_groups()
+
+# Aliases for easier usage
+inbox = read_messages
+send = send_to_agent
 
 
 # ============================================================================

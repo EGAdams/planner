@@ -13,6 +13,17 @@ Now we won't forget nothing.
 ```
 ***
 
+## November 18, 2025
+https://youtu.be/MZZCW179nKM?t=324
+Progressive Disclosure pops up in this Claude Skills discussion.
+This is where we can leverage the file system to be a big toc broken up into
+smaller toc sections.
+
+
+
+---
+
+
 ## November 17, 2025
 
 * get and set the GEMINI_API_KEY

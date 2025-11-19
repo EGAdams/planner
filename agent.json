@@ -1,0 +1,54 @@
+{
+    "name": "planner-agent",
+    "version": "1.0.0",
+    "description": "The primary orchestration and planning agent for the workspace. Responsible for task breakdown, research, and high-level decision making.",
+    "capabilities": [
+        {
+            "name": "plan_task",
+            "description": "Break down a high-level objective into actionable steps.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "objective": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "objective"
+                ]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "plan": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "research_topic",
+            "description": "Conduct web and codebase research on a specific topic.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "topic": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "topic"
+                ]
+            }
+        }
+    ],
+    "topics": [
+        "planning",
+        "research",
+        "orchestration"
+    ],
+    "memory_access": "read-write"
+}

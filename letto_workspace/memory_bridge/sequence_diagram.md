@@ -2,20 +2,20 @@
 %%{init: {
   "theme": "base",
   "themeVariables": {
-    "primaryColor": "#8ecae6",
+    "primaryColor": "#d2dbdfff",
     "secondaryColor": "#ffd166",
     "tertiaryColor": "#cdb4db",
     "primaryTextColor": "#073b4c",
-    "actorBorder": "#023047",
+    "actorBorder": "#bfccd2ff",
     "actorBkg": "#e0fbfc",
     "activationBkgColor": "#ffddd2",
     "activationBorderColor": "#f28482",
-    "sequenceNumberColor": "#2a9d8f",
-    "lineColor": "#457b9d",
+    "sequenceNumberColor": "#d0d7d7ff",
+    "lineColor": "#ced3d6ff",
     "signalColor": "#e76f51",
-    "signalTextColor": "#1d3557",
+    "signalTextColor": "#a3abb7ff",
     "noteBkgColor": "#f1faee",
-    "noteTextColor": "#1d3557"
+    "noteTextColor": "#d5dadfff"
   }
 }}%%
 sequenceDiagram

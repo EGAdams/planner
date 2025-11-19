@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/home/adamsl/planner/.venv/bin/python:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-chrome-devtools"]
+    }
+  }
+}

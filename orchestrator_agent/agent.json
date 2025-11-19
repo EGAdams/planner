@@ -1,0 +1,46 @@
+{
+    "name": "orchestrator-agent",
+    "version": "1.0.0",
+    "description": "The central nervous system of the agent collective. Routes user requests to the appropriate specialist agent.",
+    "capabilities": [
+        {
+            "name": "route_request",
+            "description": "Analyze a natural language request and route it to the best agent.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "request": {
+                        "type": "string"
+                    }
+                }
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "target_agent": {
+                        "type": "string"
+                    },
+                    "task_id": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        {
+            "name": "discover_agents",
+            "description": "Scan the environment for available agents and their capabilities.",
+            "input_schema": {},
+            "output_schema": {
+                "type": "array",
+                "items": {
+                    "type": "object"
+                }
+            }
+        }
+    ],
+    "topics": [
+        "orchestrator",
+        "general"
+    ],
+    "memory_access": "read-write"
+}
