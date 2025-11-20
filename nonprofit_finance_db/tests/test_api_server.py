@@ -669,6 +669,90 @@ class TestErrorHandling:
 # EDGE CASES AND BOUNDARY TESTS
 # ============================================================================
 
+class TestTransactionsEndpoint:
+    """Test suite for /api/transactions endpoint (alias for /api/expenses)"""
+
+    def test_get_transactions_returns_200(self, client, mock_query_all):
+        """Test that GET /api/transactions returns 200 OK"""
+        mock_query_all.return_value = []
+        response = client.get("/api/transactions")
+        assert response.status_code == 200
+
+    def test_get_transactions_returns_list(self, client, mock_query_all):
+        """Test that GET /api/transactions returns a list"""
+        mock_query_all.return_value = []
+        response = client.get("/api/transactions")
+        data = response.json()
+        assert isinstance(data, list)
+
+    def test_get_transactions_with_data(self, client, mock_query_all,
+                                       mock_db_expenses, mock_db_categories):
+        """Test that GET /api/transactions returns properly formatted transaction data"""
+        # Setup mocks - first call for categories, second for transactions
+        mock_query_all.side_effect = [
+            mock_db_categories,
+            mock_db_expenses
+        ]
+
+        response = client.get("/api/transactions")
+        assert response.status_code == 200
+        data = response.json()
+
+        # Verify structure
+        assert isinstance(data, list)
+        assert len(data) == 3
+
+        # Verify first transaction
+        transaction = data[0]
+        assert transaction["id"] == 1
+        assert transaction["vendor"] == "Office Depot"
+        assert transaction["amount"] == 45.99
+        assert transaction["date"] == "2025-10-15"
+        assert transaction["method"] == "CREDIT"
+        assert "category" in transaction
+        assert "category_id" in transaction
+
+    def test_update_transaction_category_returns_200(self, client, mock_query_one, mock_execute):
+        """Test that PUT /api/transactions/{id}/category returns 200 OK"""
+        mock_query_one.return_value = {"id": 1}
+        mock_execute.return_value = 1
+
+        response = client.put("/api/transactions/1/category", json={"category_id": 2})
+        assert response.status_code == 200
+
+    def test_update_transaction_category_success_response(self, client, mock_query_one, mock_execute):
+        """Test that successful transaction category update returns correct response"""
+        mock_query_one.return_value = {"id": 1}
+        mock_execute.return_value = 1
+
+        response = client.put("/api/transactions/1/category", json={"category_id": 2})
+        data = response.json()
+
+        assert data["success"] is True
+        assert data["expense_id"] == 1
+
+    def test_update_transaction_category_not_found(self, client, mock_query_one):
+        """Test that updating non-existent transaction returns 404"""
+        mock_query_one.return_value = None
+
+        response = client.put("/api/transactions/999/category", json={"category_id": 2})
+        assert response.status_code == 404
+        assert "not found" in response.json()["detail"].lower()
+
+    def test_update_transaction_category_null_value(self, client, mock_query_one, mock_execute):
+        """Test that transaction category can be set to null"""
+        mock_query_one.return_value = {"id": 1}
+        mock_execute.return_value = 1
+
+        response = client.put("/api/transactions/1/category", json={"category_id": None})
+        assert response.status_code == 200
+
+        # Verify None was passed to database
+        call_args = mock_execute.call_args
+        params = call_args[0][1]
+        assert params[0] is None
+
+
 class TestEdgeCases:
     """Test suite for edge cases and boundary conditions"""
 

@@ -32,7 +32,7 @@ class GeminiReceiptEngine(ReceiptEngine):
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable not set.")
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-1.5-flash') # Or gemini-1.5-pro for higher accuracy/cost
+        self.model = genai.GenerativeModel('gemini-flash-latest') # Using latest flash model for speed and cost efficiency
 
     async def parse_receipt(self, image_data: bytes, image_mime_type: str) -> ReceiptExtractionResult:
         prompt = self._get_prompt()

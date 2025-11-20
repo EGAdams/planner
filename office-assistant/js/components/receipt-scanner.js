@@ -260,6 +260,8 @@ class ReceiptScanner extends HTMLElement {
         this._showLoading(true);
         this.originalFileName = file.name;
 
+        console.log('Processing file:', file.name, 'type:', file.type, 'size:', file.size);
+
         const formData = new FormData();
         formData.append('file', file);
 
@@ -269,9 +271,25 @@ class ReceiptScanner extends HTMLElement {
                 body: formData,
             });
 
+            console.log('Parse receipt response status:', response.status, response.statusText);
+
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Failed to parse receipt.');
+                let errorMessage = 'Failed to parse receipt.';
+                const contentType = response.headers.get('content-type');
+
+                try {
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorMessage;
+                    } else {
+                        const text = await response.text();
+                        errorMessage = text || `Server error (${response.status})`;
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing error response:', parseError);
+                    errorMessage = `Server error (${response.status})`;
+                }
+                throw new Error(errorMessage);
             }
 
             const result = await response.json();
@@ -284,9 +302,10 @@ class ReceiptScanner extends HTMLElement {
 
         } catch (error) {
             console.error('Error parsing receipt:', error);
-            this._showError(error.message);
+            const errorMessage = error?.message || error?.toString() || 'Unknown error occurred';
+            this._showError(errorMessage);
             this._showLoading(false);
-            emit('receipt:error', { message: error.message });
+            emit('receipt:error', { message: errorMessage });
         }
     }
 
@@ -372,8 +391,22 @@ class ReceiptScanner extends HTMLElement {
             });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.detail || 'Failed to save expense.');
+                let errorMessage = 'Failed to save expense.';
+                const contentType = response.headers.get('content-type');
+
+                try {
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        errorMessage = errorData.detail || errorMessage;
+                    } else {
+                        const text = await response.text();
+                        errorMessage = text || `Server error (${response.status})`;
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing error response:', parseError);
+                    errorMessage = `Server error (${response.status})`;
+                }
+                throw new Error(errorMessage);
             }
 
             const result = await response.json();
@@ -384,9 +417,10 @@ class ReceiptScanner extends HTMLElement {
 
         } catch (error) {
             console.error('Error saving expense:', error);
-            this._showError(error.message);
+            const errorMessage = error?.message || error?.toString() || 'Unknown error occurred';
+            this._showError(errorMessage);
             this._showLoading(false);
-            emit('receipt:error', { message: error.message });
+            emit('receipt:error', { message: errorMessage });
         }
     }
 

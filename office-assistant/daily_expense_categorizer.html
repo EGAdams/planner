@@ -193,8 +193,6 @@
     </div>
   </header>
 
-  <receipt-scanner></receipt-scanner>
-
   <div id="loadingMsg" class="loading" style="background: yellow; color: red; font-size: 24px; padding: 40px; border: 5px solid red;">LOADING... If you see this for more than 2 seconds, check console for errors!</div>
   <div id="fallbackNotice" class="info" style="display:none;"></div>
   <div id="errorMsg" class="error" style="display:none;"></div>
@@ -232,30 +230,6 @@
 
 <script type="module" src="/office/js/main.js" onerror="console.error('[DEBUG] Failed to load main.js module!')"></script>
 <script type="module" src="/office/js/event-bus.js"></script>
-<script type="module" src="/office/js/components/receipt-scanner.js"></script>
-<script type="module">
-  import { on } from '/office/js/event-bus.js';
-
-  on('receipt:saved', async (data) => {
-    console.log('Receipt saved event received:', data);
-    // Optionally show a success message
-    const infoDiv = document.getElementById('infoMsg') || document.createElement('div');
-    infoDiv.id = 'infoMsg';
-    infoDiv.className = 'info';
-    infoDiv.textContent = `Receipt for ${data.expense_id} saved successfully!`;
-    document.body.prepend(infoDiv);
-    setTimeout(() => infoDiv.remove(), 5000); // Remove after 5 seconds
-
-    await reloadTransactions(); // Reload transactions to show the new expense
-  });
-
-  on('receipt:error', (data) => {
-    console.error('Receipt error event received:', data);
-    const errorDiv = document.getElementById('errorMsg');
-    errorDiv.textContent = `Error processing receipt: ${data.message}`;
-    errorDiv.style.display = 'block';
-  });
-</script>
 <script>
 console.log('[DEBUG] Script starting execution...');
 window.addEventListener('error', (e) => {

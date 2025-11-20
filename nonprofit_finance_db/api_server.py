@@ -199,6 +199,30 @@ async def get_expenses(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Transaction endpoints (aliases for expenses endpoints - frontend compatibility)
+@app.get("/api/transactions", response_model=List[Expense])
+async def get_transactions(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    """
+    Get all transactions (alias for get_expenses)
+    Query params:
+    - start_date: YYYY-MM-DD (optional)
+    - end_date: YYYY-MM-DD (optional)
+    """
+    return await get_expenses(start_date, end_date)
+
+
+@app.put("/api/transactions/{transaction_id}/category")
+async def update_transaction_category(transaction_id: int, update: CategoryUpdate):
+    """
+    Update the category for a transaction (alias for update_expense_category)
+    Body: {"category_id": 123}
+    """
+    return await update_expense_category(transaction_id, update)
+
+
 @app.get("/api/categories", response_model=List[Category])
 async def get_categories():
     """Get all active expense categories with hierarchy"""
