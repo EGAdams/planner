@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv(override=True)
+# Load .env from parent directory
+env_path = Path(__file__).resolve().parent.parent.parent / '.env'
+load_dotenv(dotenv_path=env_path, override=True)
 
 @dataclass(frozen=True)
 class Settings:

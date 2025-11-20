@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Scanner Table Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Receipt Scanner Table Verification</h1>
+        <receipt-scanner id="scanner"></receipt-scanner>
+        <div id="test-controls" class="mt-4 p-4 border rounded bg-gray-100">
+            <button id="run-test-btn" class="bg-blue-500 text-white px-4 py-2 rounded">Run Test with Mock Data</button>
+            <div id="test-results" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/components/receipt-scanner.js"></script>
+    <script type="module">
+        const mockData = {
+            party: { merchant_name: "TEST MERCHANT" },
+            transaction_date: "2023-10-27",
+            totals: { total_amount: 10.98, tax_amount: 0.00 },
+            payment_method: "CARD",
+            meta: { raw_text: "Mock receipt" },
+            items: [
+                { description: "COCA COLA ZERO", quantity: 2, unit_price: 5.49, line_total: 10.98 }
+            ]
+        };
+
+        const mockDataMismatch = {
+            party: { merchant_name: "TEST MERCHANT MISMATCH" },
+            transaction_date: "2023-10-27",
+            totals: { total_amount: 12.00, tax_amount: 0.00 }, // Total is 12, but items sum to 10.98
+            payment_method: "CARD",
+            meta: { raw_text: "Mock receipt mismatch" },
+            items: [
+                { description: "COCA COLA ZERO", quantity: 2, unit_price: 5.49, line_total: 10.98 }
+            ]
+        };
+
+        document.getElementById('run-test-btn').addEventListener('click', () => {
+            const scanner = document.getElementById('scanner');
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '';
+
+            // Test 1: Correct Data
+            scanner.parsedData = mockData;
+            scanner._populateForm();
+            scanner.parsedDataForm.style.display = 'block'; // Force show
+
+            setTimeout(() => {
+                const shadow = scanner.shadowRoot;
+                const table = shadow.querySelector('table');
+                const rows = shadow.querySelectorAll('tbody tr');
+                const calculatedInput = shadow.getElementById('calculatedAmount');
+                const totalInput = shadow.getElementById('totalAmount');
+
+                let log = '<h3 class="font-bold">Test 1: Correct Data</h3>';
+                log += `Table exists: ${!!table} <br>`;
+                log += `Row count: ${rows.length} (Expected 1) <br>`;
+                log += `Calculated Amount: ${calculatedInput.value} (Expected 10.98) <br>`;
+                log += `Has success class: ${calculatedInput.classList.contains('success-match')} (Expected true) <br>`;
+                
+                // Verify row content
+                if (rows.length > 0) {
+                    const cells = rows[0].querySelectorAll('td');
+                    log += `Row 1 Item: ${cells[0].textContent} (Expected COCA COLA ZERO) <br>`;
+                    log += `Row 1 Qty: ${cells[1].textContent} (Expected 2) <br>`;
+                    log += `Row 1 Price: ${cells[2].textContent} (Expected 5.49) <br>`;
+                    log += `Row 1 Total: ${cells[3].textContent} (Expected 10.98) <br>`;
+                }
+
+                resultsDiv.innerHTML += log;
+
+                // Test 2: Mismatch Data
+                setTimeout(() => {
+                    scanner.parsedData = mockDataMismatch;
+                    scanner._populateForm();
+                    
+                    let log2 = '<h3 class="font-bold mt-4">Test 2: Mismatch Data</h3>';
+                    const calculatedInput2 = shadow.getElementById('calculatedAmount');
+                     log2 += `Calculated Amount: ${calculatedInput2.value} (Expected 10.98) <br>`;
+                    log2 += `Total Amount: ${shadow.getElementById('totalAmount').value} (Expected 12) <br>`;
+                    log2 += `Has success class: ${calculatedInput2.classList.contains('success-match')} (Expected false) <br>`;
+                    
+                    resultsDiv.innerHTML += log2;
+                }, 1000);
+
+            }, 100);
+        });
+    </script>
+</body>
+</html>

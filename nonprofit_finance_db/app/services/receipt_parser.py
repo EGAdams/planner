@@ -57,19 +57,21 @@ class ReceiptParser:
             img = Image.open(BytesIO(image_data))
             
             # Resize if larger than max dimensions (settings.RECEIPT_IMAGE_MAX_WIDTH_PX, etc.)
-            max_width = settings.RECEIPT_IMAGE_MAX_WIDTH_PX
-            max_height = settings.RECEIPT_IMAGE_MAX_HEIGHT_PX
-
+            # Increased limits for better OCR accuracy
+            max_width = settings.RECEIPT_IMAGE_MAX_WIDTH_PX * 2  # Double the resolution
+            max_height = settings.RECEIPT_IMAGE_MAX_HEIGHT_PX * 2
+            
+            # Only downsize if image is too large, never upscale
             if img.width > max_width or img.height > max_height:
                 img.thumbnail((max_width, max_height), Image.Resampling.LANCZOS)
             
             output_buffer = BytesIO()
-            # Convert to JPEG for consistency and smaller size, if not already PDF
+            # Use higher quality JPEG for better OCR
             if mime_type == "image/webp":
-                img.save(output_buffer, format="WEBP", quality=85)
+                img.save(output_buffer, format="WEBP", quality=95)  # Increased from 85
                 return output_buffer.getvalue(), "image/webp"
             else:
-                img.save(output_buffer, format="JPEG", quality=85)
+                img.save(output_buffer, format="JPEG", quality=95)  # Increased from 85
                 return output_buffer.getvalue(), "image/jpeg"
         elif mime_type == "application/pdf":
             # For PDFs, we might want to extract the first page as an image

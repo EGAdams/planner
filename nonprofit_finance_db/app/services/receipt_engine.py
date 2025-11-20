@@ -32,7 +32,9 @@ class GeminiReceiptEngine(ReceiptEngine):
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable not set.")
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-flash-latest') # Using latest flash model for speed and cost efficiency
+        # Using gemini-flash-latest - Pro model not available in current API version
+        # Flash is less accurate but still good, and much faster/cheaper
+        self.model = genai.GenerativeModel('gemini-flash-latest')
 
     async def parse_receipt(self, image_data: bytes, image_mime_type: str) -> ReceiptExtractionResult:
         prompt = self._get_prompt()
@@ -110,11 +112,18 @@ class GeminiReceiptEngine(ReceiptEngine):
         }
         ```
         
-        - Ensure all required fields are present.
-        - For `payment_method`, choose from the exact enum values: "CASH", "CARD", "BANK", "OTHER".
-        - If a field is optional and not found, set it to `null`.
-        - `line_total` should be `quantity * unit_price`.
-        - `currency` should default to "USD" if not explicitly found.
-        - Provide `model_name`, `model_provider`, `engine_version` in `meta` if available from the tool.
-        - Do not include any other text or explanation, just the JSON object.
+        CRITICAL RULES:
+        - ONLY extract items that are CLEARLY VISIBLE on the receipt as purchased items or discounts
+        - DO NOT create "balancing" items, "unidentified" items, or phantom items to make totals match
+        - DO NOT invent items like "UNIDENTIFIED ITEM", "MISC FEE", or similar
+        - If the totals don't match the sum of items, that's OK - just extract what you see
+        - Be VERY CAREFUL with OCR - double-check prices and quantities
+        - Negative prices are OK for discounts/coupons (e.g., "COUPON -$1.39")
+        - For `payment_method`, choose from the exact enum values: "CASH", "CARD", "BANK", "OTHER"
+        - If a field is optional and not found, set it to `null`
+        - `line_total` should be `quantity * unit_price`
+        - `currency` should default to "USD" if not explicitly found
+        - Provide `model_name`, `model_provider`, `engine_version` in `meta` if available from the tool
+        - Do not include any other text or explanation, just the JSON object
+        - Take your time to read prices carefully - OCR errors are common with similar-looking digits (e.g., 8 vs 9)
         """

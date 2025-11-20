@@ -10,9 +10,9 @@ PaymentMethod = Literal["CASH", "CARD", "BANK", "OTHER"]
 
 class ReceiptItem(BaseModel):
     description: str = Field(..., min_length=1)
-    quantity: float = Field(1.0)
-    unit_price: float = Field(...)
-    line_total: float = Field(...)
+    quantity: float = Field(1.0, ge=0)  # Quantity should be positive
+    unit_price: float  # Allow negative for discounts/coupons
+    line_total: float  # Allow negative for discounts/coupons
 
     @validator("line_total", always=True)
     def compute_line_total(cls, v, values):
