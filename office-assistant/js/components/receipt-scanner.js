@@ -9,6 +9,7 @@ class ReceiptScanner extends HTMLElement {
         this.originalFileName = null;
         this.isLoading = false;
         this.error = null;
+        this.calculatedTotal = 0;
 
         this.shadowRoot.innerHTML = `
             <style>
@@ -19,7 +20,7 @@ class ReceiptScanner extends HTMLElement {
                     border: 1px solid #ccc;
                     padding: 1rem;
                     border-radius: 8px;
-                    max-width: 600px;
+                    max-width: 800px; /* Increased width for table */
                     margin: 1rem auto;
                     background-color: #f9f9f9;
                 }
@@ -79,6 +80,10 @@ class ReceiptScanner extends HTMLElement {
                     border-radius: 4px;
                     box-sizing: border-box;
                 }
+                .form-group input.success-match {
+                    background-color: #d4edda; /* Light green */
+                    border-color: #c3e6cb;
+                }
                 .form-actions {
                     margin-top: 1.5rem;
                     text-align: right;
@@ -101,25 +106,37 @@ class ReceiptScanner extends HTMLElement {
                 }
                 .item-list {
                     margin-top: 1rem;
+                    margin-bottom: 1rem;
                     border: 1px solid #eee;
                     padding: 0.5rem;
                     border-radius: 4px;
                     background-color: #fff;
+                    overflow-x: auto;
                 }
                 .item-list h4 {
                     margin-top: 0;
                     margin-bottom: 0.5rem;
                 }
-                .item-list ul {
-                    list-style: none;
-                    padding: 0;
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 0.5rem;
                 }
-                .item-list li {
-                    padding: 5px 0;
-                    border-bottom: 1px dashed #eee;
+                th, td {
+                    padding: 8px;
+                    text-align: left;
+                    border-bottom: 1px solid #ddd;
+                    color: black;
                 }
-                .item-list li:last-child {
-                    border-bottom: none;
+                th {
+                    background-color: #d3d3d3; /* Light gray */
+                    font-weight: bold;
+                }
+                tr:nth-child(even) {
+                    background-color: #f2f2f2; /* Light gray */
+                }
+                tr:nth-child(odd) {
+                    background-color: #e6e6e6; /* Lighter gray */
                 }
             </style>
             <div class="receipt-scanner-container">
@@ -144,10 +161,34 @@ class ReceiptScanner extends HTMLElement {
                             <label for="transactionDate">Transaction Date:</label>
                             <input type="date" id="transactionDate" name="transactionDate" required>
                         </div>
+                        
+                        <div class="item-list">
+                            <h4>Items:</h4>
+                            <table id="receiptItemsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th>Quantity</th>
+                                        <th>Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="receiptItemsBody">
+                                    <!-- Items will be rendered here -->
+                                </tbody>
+                            </table>
+                        </div>
+
                         <div class="form-group">
                             <label for="totalAmount">Total Amount:</label>
                             <input type="number" id="totalAmount" name="totalAmount" step="0.01" required>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="calculatedAmount">Calculated Amount:</label>
+                            <input type="number" id="calculatedAmount" name="calculatedAmount" step="0.01" readonly>
+                        </div>
+
                         <div class="form-group">
                             <label for="taxAmount">Tax Amount:</label>
                             <input type="number" id="taxAmount" name="taxAmount" step="0.01">
@@ -166,13 +207,6 @@ class ReceiptScanner extends HTMLElement {
                             <input type="text" id="description" name="description">
                         </div>
                         
-                        <div class="item-list">
-                            <h4>Items:</h4>
-                            <ul id="receiptItems">
-                                <!-- Items will be rendered here -->
-                            </ul>
-                        </div>
-
                         <div class="form-group">
                             <label for="categoryId">Category:</label>
                             <!-- Category picker will be integrated here -->
@@ -196,10 +230,11 @@ class ReceiptScanner extends HTMLElement {
         this.errorMessage = this.shadowRoot.getElementById('error');
         this.parsedDataForm = this.shadowRoot.getElementById('parsedDataForm');
         this.receiptForm = this.shadowRoot.getElementById('receiptForm');
-        this.receiptItemsList = this.shadowRoot.getElementById('receiptItems');
+        this.receiptItemsBody = this.shadowRoot.getElementById('receiptItemsBody');
         this.cancelButton = this.shadowRoot.getElementById('cancelButton');
         this.saveButton = this.shadowRoot.getElementById('saveButton');
         this.categoryIdSelect = this.shadowRoot.getElementById('categoryId');
+        this.calculatedAmountInput = this.shadowRoot.getElementById('calculatedAmount');
 
         this._setupEventListeners();
         this._fetchCategories();
@@ -315,21 +350,64 @@ class ReceiptScanner extends HTMLElement {
         const form = this.receiptForm;
         form.elements.merchantName.value = this.parsedData.party.merchant_name || '';
         form.elements.transactionDate.value = this.parsedData.transaction_date || '';
-        form.elements.totalAmount.value = this.parsedData.totals.total_amount || 0;
+        
+        const totalAmount = this.parsedData.totals.total_amount || 0;
+        form.elements.totalAmount.value = totalAmount;
+        
         form.elements.taxAmount.value = this.parsedData.totals.tax_amount || 0;
         form.elements.paymentMethod.value = this.parsedData.payment_method || 'OTHER';
         form.elements.description.value = this.parsedData.meta.raw_text || ''; // Using raw_text for description for now
 
-        // Populate items
-        this.receiptItemsList.innerHTML = '';
+        // Populate items and calculate total
+        this.receiptItemsBody.innerHTML = '';
+        this.calculatedTotal = 0;
+
         if (this.parsedData.items && this.parsedData.items.length > 0) {
             this.parsedData.items.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = `${item.description} (x${item.quantity}) @ $${item.unit_price} = $${item.line_total}`;
-                this.receiptItemsList.appendChild(li);
+                const tr = document.createElement('tr');
+                
+                const nameTd = document.createElement('td');
+                nameTd.textContent = item.description;
+                tr.appendChild(nameTd);
+
+                const qtyTd = document.createElement('td');
+                qtyTd.textContent = item.quantity;
+                tr.appendChild(qtyTd);
+
+                const priceTd = document.createElement('td');
+                priceTd.textContent = item.unit_price;
+                tr.appendChild(priceTd);
+
+                const totalTd = document.createElement('td');
+                totalTd.textContent = item.line_total;
+                tr.appendChild(totalTd);
+
+                this.receiptItemsBody.appendChild(tr);
+
+                // Add to calculated total
+                this.calculatedTotal += (parseFloat(item.line_total) || 0);
             });
         } else {
-            this.receiptItemsList.innerHTML = '<li>No items extracted.</li>';
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.colSpan = 4;
+            td.textContent = 'No items extracted.';
+            td.style.textAlign = 'center';
+            tr.appendChild(td);
+            this.receiptItemsBody.appendChild(tr);
+        }
+
+        // Update calculated amount field
+        // Fix floating point precision issues
+        this.calculatedTotal = Math.round(this.calculatedTotal * 100) / 100;
+        this.calculatedAmountInput.value = this.calculatedTotal;
+
+        // Check if calculated amount matches total amount
+        // Allow for small floating point differences
+        if (Math.abs(this.calculatedTotal - parseFloat(totalAmount)) < 0.01) {
+            this.calculatedAmountInput.classList.add('success-match');
+        } else {
+            this.calculatedAmountInput.classList.remove('success-match');
         }
     }
 
@@ -433,7 +511,10 @@ class ReceiptScanner extends HTMLElement {
         this.parsedData = null;
         this.tempFileName = null;
         this.originalFileName = null;
+        this.calculatedTotal = 0;
         this.receiptForm.reset();
+        this.calculatedAmountInput.value = '';
+        this.calculatedAmountInput.classList.remove('success-match');
         this.parsedDataForm.style.display = 'none';
         this.dropArea.style.display = 'block';
         this._clearError();
