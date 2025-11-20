@@ -58,11 +58,11 @@ class OfficeAssistant {
                 case 'expenses':
                     this.loadExpensesSection();
                     break;
-                case 'upload':
-                    this.loadUploadSection();
+                case 'upload-bank-statement':
+                    this.loadUploadBankStatementSection();
                     break;
-                case 'calendar':
-                    this.loadCalendarSection();
+                case 'scan-receipt':
+                    this.loadScanReceiptSection();
                     break;
                 default:
                     this.showNotImplementedAlert(section);
@@ -84,8 +84,8 @@ class OfficeAssistant {
         `;
     }
 
-    loadUploadSection() {
-        console.log('Loading upload section...');
+    loadUploadBankStatementSection() {
+        console.log('Loading upload bank statement section...');
         const contentArea = document.getElementById('content-area');
         contentArea.className = 'bg-white rounded-lg shadow-md overflow-hidden';
         contentArea.innerHTML = `
@@ -95,6 +95,17 @@ class OfficeAssistant {
                     onload="console.log('Upload iframe loaded successfully')"
                     onerror="console.error('Upload iframe failed to load')">
             </iframe>
+        `;
+    }
+
+    loadScanReceiptSection() {
+        console.log('Loading scan receipt section...');
+        const contentArea = document.getElementById('content-area');
+        contentArea.className = 'bg-white rounded-lg shadow-md p-4 min-h-[70vh]';
+        contentArea.innerHTML = `
+            <div class="fade-in">
+                <receipt-scanner></receipt-scanner>
+            </div>
         `;
     }
 
@@ -311,7 +322,22 @@ class OfficeAssistant {
     }
 }
 
+// Make OfficeAssistant available globally for testing
+try {
+    if (typeof window !== 'undefined' && window) {
+        window.OfficeAssistant = OfficeAssistant;
+    }
+} catch (e) {
+    // Window not available in Node environment
+}
+
 // Initialize the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    window.app = new OfficeAssistant();
-});
+try {
+    if (typeof document !== 'undefined' && document) {
+        document.addEventListener('DOMContentLoaded', () => {
+            window.app = new OfficeAssistant();
+        });
+    }
+} catch (e) {
+    // Document not available in Node environment
+}

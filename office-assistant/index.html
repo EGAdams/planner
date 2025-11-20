@@ -29,17 +29,17 @@
         <nav class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-10 mt-2">
             <div class="container mx-auto px-4">
                 <div class="nav-container flex gap-2 overflow-x-auto">
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="expenses" data-active="true">
+                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="expenses" data-active="true" tabindex="0" aria-label="Expense Categorizer" title="Expense Categorizer">
                         <span class="text-2xl">💰</span>
                         <span class="text-xs md:text-sm font-medium">Expense Categorizer</span>
                     </button>
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="upload">
+                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="upload-bank-statement" data-active="false" tabindex="0" aria-label="Upload Bank Statement" title="Upload Bank Statement">
                         <span class="text-2xl">📤</span>
-                        <span class="text-xs md:text-sm font-medium">Upload to Computer</span>
+                        <span class="text-xs md:text-sm font-medium">Upload Bank Statement</span>
                     </button>
-                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="calendar">
-                        <span class="text-2xl">📅</span>
-                        <span class="text-xs md:text-sm font-medium">Calendar</span>
+                    <button class="nav-button flex flex-col items-center gap-1 px-4 py-3 min-w-[100px] rounded-t-lg transition-all hover:bg-gray-50 border-b-2 border-transparent data-[active=true]:bg-blue-600 data-[active=true]:text-white data-[active=true]:border-blue-600" data-section="scan-receipt" data-active="false" tabindex="0" aria-label="Scan Receipt" title="Scan Receipt">
+                        <span class="text-2xl">📸</span>
+                        <span class="text-xs md:text-sm font-medium">Scan Receipt</span>
                     </button>
                 </div>
             </div>
@@ -64,6 +64,7 @@
     </div>
 
     <script src="js/components/calendar.js"></script>
+    <script type="module" src="js/components/receipt-scanner.js"></script>
     <script src="js/app.js"></script>
     <script src="js/navigation.js"></script>
 </body>
