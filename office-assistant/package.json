@@ -1,0 +1,27 @@
+{
+  "name": "office-assistant",
+  "version": "1.0.0",
+  "description": "Office Assistant - Mom's Dashboard for financial management",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "dev": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "office-assistant",
+    "expense-tracker",
+    "receipt-scanner"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@vitest/ui": "^1.0.4",
+    "jsdom": "^23.0.1",
+    "playwright": "^1.56.1",
+    "vitest": "^1.0.4"
+  }
+}

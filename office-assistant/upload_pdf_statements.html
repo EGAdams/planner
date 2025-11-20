@@ -122,11 +122,6 @@
       </p>
     </div>
 
-    <!-- Receipt Scanner Component -->
-    <div style="margin: 24px 0;">
-      <receipt-scanner></receipt-scanner>
-    </div>
-
     <upload-component api-endpoint="/api/import-pdf"></upload-component>
 
     <div class="success-stats" id="successStats">
@@ -152,7 +147,6 @@
     </div>
   </div>
 
-<script type="module" src="./js/components/receipt-scanner.js"></script>
 <script type="module">
   import "./js/upload-component.js";
   import { on } from "./js/event-bus.js";
@@ -180,29 +174,6 @@
   // Listen for upload errors
   on("upload:error", (e) => {
     console.error("Upload error:", e.detail);
-  });
-
-  // Listen for receipt scanner events
-  on('receipt:saved', async (data) => {
-    console.log('Receipt saved event received:', data);
-    // Show a success message
-    const successMessage = document.createElement('div');
-    successMessage.className = 'info-box';
-    successMessage.style.backgroundColor = '#e8f5e9';
-    successMessage.style.borderLeft = '4px solid #4caf50';
-    successMessage.innerHTML = `
-      <h3 style="color: #2e7d32;">✅ Receipt Saved!</h3>
-      <p style="color: #555;">Receipt for ${data.merchant_name || 'expense'} has been saved successfully!</p>
-    `;
-    const container = document.querySelector('.upload-container');
-    const receiptScanner = container.querySelector('receipt-scanner').parentElement;
-    container.insertBefore(successMessage, receiptScanner);
-    setTimeout(() => successMessage.remove(), 5000); // Remove after 5 seconds
-  });
-
-  on('receipt:error', (data) => {
-    console.error('Receipt error event received:', data);
-    alert(`Error processing receipt: ${data.message}`);
   });
 </script>
 </body>

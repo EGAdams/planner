@@ -64,6 +64,9 @@ class OfficeAssistant {
                 case 'scan-receipt':
                     this.loadScanReceiptSection();
                     break;
+                case 'calendar':
+                    this.loadCalendarSection();
+                    break;
                 default:
                     this.showNotImplementedAlert(section);
             }

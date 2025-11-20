@@ -1,0 +1,73 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - heading "Mom's Dashboard" [level=1] [ref=e5]
+  - navigation [ref=e6]:
+    - generic [ref=e8]:
+      - button "Navigate to expenses" [ref=e9] [cursor=pointer]:
+        - generic [ref=e10]: 💰
+        - generic [ref=e11]: Expense Categorizer
+      - button "Navigate to upload-bank-statement" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: 📤
+        - generic [ref=e14]: Upload Bank Statement
+      - button "Navigate to scan-receipt" [ref=e15] [cursor=pointer]:
+        - generic [ref=e16]: 📸
+        - generic [ref=e17]: Scan Receipt
+  - main [ref=e18]:
+    - iframe [ref=e20]:
+      - generic [active] [ref=f1e1]:
+        - banner [ref=f1e2]:
+          - heading "Daily Expense Categorizer" [level=1] [ref=f1e3]
+          - generic [ref=f1e4]:
+            - generic [ref=f1e5]:
+              - text: "Month:"
+              - strong [ref=f1e6]: January 2025
+            - generic [ref=f1e7]:
+              - text: "Date:"
+              - strong [ref=f1e8]: 2025-01-05
+            - generic [ref=f1e9]:
+              - text: "Uncategorized:"
+              - strong [ref=f1e10]: "1"
+            - generic [ref=f1e11]:
+              - text: "Total (day):"
+              - strong [ref=f1e12]: $215.37
+        - generic [ref=f1e13]:
+          - text: Connected API at http://localhost:8000/api is unavailable. Showing sample data instead.
+          - link "Retry API" [ref=f1e14] [cursor=pointer]:
+            - /url: "?use_api=1"
+        - table "Transactions for the day" [ref=f1e15]:
+          - rowgroup [ref=f1e16]:
+            - row "Vendor / Description Amount Category Notes Status" [ref=f1e17]:
+              - cell "Vendor / Description" [ref=f1e18]
+              - cell "Amount" [ref=f1e19]
+              - cell "Category" [ref=f1e20]
+              - cell "Notes" [ref=f1e21]
+              - cell "Status" [ref=f1e22]
+          - rowgroup [ref=f1e23]:
+            - row "Priority Health ACH Withdrawal $215.37 Needs category" [ref=f1e24]:
+              - cell "Priority Health ACH Withdrawal" [ref=f1e25]:
+                - strong [ref=f1e26]: Priority Health
+                - text: ACH Withdrawal
+              - cell "$215.37" [ref=f1e27]
+              - cell [ref=f1e28]
+              - cell [ref=f1e29]:
+                - textbox "Add a note (optional)" [ref=f1e30]
+              - cell "Needs category" [ref=f1e31]
+          - rowgroup [ref=f1e32]:
+            - row "Showing transactions for 2025-01-05" [ref=f1e33]:
+              - cell "Showing transactions for 2025-01-05" [ref=f1e34]
+        - generic [ref=f1e35]:
+          - generic [ref=f1e36]:
+            - text: "Select month:"
+            - combobox "Select month:" [ref=f1e37]:
+              - option "January 2025" [selected]
+          - generic [ref=f1e38]:
+            - button "« First" [ref=f1e39] [cursor=pointer]
+            - button "‹ Previous" [ref=f1e40] [cursor=pointer]
+            - button "Next ›" [disabled] [ref=f1e41]
+            - button "Last »" [disabled] [ref=f1e42]
+  - contentinfo [ref=e21]:
+    - paragraph [ref=e22]: © 2025 Software Freelancer AI Expert - Office Assistant v1.0
+```

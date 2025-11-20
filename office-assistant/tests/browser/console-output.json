@@ -1,0 +1,48 @@
+{
+  "consoleMessages": {
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "[DEBUG] Failed to load main.js module!",
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "Error fetching categories: Error: Failed to fetch categories.\n    at ReceiptScanner._fetchCategories (http://localhost:8000/js/components/receipt-scanner.js:340:23)",
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "[upload-component] Error loading downloads: Error: Failed to fetch downloads: File not found\n    at UploadComponent.loadRecentDownloads (http://localhost:8000/js/upload-component.js:214:23)",
+      "Failed to load resource: the server responded with a status of 404 (File not found)",
+      "Error fetching categories: Error: Failed to fetch categories.\n    at ReceiptScanner._fetchCategories (http://localhost:8000/js/components/receipt-scanner.js:340:23)"
+    ],
+    "warnings": [
+      "cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation",
+      "[daily-expense-categorizer] Falling back to static data: Error: Primary request failed: 404 File not found\n    at fetchJsonWithFallback (http://localhost:8000/daily_expense_categorizer.html:325:13)\n    at async fetchCategories (http://localhost:8000/daily_expense_categorizer.html:349:26)\n    at async Promise.all (index 1)\n    at async loadData (http://localhost:8000/daily_expense_categorizer.html:430:42)",
+      "[daily-expense-categorizer] Falling back to static data: Error: Primary request failed: 404 File not found\n    at fetchJsonWithFallback (http://localhost:8000/daily_expense_categorizer.html:325:13)\n    at async fetchTransactions (http://localhost:8000/daily_expense_categorizer.html:342:10)\n    at async Promise.all (index 0)\n    at async loadData (http://localhost:8000/daily_expense_categorizer.html:430:42)"
+    ],
+    "logs": [
+      "Office Assistant initialized",
+      "Loading expenses section...",
+      "[DEBUG] Script starting execution...",
+      "[DEBUG] Window location: http://localhost:8000/daily_expense_categorizer.html",
+      "[DEBUG] Window port: 8000",
+      "[DEBUG] Calling loadData()...",
+      "[DEBUG] loadData() called",
+      "[DEBUG] Starting data load...",
+      "[DEBUG] UI elements initialized",
+      "[DEBUG] Fetching transactions and categories...",
+      "[DEBUG] API_BASE: http://localhost:8000/api",
+      "Iframe loaded successfully",
+      "[DEBUG] Loaded transactions: 5",
+      "[DEBUG] Loaded categories: 2",
+      "[DEBUG] Sample transaction: {id: 101, date: 2025-01-03, vendor: Great Lakes Energy, amount: 128.42, category: null}",
+      "[DEBUG] Rendering table...",
+      "[DEBUG] Render complete!",
+      "Loading upload bank statement section...",
+      "Upload iframe loaded successfully",
+      "Loading scan receipt section..."
+    ]
+  },
+  "networkErrors": [
+    "http://localhost:8000/office/js/main.js failed",
+    "http://localhost:8000/office/js/event-bus.js failed"
+  ]
+}
