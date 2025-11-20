@@ -36,10 +36,35 @@ Server api-server started with PID 455629
 Process api-server died unexpectedly
 Server api-server started with PID 460966
 Process api-server died unexpectedly
-already running on port 3000
-Verification:
-✓ Admin Dashboard Server is running on port 3000
-=== Dashboard Startup: Wed Nov 19 20:06:51 EST 2025 ===
-Admin Dashboard Server already running on port 3000
-Verification:
-✓ Admin Dashboard Server is running on port 3000
+Server api-server started with PID 1447637
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 1451347
+Process api-server died unexpectedly
+Server api-server started with PID 1458778
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 1461183
+Process api-server died unexpectedly
+Docling report error: Error: Command failed: python3 "/home/adamsl/planner/docling/test_january_statement.py"
+Traceback (most recent call last):
+  File "/home/adamsl/planner/docling/test_january_statement.py", line 9, in <module>
+    from docling.document_converter import DocumentConverter
+ModuleNotFoundError: No module named 'docling'
+
+    at genericNodeError (node:internal/errors:983:15)
+    at wrappedFn (node:internal/errors:537:14)
+    at ChildProcess.exithandler (node:child_process:417:12)
+    at ChildProcess.emit (node:events:519:28)
+    at maybeClose (node:internal/child_process:1101:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:304:5) {
+  code: 1,
+  killed: false,
+  signal: null,
+  cmd: 'python3 "/home/adamsl/planner/docling/test_january_statement.py"',
+  stdout: '',
+  stderr: 'Traceback (most recent call last):\n' +
+    '  File "/home/adamsl/planner/docling/test_january_statement.py", line 9, in <module>\n' +
+    '    from docling.document_converter import DocumentConverter\n' +
+    "ModuleNotFoundError: No module named 'docling'\n"
+}

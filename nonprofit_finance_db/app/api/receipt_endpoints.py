@@ -30,13 +30,24 @@ class SaveReceiptRequest(BaseModel):
     expense_date: date
     total_amount: float
     tax_amount: Optional[float] = 0.0
-    category_id: int
+    category_id: Optional[int] = None
     payment_method: PaymentMethod
     description: Optional[str] = None
     original_file_name: str # The original filename from the user upload
     temp_file_name: str    # The temporary filename saved on the server
     parsed_items: List[ReceiptItem] = []
     # Add other fields from ReceiptExtractionResult if needed for manual override
+
+
+class ReceiptItemCategorizationRequest(BaseModel):
+    org_id: int
+    merchant_name: str
+    expense_date: date
+    amount: float
+    category_id: int
+    description: Optional[str] = None
+    method: PaymentMethod
+    receipt_url: Optional[str] = None
 
 @router.post("/parse-receipt", response_model=ParseReceiptResponse)
 async def parse_receipt_endpoint(file: UploadFile = File(...)):
@@ -53,6 +64,38 @@ async def parse_receipt_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error parsing receipt: {e}")
 
+
+@router.post("/receipt-items")
+async def create_receipt_item(request: ReceiptItemCategorizationRequest):
+    """
+    Persist a single categorized receipt line item as an expense entry.
+    Only categorized lines are written; uncategorized items are ignored.
+    """
+    try:
+        expense_id = expense_repo.insert({
+            "org_id": request.org_id,
+            "expense_date": request.expense_date,
+            "amount": request.amount,
+            "category_id": request.category_id,
+            "description": request.description or request.merchant_name,
+            "method": request.method,
+            "receipt_url": request.receipt_url,
+        })
+        return {"expense_id": expense_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving categorized item: {e}")
+
+
+@router.delete("/receipt-items/{expense_id}")
+async def delete_receipt_item(expense_id: int):
+    """Remove a previously stored categorized receipt line item."""
+    try:
+        expense_repo.delete(expense_id)
+        return {"success": True, "expense_id": expense_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting categorized item: {e}")
+
+
 @router.post("/save-receipt")
 async def save_receipt_endpoint(request: SaveReceiptRequest):
     """
@@ -60,38 +103,49 @@ async def save_receipt_endpoint(request: SaveReceiptRequest):
     Moves the temporary receipt file to permanent storage.
     """
     try:
-        # Move temporary file to permanent storage
-        # We need the original filename and mime_type to correctly determine the permanent path and extension
-        # For now, we'll assume the original_file_name from the request is sufficient.
-        # In a more robust system, the mime_type would also be passed or derived from the temp file.
         permanent_receipt_url = await receipt_parser.move_temp_file_to_permanent(
             request.temp_file_name,
             request.original_file_name,
-            "application/octet-stream" # Placeholder, actual mime_type should be stored with temp file
+            "application/octet-stream"
         )
 
-        # Create expense entry
-        expense_id = expense_repo.insert({
-            "org_id": request.org_id,
-            "expense_date": request.expense_date,
-            "amount": request.total_amount,
-            "category_id": request.category_id,
-            "description": request.description,
-            "method": request.payment_method,
-            "receipt_url": permanent_receipt_url, # Use the permanent URL
-        })
+        categorized_items = [
+            item for item in request.parsed_items
+            if getattr(item, "category_id", None) is not None
+        ]
 
-        # Save receipt metadata (assuming we have the full parsed data from the frontend)
-        # This part needs to be refined. The frontend should send the full parsed_data
-        # or we need to retrieve it from a temporary storage using receipt_file_path.
-        # For now, let's assume we have enough info to save metadata.
-        # In a real app, the parsed_data would be stored temporarily after /parse-receipt
-        # and retrieved here.
-        
-        # Placeholder for metadata - needs actual parsed data
+        if not categorized_items:
+            receipt_parser.cleanup_temp_file(request.temp_file_name)
+            raise HTTPException(
+                status_code=400,
+                detail="No categorized items provided; uncategorized lines are ignored."
+            )
+
+        created_expense_ids: List[int] = []
+        for item in categorized_items:
+            data = {
+                "org_id": request.org_id,
+                "expense_date": request.expense_date,
+                "amount": item.line_total,
+                "category_id": item.category_id,
+                "description": item.description or request.merchant_name,
+                "method": request.payment_method,
+                "receipt_url": permanent_receipt_url,
+            }
+
+            item_expense_id = getattr(item, "expense_id", None)
+            if item_expense_id:
+                expense_repo.update(item_expense_id, data)
+                expense_id = item_expense_id
+            else:
+                expense_id = expense_repo.insert(data)
+
+            created_expense_ids.append(expense_id)
+
+        primary_expense_id = created_expense_ids[0]
         receipt_metadata_repo.create(
-            expense_id=expense_id,
-            model_name="gemini-1.5-flash", # Hardcoded for now
+            expense_id=primary_expense_id,
+            model_name="gemini-1.5-flash",
             model_provider="google",
             engine_version=None,
             parsing_confidence=None,
@@ -99,15 +153,16 @@ async def save_receipt_endpoint(request: SaveReceiptRequest):
             raw_response=None,
         )
 
-        # Clean up temporary file
         receipt_parser.cleanup_temp_file(request.temp_file_name)
 
         return JSONResponse(content={
-            "expense_id": expense_id,
+            "expense_ids": created_expense_ids,
             "receipt_url": permanent_receipt_url,
             "status": "created",
-            "message": "Expense saved successfully"
+            "message": "Categorized expenses saved successfully"
         }, status_code=201)
+    except HTTPException:
+        raise
     except Exception as e:
         # If an error occurs, attempt to clean up the temp file
         receipt_parser.cleanup_temp_file(request.temp_file_name)

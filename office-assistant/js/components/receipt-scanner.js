@@ -1,4 +1,5 @@
 import { emit, on } from '../event-bus.js';
+import '../category-picker.js';
 
 class ReceiptScanner extends HTMLElement {
     constructor() {
@@ -171,6 +172,7 @@ class ReceiptScanner extends HTMLElement {
                                         <th>Quantity</th>
                                         <th>Price</th>
                                         <th>Total</th>
+                                        <th>Category</th>
                                     </tr>
                                 </thead>
                                 <tbody id="receiptItemsBody">
@@ -235,9 +237,24 @@ class ReceiptScanner extends HTMLElement {
         this.saveButton = this.shadowRoot.getElementById('saveButton');
         this.categoryIdSelect = this.shadowRoot.getElementById('categoryId');
         this.calculatedAmountInput = this.shadowRoot.getElementById('calculatedAmount');
+        this.categoryOptions = [];
+        this.categoriesPromise = null;
+        this.orgId = 1; // Default org; can be overridden via host context
+        this.apiBase = this._computeApiBase();
 
         this._setupEventListeners();
-        this._fetchCategories();
+        this.categoriesPromise = this._fetchCategories();
+    }
+
+    _computeApiBase() {
+        const { protocol, hostname, port } = window.location;
+        if (port === '8081' || port === '8000') {
+            return `${protocol}//${hostname}:8080/api`;
+        }
+        if (port && port !== '') {
+            return `${protocol}//${hostname}:${port}/api`;
+        }
+        return `${protocol}//${hostname}/api`;
     }
 
     _setupEventListeners() {
@@ -301,7 +318,7 @@ class ReceiptScanner extends HTMLElement {
         formData.append('file', file);
 
         try {
-            const response = await fetch('/api/parse-receipt', {
+            const response = await fetch(`${this.apiBase}/parse-receipt`, {
                 method: 'POST',
                 body: formData,
             });
@@ -330,7 +347,7 @@ class ReceiptScanner extends HTMLElement {
             const result = await response.json();
             this.parsedData = result.parsed_data;
             this.tempFileName = result.temp_file_name;
-            this._populateForm();
+            await this._populateForm();
             this._showLoading(false);
             this.parsedDataForm.style.display = 'block';
             emit('receipt:parsed', this.parsedData);
@@ -344,8 +361,16 @@ class ReceiptScanner extends HTMLElement {
         }
     }
 
-    _populateForm() {
+    async _populateForm() {
         if (!this.parsedData) return;
+
+        if (this.categoriesPromise) {
+            try {
+                await this.categoriesPromise;
+            } catch (err) {
+                console.error('Failed to load categories for category-picker:', err);
+            }
+        }
 
         const form = this.receiptForm;
         form.elements.merchantName.value = this.parsedData.party.merchant_name || '';
@@ -363,9 +388,9 @@ class ReceiptScanner extends HTMLElement {
         this.calculatedTotal = 0;
 
         if (this.parsedData.items && this.parsedData.items.length > 0) {
-            this.parsedData.items.forEach(item => {
+            this.parsedData.items.forEach((item, index) => {
                 const tr = document.createElement('tr');
-                
+
                 const nameTd = document.createElement('td');
                 nameTd.textContent = item.description;
                 tr.appendChild(nameTd);
@@ -382,15 +407,56 @@ class ReceiptScanner extends HTMLElement {
                 totalTd.textContent = item.line_total;
                 tr.appendChild(totalTd);
 
+                // Add category picker column
+                const categoryTd = document.createElement('td');
+                const categoryPicker = document.createElement('category-picker');
+                categoryPicker.setAttribute('expense-id', item.expense_id ? `expense-${item.expense_id}` : `item-${index}`);
+                categoryPicker.setAttribute('placeholder', 'Select category...');
+
+                // Attach inline taxonomy matching the Daily Expense Categorizer page
+                const taxonomy = document.createElement('script');
+                taxonomy.type = 'application/json';
+                taxonomy.textContent = JSON.stringify(this.categoryOptions || []);
+                categoryPicker.appendChild(taxonomy);
+
+                // Rehydrate existing category selection if present
+                if (Array.isArray(item.category_path) && item.category_path.length > 0) {
+                    const setValue = () => {
+                        const selectEl = categoryPicker.shadowRoot?.querySelector('select');
+                        if (selectEl && selectEl.options.length > 1) {
+                            categoryPicker.value = item.category_path.join(' / ');
+                        } else {
+                            setTimeout(setValue, 50);
+                        }
+                    };
+                    setTimeout(setValue, 0);
+                }
+
+                // Listen for category selection
+                categoryPicker.addEventListener('completed', async (e) => {
+                    await this._handleCategorySelection(index, e.detail);
+                });
+
+                // Listen for category reset
+                categoryPicker.addEventListener('reset', async () => {
+                    await this._clearCategorizedItem(index);
+                });
+
+                categoryTd.appendChild(categoryPicker);
+                tr.appendChild(categoryTd);
+
                 this.receiptItemsBody.appendChild(tr);
 
                 // Add to calculated total
-                this.calculatedTotal += (parseFloat(item.line_total) || 0);
+                const normalizedLineTotal = parseFloat(item.line_total || 0);
+                this.calculatedTotal += Number.isFinite(normalizedLineTotal)
+                    ? normalizedLineTotal
+                    : 0;
             });
         } else {
             const tr = document.createElement('tr');
             const td = document.createElement('td');
-            td.colSpan = 4;
+            td.colSpan = 5; // Updated colspan for new category column
             td.textContent = 'No items extracted.';
             td.style.textAlign = 'center';
             tr.appendChild(td);
@@ -413,11 +479,12 @@ class ReceiptScanner extends HTMLElement {
 
     async _fetchCategories() {
         try {
-            const response = await fetch('/api/categories');
+            const response = await fetch(`${this.apiBase}/categories`);
             if (!response.ok) {
                 throw new Error('Failed to fetch categories.');
             }
             const categories = await response.json();
+            this.categoryOptions = this._buildCategoryTree(categories);
             this.categoryIdSelect.innerHTML = '<option value="">Select Category</option>';
             categories.forEach(cat => {
                 const option = document.createElement('option');
@@ -431,6 +498,149 @@ class ReceiptScanner extends HTMLElement {
         }
     }
 
+    _buildCategoryTree(categories) {
+        const map = {};
+        const roots = [];
+
+        categories.forEach(cat => {
+            map[cat.id] = {
+                id: String(cat.id),
+                label: cat.name,
+                children: [],
+                _original: cat,
+            };
+        });
+
+        categories.forEach(cat => {
+            const node = map[cat.id];
+            if (cat.parent_id && map[cat.parent_id]) {
+                map[cat.parent_id].children.push(node);
+            } else {
+                roots.push(node);
+            }
+        });
+
+        Object.values(map).forEach(node => {
+            if (node.children.length === 0) {
+                delete node.children;
+            }
+        });
+
+        return roots;
+    }
+
+    _findCategoryNodeByPath(path) {
+        let current = this.categoryOptions || [];
+        let found = null;
+
+        for (const label of path) {
+            const next = (current || []).find(node => node.label === label);
+            if (!next) return null;
+            found = next;
+            current = next.children || [];
+        }
+
+        return found;
+    }
+
+    async _handleCategorySelection(index, detail) {
+        if (!this.parsedData?.items?.[index]) {
+            return;
+        }
+
+        const path = detail?.path || [];
+        const categoryNode = this._findCategoryNodeByPath(path);
+
+        if (!categoryNode || !categoryNode._original) {
+            console.error('Could not resolve category for path:', path);
+            return;
+        }
+
+        const item = this.parsedData.items[index];
+        item.category = detail.label;
+        item.category_path = path;
+        item.category_id = categoryNode._original.id;
+
+        await this._persistCategorizedItem(index, categoryNode._original.id);
+    }
+
+    async _persistCategorizedItem(index, categoryId) {
+        const item = this.parsedData?.items?.[index];
+        if (!item) return;
+
+        const amount = parseFloat(item.line_total ?? (item.unit_price || 0) * (item.quantity || 0)) || 0;
+        const expenseDate = this.receiptForm?.elements.transactionDate.value || this.parsedData.transaction_date;
+        const merchantName = this.receiptForm?.elements.merchantName.value || this.parsedData.party.merchant_name || 'Unknown merchant';
+        const paymentMethod = this.receiptForm?.elements.paymentMethod.value || this.parsedData.payment_method || 'OTHER';
+
+        const payload = {
+            org_id: this.orgId,
+            merchant_name: merchantName,
+            expense_date: expenseDate,
+            amount,
+            category_id: categoryId,
+            description: item.description || merchantName,
+            method: paymentMethod,
+            receipt_url: null,
+        };
+
+        try {
+            if (item.expense_id) {
+                await fetch(`${this.apiBase}/expenses/${item.expense_id}/category`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ category_id: categoryId }),
+                });
+            } else {
+                const response = await fetch(`${this.apiBase}/receipt-items`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(text || 'Failed to store categorized item.');
+                }
+
+                const data = await response.json();
+                item.expense_id = data.expense_id;
+            }
+        } catch (error) {
+            console.error('Error persisting categorized item:', error);
+            this.errorMessage.textContent = error?.message || 'Failed to save category selection.';
+            this.errorMessage.style.display = 'block';
+        }
+    }
+
+    async _clearCategorizedItem(index) {
+        const item = this.parsedData?.items?.[index];
+        if (!item) return;
+
+        if (item.expense_id) {
+            try {
+                const response = await fetch(`${this.apiBase}/receipt-items/${item.expense_id}`, {
+                    method: 'DELETE',
+                });
+                if (!response.ok) {
+                    const text = await response.text();
+                    console.error('Failed to delete categorized item:', text);
+                }
+            } catch (error) {
+                console.error('Error clearing categorized item:', error);
+            }
+        }
+
+        delete item.category;
+        delete item.category_path;
+        delete item.category_id;
+        delete item.expense_id;
+    }
+
     async _handleSave(event) {
         event.preventDefault();
         this._showLoading(true);
@@ -439,28 +649,48 @@ class ReceiptScanner extends HTMLElement {
         const form = this.receiptForm;
         const selectedCategoryId = form.elements.categoryId.value;
 
-        if (!selectedCategoryId) {
-            this._showError('Please select a category.');
+        const categorizedItems = (this.parsedData.items || []).filter(
+            (item) => item.category_id
+        );
+
+        if (categorizedItems.length === 0) {
+            this._showError('Categorize at least one line item to save.');
             this._showLoading(false);
             return;
         }
 
+        const formattedItems = categorizedItems.map((item) => {
+            const qty = parseFloat(item.quantity || 0) || 0;
+            const unit = parseFloat(item.unit_price || 0) || 0;
+            const line = parseFloat(item.line_total || qty * unit) || 0;
+
+            return {
+                description: item.description || form.elements.description.value || form.elements.merchantName.value,
+                quantity: qty,
+                unit_price: unit,
+                line_total: line,
+                category_id: item.category_id,
+                category_path: item.category_path || [],
+                expense_id: item.expense_id,
+            };
+        });
+
         const saveRequest = {
-            org_id: 1, // Hardcoded for now, should come from user context
+            org_id: this.orgId, // Hardcoded for now, should come from user context
             merchant_name: form.elements.merchantName.value,
             expense_date: form.elements.transactionDate.value,
             total_amount: parseFloat(form.elements.totalAmount.value),
             tax_amount: parseFloat(form.elements.taxAmount.value) || 0.0,
-            category_id: parseInt(selectedCategoryId),
+            category_id: selectedCategoryId ? parseInt(selectedCategoryId) : null,
             payment_method: form.elements.paymentMethod.value,
             description: form.elements.description.value,
             original_file_name: this.originalFileName,
             temp_file_name: this.tempFileName,
-            parsed_items: this.parsedData.items || [],
+            parsed_items: formattedItems,
         };
 
         try {
-            const response = await fetch('/api/save-receipt', {
+            const response = await fetch(`${this.apiBase}/save-receipt`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -489,7 +719,7 @@ class ReceiptScanner extends HTMLElement {
 
             const result = await response.json();
             console.log('Expense saved:', result);
-            this._resetForm();
+            await this._resetForm(true);
             this._showLoading(false);
             emit('receipt:saved', result);
 
@@ -502,16 +732,34 @@ class ReceiptScanner extends HTMLElement {
         }
     }
 
-    _handleCancel() {
-        this._resetForm();
+    async _handleCancel() {
+        await this._resetForm();
         emit('receipt:cancelled');
     }
 
-    _resetForm() {
+    async _resetForm(skipDbCleanup = false) {
+        const expenseIds = (this.parsedData?.items || [])
+            .map(item => item.expense_id)
+            .filter(Boolean);
+
+        if (!skipDbCleanup && expenseIds.length > 0) {
+            await Promise.all(expenseIds.map(async (id) => {
+                try {
+                    const response = await fetch(`/api/receipt-items/${id}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        console.error('Failed to clean up expense', id);
+                    }
+                } catch (error) {
+                    console.error('Error cleaning up expense', id, error);
+                }
+            }));
+        }
+
         this.parsedData = null;
         this.tempFileName = null;
         this.originalFileName = null;
         this.calculatedTotal = 0;
+        this.receiptItemsBody.innerHTML = '';
         this.receiptForm.reset();
         this.calculatedAmountInput.value = '';
         this.calculatedAmountInput.classList.remove('success-match');

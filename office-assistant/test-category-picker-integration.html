@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Picker Integration Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Category Picker Integration Test</h1>
+
+        <div class="mb-4 p-4 bg-blue-100 rounded">
+            <h2 class="font-bold mb-2">Test Instructions:</h2>
+            <ol class="list-decimal list-inside space-y-1">
+                <li>Click "Run Integration Test" to populate the table with mock receipt data</li>
+                <li>Verify that a Category column appears in the table header</li>
+                <li>Verify that each row has a category-picker component</li>
+                <li>Select categories for different items and verify they are independent</li>
+                <li>Check the test results section for automated verification</li>
+            </ol>
+        </div>
+
+        <receipt-scanner id="scanner"></receipt-scanner>
+
+        <div id="test-controls" class="mt-4 p-4 border rounded bg-gray-100">
+            <button id="run-test-btn" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Run Integration Test
+            </button>
+            <button id="check-categories-btn" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-2">
+                Check Category Data
+            </button>
+            <div id="test-results" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script type="module" src="./js/components/receipt-scanner.js"></script>
+    <script type="module">
+        const mockReceiptData = {
+            party: { merchant_name: "TEST GROCERY STORE" },
+            transaction_date: "2024-01-15",
+            totals: { total_amount: 45.97, tax_amount: 3.50 },
+            payment_method: "CARD",
+            meta: { raw_text: "Mock receipt for testing" },
+            items: [
+                { description: "Organic Bananas", quantity: 2, unit_price: 5.99, line_total: 11.98 },
+                { description: "Whole Milk", quantity: 1, unit_price: 4.99, line_total: 4.99 },
+                { description: "Coffee Beans", quantity: 1, unit_price: 12.99, line_total: 12.99 },
+                { description: "Notebook", quantity: 3, unit_price: 5.34, line_total: 16.01 }
+            ]
+        };
+
+        document.getElementById('run-test-btn').addEventListener('click', () => {
+            const scanner = document.getElementById('scanner');
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = '<h3 class="font-bold text-lg mb-2">Running Tests...</h3>';
+
+            // Populate scanner with mock data
+            scanner.parsedData = mockReceiptData;
+            scanner._populateForm();
+            scanner.parsedDataForm.style.display = 'block';
+
+            setTimeout(() => {
+                const shadow = scanner.shadowRoot;
+                const table = shadow.querySelector('#receiptItemsTable');
+                const headers = table.querySelectorAll('thead th');
+                const rows = shadow.querySelectorAll('#receiptItemsBody tr');
+
+                let results = '<h3 class="font-bold text-lg mb-2">Test Results:</h3>';
+                results += '<div class="space-y-2">';
+
+                // Test 1: Category column in header
+                const hasCategoryColumn = headers.length === 5 && headers[4].textContent === 'Category';
+                results += `<div class="${hasCategoryColumn ? 'text-green-700' : 'text-red-700'}">`;
+                results += `${hasCategoryColumn ? '✓' : '✗'} Test 1: Category column in header - `;
+                results += `Found ${headers.length} columns (expected 5), last column: "${headers[4]?.textContent}"`;
+                results += '</div>';
+
+                // Test 2: Category pickers in rows
+                const categoryPickers = shadow.querySelectorAll('category-picker');
+                const hasCorrectPickerCount = categoryPickers.length === 4;
+                results += `<div class="${hasCorrectPickerCount ? 'text-green-700' : 'text-red-700'}">`;
+                results += `${hasCorrectPickerCount ? '✓' : '✗'} Test 2: Category pickers in rows - `;
+                results += `Found ${categoryPickers.length} pickers (expected 4)`;
+                results += '</div>';
+
+                // Test 3: Proper attributes
+                const firstPicker = categoryPickers[0];
+                const hasExpenseId = firstPicker?.hasAttribute('expense-id');
+                const expenseIdValue = firstPicker?.getAttribute('expense-id');
+                results += `<div class="${hasExpenseId ? 'text-green-700' : 'text-red-700'}">`;
+                results += `${hasExpenseId ? '✓' : '✗'} Test 3: Category picker has expense-id - `;
+                results += `Value: "${expenseIdValue}" (expected "item-0")`;
+                results += '</div>';
+
+                // Test 4: Data source attribute
+                const hasDataSrc = firstPicker?.hasAttribute('data-src');
+                const dataSrcValue = firstPicker?.getAttribute('data-src');
+                results += `<div class="${hasDataSrc ? 'text-green-700' : 'text-red-700'}">`;
+                results += `${hasDataSrc ? '✓' : '✗'} Test 4: Category picker has data-src - `;
+                results += `Value: "${dataSrcValue}"`;
+                results += '</div>';
+
+                // Test 5: Placeholder attribute
+                const hasPlaceholder = firstPicker?.hasAttribute('placeholder');
+                results += `<div class="${hasPlaceholder ? 'text-green-700' : 'text-red-700'}">`;
+                results += `${hasPlaceholder ? '✓' : '✗'} Test 5: Category picker has placeholder`;
+                results += '</div>';
+
+                results += '</div>';
+
+                // Summary
+                const allTestsPassed = hasCategoryColumn && hasCorrectPickerCount && hasExpenseId && hasDataSrc && hasPlaceholder;
+                results += `<div class="mt-4 p-3 rounded ${allTestsPassed ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'}">`;
+                results += `<strong>${allTestsPassed ? 'All basic tests passed! ✓' : 'Some tests need attention'}</strong>`;
+                results += '</div>';
+
+                resultsDiv.innerHTML = results;
+            }, 200);
+        });
+
+        document.getElementById('check-categories-btn').addEventListener('click', () => {
+            const scanner = document.getElementById('scanner');
+            const resultsDiv = document.getElementById('test-results');
+
+            let results = '<h3 class="font-bold text-lg mb-2">Category Data Check:</h3>';
+            results += '<div class="space-y-2">';
+
+            if (scanner.parsedData && scanner.parsedData.items) {
+                scanner.parsedData.items.forEach((item, index) => {
+                    results += `<div class="border-l-4 ${item.category ? 'border-green-500 bg-green-50' : 'border-gray-300 bg-gray-50'} p-2">`;
+                    results += `<strong>Item ${index + 1}:</strong> ${item.description}<br>`;
+                    results += `<strong>Category:</strong> ${item.category || '<em>Not selected</em>'}<br>`;
+                    if (item.categoryPath) {
+                        results += `<strong>Path:</strong> ${item.categoryPath.join(' / ')}`;
+                    }
+                    results += '</div>';
+                });
+            } else {
+                results += '<div class="text-red-700">No receipt data loaded. Run Integration Test first.</div>';
+            }
+
+            results += '</div>';
+            resultsDiv.innerHTML = results;
+        });
+    </script>
+</body>
+</html>

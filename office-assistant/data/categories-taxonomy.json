@@ -1,0 +1,61 @@
+[
+  {
+    "id": "housing",
+    "label": "Housing",
+    "children": [
+      {
+        "id": "housing-payment",
+        "label": "Housing Payment",
+        "children": [
+          { "id": "mortgage", "label": "Mortgage" }
+        ]
+      },
+      {
+        "id": "utilities",
+        "label": "Utilities",
+        "children": [
+          { "id": "water", "label": "Water" },
+          { "id": "electric", "label": "Electric" }
+        ]
+      },
+      { "id": "taxes-insurance", "label": "Taxes & Insurance" },
+      { "id": "upkeep", "label": "Upkeep" },
+      { "id": "services", "label": "Services" },
+      { "id": "misc-housing", "label": "Miscellaneous" }
+    ]
+  },
+  {
+    "id": "church",
+    "label": "Church",
+    "children": [
+      { "id": "facility-payment", "label": "Facility Payment" },
+      { "id": "facility-upkeep", "label": "Facility Upkeep" },
+      { "id": "education-music", "label": "Education & Music" },
+      {
+        "id": "travel-transportation",
+        "label": "Travel & Transportation",
+        "children": [
+          { "id": "vehicle-maintenance", "label": "Vehicle Maintenance" }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "food-dining",
+    "label": "Food & Dining",
+    "children": [
+      { "id": "groceries", "label": "Groceries" },
+      { "id": "restaurants", "label": "Restaurants" },
+      { "id": "coffee-shops", "label": "Coffee Shops" }
+    ]
+  },
+  {
+    "id": "shopping",
+    "label": "Shopping",
+    "children": [
+      { "id": "clothing", "label": "Clothing" },
+      { "id": "electronics", "label": "Electronics" },
+      { "id": "general-merchandise", "label": "General Merchandise" }
+    ]
+  }
+]

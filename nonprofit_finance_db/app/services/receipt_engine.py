@@ -32,9 +32,28 @@ class GeminiReceiptEngine(ReceiptEngine):
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable not set.")
         genai.configure(api_key=api_key)
-        # Using gemini-flash-latest - Pro model not available in current API version
-        # Flash is less accurate but still good, and much faster/cheaper
-        self.model = genai.GenerativeModel('gemini-flash-latest')
+        
+        # Try models in order of preference (best OCR accuracy first)
+        # Updated to use Gemini 2.5/2.0 models (1.5 models are deprecated)
+        model_names = [
+            'gemini-2.5-pro',
+            'gemini-2.5-flash',
+            'gemini-2.0-flash',
+            'gemini-pro-latest'
+        ]
+        
+        self.model = None
+        for model_name in model_names:
+            try:
+                self.model = genai.GenerativeModel(model_name)
+                print(f"Successfully initialized Gemini model: {model_name}")
+                break
+            except Exception as e:
+                print(f"Failed to initialize {model_name}: {e}")
+                continue
+        
+        if not self.model:
+            raise ValueError(f"Could not initialize any Gemini model. Tried: {model_names}")
 
     async def parse_receipt(self, image_data: bytes, image_mime_type: str) -> ReceiptExtractionResult:
         prompt = self._get_prompt()
@@ -46,8 +65,14 @@ class GeminiReceiptEngine(ReceiptEngine):
         contents = [prompt, image_part]
 
         try:
+            # Lower temperature for more deterministic, accurate OCR
             response = await self.model.generate_content_async(contents,
-                                                                generation_config={"response_mime_type": "application/json"})
+                                                                generation_config={
+                                                                    "response_mime_type": "application/json",
+                                                                    "temperature": 0.1,
+                                                                    "top_p": 0.8,
+                                                                    "top_k": 20
+                                                                })
             
             # Assuming the response is directly the JSON string
             json_response = response.text
@@ -72,7 +97,7 @@ class GeminiReceiptEngine(ReceiptEngine):
         # This prompt instructs Gemini to extract structured data from a receipt image.
         # It's crucial to be very specific about the desired JSON format.
         return """
-        You are an expert at extracting structured data from receipt images.
+        You are an expert at extracting structured data from receipt images with EXTREME ACCURACY.
         Your task is to parse the provided receipt image and return the extracted information
         as a JSON object that strictly conforms to the following Pydantic model schema:
 
@@ -112,12 +137,30 @@ class GeminiReceiptEngine(ReceiptEngine):
         }
         ```
         
-        CRITICAL RULES:
+        CRITICAL OCR ACCURACY RULES:
+        
+        **DIGIT CONFUSION PREVENTION** (MOST IMPORTANT):
+        - Be EXTREMELY careful distinguishing these commonly confused digits:
+          * 4 vs 9 (4 is angular, 9 is curved at top)
+          * 3 vs 8 (3 has two curves, 8 has two loops)
+          * 5 vs 6 (5 has flat top, 6 is fully curved)
+          * 0 vs 8 (0 is oval, 8 has two loops)
+          * 1 vs 7 (7 has horizontal top bar)
+        - When you see a price, ZOOM IN mentally and examine each digit carefully
+        - Cross-reference prices with the line total: if quantity=1 and unit_price doesn't match line_total, you made an OCR error
+        - Grocery items typically cost $0.99-$15.99, use this context to validate readings
+        
+        **VERIFICATION STEPS** (MANDATORY):
+        1. After extracting each item, verify: quantity × unit_price = line_total
+        2. After extracting all items, verify: sum of line_totals ≈ subtotal (within $0.50)
+        3. If verification fails, RE-READ the receipt more carefully before finalizing
+        4. Pay special attention to items with prices ending in .49, .99, .89, .79 - these are common grocery prices
+        
+        **EXTRACTION RULES**:
         - ONLY extract items that are CLEARLY VISIBLE on the receipt as purchased items or discounts
         - DO NOT create "balancing" items, "unidentified" items, or phantom items to make totals match
         - DO NOT invent items like "UNIDENTIFIED ITEM", "MISC FEE", or similar
-        - If the totals don't match the sum of items, that's OK - just extract what you see
-        - Be VERY CAREFUL with OCR - double-check prices and quantities
+        - If the totals don't match the sum of items after careful verification, that's OK - just extract what you see accurately
         - Negative prices are OK for discounts/coupons (e.g., "COUPON -$1.39")
         - For `payment_method`, choose from the exact enum values: "CASH", "CARD", "BANK", "OTHER"
         - If a field is optional and not found, set it to `null`
@@ -125,5 +168,6 @@ class GeminiReceiptEngine(ReceiptEngine):
         - `currency` should default to "USD" if not explicitly found
         - Provide `model_name`, `model_provider`, `engine_version` in `meta` if available from the tool
         - Do not include any other text or explanation, just the JSON object
-        - Take your time to read prices carefully - OCR errors are common with similar-looking digits (e.g., 8 vs 9)
+        
+        **FINAL CHECK**: Before returning the JSON, ask yourself: "Did I carefully examine each digit in every price? Did I verify the math?"
         """

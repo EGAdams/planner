@@ -13,6 +13,9 @@ class ReceiptItem(BaseModel):
     quantity: float = Field(1.0, ge=0)  # Quantity should be positive
     unit_price: float  # Allow negative for discounts/coupons
     line_total: float  # Allow negative for discounts/coupons
+    category_id: Optional[int] = None
+    category_path: Optional[List[str]] = None
+    expense_id: Optional[int] = None
 
     @validator("line_total", always=True)
     def compute_line_total(cls, v, values):
