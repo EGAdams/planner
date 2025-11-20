@@ -161,7 +161,7 @@ CREATE TABLE `expenses` (
   `org_id` bigint unsigned NOT NULL,
   `expense_date` date NOT NULL,
   `amount` decimal(12,2) NOT NULL,
-  `category_id` bigint unsigned NOT NULL,
+  `category_id` bigint unsigned DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `paid_by_contact_id` bigint unsigned DEFAULT NULL,
   `method` enum('CASH','CARD','BANK','OTHER') NOT NULL DEFAULT 'OTHER',

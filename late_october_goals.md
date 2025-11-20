@@ -43,6 +43,7 @@ D2 - Red Serves after Green Always (Dev 2)
 We need to open a shell and start the mcp server before an agent can use chrome-devtools-mcp
 
 ```bash
+source planner/.venv/bin/activate
 (planner) adamsl@DESKTOP-2OBSQMC:~/planner$ npx -y chrome-devtools-mcp --browser-url http://127.0.0.1:9222
 chrome-devtools-mcp exposes content of the browser instance to the MCP clients allowing them to inspect,
 debug, and modify any data in the browser or DevTools.

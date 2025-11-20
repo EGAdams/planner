@@ -80,7 +80,7 @@ CREATE TABLE expenses (
   org_id             BIGINT UNSIGNED NOT NULL,
   expense_date       DATE NOT NULL,
   amount             DECIMAL(12,2) NOT NULL,
-  category_id        BIGINT UNSIGNED NOT NULL,
+  category_id        BIGINT UNSIGNED NULL,
   description        VARCHAR(255),
   paid_by_contact_id BIGINT UNSIGNED NULL,
   method             ENUM('CASH','CARD','BANK','OTHER') NOT NULL DEFAULT 'OTHER',
