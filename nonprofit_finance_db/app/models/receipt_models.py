@@ -10,9 +10,9 @@ PaymentMethod = Literal["CASH", "CARD", "BANK", "OTHER"]
 
 class ReceiptItem(BaseModel):
     description: str = Field(..., min_length=1)
-    quantity: float = Field(1.0, ge=0)
-    unit_price: float = Field(..., ge=0)
-    line_total: float = Field(..., ge=0)
+    quantity: float = Field(1.0)
+    unit_price: float = Field(...)
+    line_total: float = Field(...)
 
     @validator("line_total", always=True)
     def compute_line_total(cls, v, values):
@@ -24,11 +24,11 @@ class ReceiptItem(BaseModel):
 
 
 class ReceiptTotals(BaseModel):
-    subtotal: float = Field(..., ge=0)
-    tax_amount: Optional[float] = Field(0.0, ge=0)
-    tip_amount: Optional[float] = Field(0.0, ge=0)
-    discount_amount: Optional[float] = Field(0.0, ge=0)
-    total_amount: float = Field(..., ge=0)
+    subtotal: float = Field(...)
+    tax_amount: Optional[float] = Field(0.0)
+    tip_amount: Optional[float] = Field(0.0)
+    discount_amount: Optional[float] = Field(0.0)
+    total_amount: float = Field(...)
 
 
 class ReceiptPartyInfo(BaseModel):
