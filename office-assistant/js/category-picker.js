@@ -319,4 +319,12 @@ export class CategoryPicker extends HTMLElement {
 if (!customElements.get("category-picker")) {
     customElements.define("category-picker", CategoryPicker);
 }
+try {
+    if (typeof globalThis !== "undefined") {
+        globalThis.CategoryPicker = CategoryPicker;
+    }
+}
+catch (_e) {
+    // ignore
+}
 //# sourceMappingURL=category-picker.js.map

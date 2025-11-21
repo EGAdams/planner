@@ -52,8 +52,15 @@ class ReceiptMeta(BaseModel):
 
 class ReceiptExtractionResult(BaseModel):
     transaction_date: date
-    payment_method: PaymentMethod
+    payment_method: PaymentMethod = "OTHER"
     party: ReceiptPartyInfo
     items: List[ReceiptItem]
     totals: ReceiptTotals
     meta: ReceiptMeta
+
+    @validator("payment_method", pre=True, always=True)
+    def default_payment_method(cls, v):
+        # Some parsers omit the payment method; treat missing/empty as OTHER.
+        if v in (None, "", "UNKNOWN"):
+            return "OTHER"
+        return v

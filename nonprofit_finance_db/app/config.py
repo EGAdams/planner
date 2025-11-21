@@ -22,7 +22,7 @@ class Settings:
     RECEIPT_MAX_SIZE_MB: int = int(os.getenv("RECEIPT_MAX_SIZE_MB", "5"))
     RECEIPT_IMAGE_MAX_WIDTH_PX: int = int(os.getenv("RECEIPT_IMAGE_MAX_WIDTH_PX", "1600"))
     RECEIPT_IMAGE_MAX_HEIGHT_PX: int = int(os.getenv("RECEIPT_IMAGE_MAX_HEIGHT_PX", "1600"))
-    RECEIPT_PARSE_TIMEOUT_SECONDS: int = int(os.getenv("RECEIPT_PARSE_TIMEOUT_SECONDS", "15"))
+    RECEIPT_PARSE_TIMEOUT_SECONDS: int = int(os.getenv("RECEIPT_PARSE_TIMEOUT_SECONDS", "120"))
     RECEIPT_RETENTION_DAYS: int = int(os.getenv("RECEIPT_RETENTION_DAYS", "2555")) # 7 years
 
 settings = Settings()

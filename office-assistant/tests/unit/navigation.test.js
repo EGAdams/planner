@@ -2,11 +2,9 @@
  * TDD RED PHASE: Navigation Structure Tests
  *
  * These tests define the REQUIRED navigation structure after refactoring:
- * - 3 navigation buttons (NOT 2): Expense Categorizer, Upload Bank Statement, Scan Receipt
+ * - 5 navigation buttons: Expense Categorizer, Upload Bank Statement, Scan Receipt, Scan Bank PDF, Calendar
  * - "Upload to Computer" tab should NOT exist
  * - Each button should have correct icon and data attributes
- *
- * EXPECTED: ALL TESTS WILL FAIL until implementation is complete (GREEN phase)
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
@@ -33,11 +31,10 @@ describe('Navigation Structure - TDD RED Phase', () => {
   });
 
   describe('Navigation Button Count', () => {
-    it('should have exactly 3 navigation buttons', () => {
+    it('should have exactly 5 navigation buttons', () => {
       const navButtons = document.querySelectorAll('.nav-button');
 
-      // EXPECTED TO FAIL: Currently has 3 buttons, but one is wrong ("Upload to Computer")
-      expect(navButtons.length).toBe(3);
+      expect(navButtons.length).toBe(5);
     });
   });
 
@@ -82,7 +79,6 @@ describe('Navigation Structure - TDD RED Phase', () => {
       const buttons = document.querySelectorAll('.nav-button');
       const scanButton = buttons[2];
 
-      // EXPECTED TO FAIL: Button doesn't exist yet (currently shows "Calendar")
       expect(scanButton.getAttribute('data-section')).toBe('scan-receipt');
       expect(scanButton.textContent).toContain('Scan Receipt');
       expect(scanButton.querySelector('.text-2xl').textContent).toBe('📸');
@@ -91,9 +87,44 @@ describe('Navigation Structure - TDD RED Phase', () => {
     it('should be inactive by default', () => {
       const scanButton = document.querySelector('[data-section="scan-receipt"]');
 
-      // EXPECTED TO FAIL: Button doesn't exist yet
       expect(scanButton).toBeDefined();
       expect(scanButton.getAttribute('data-active')).toBe('false');
+    });
+  });
+
+  describe('Scan Bank PDF Button', () => {
+    it('should have Scan Bank PDF as fourth button with bank icon', () => {
+      const buttons = document.querySelectorAll('.nav-button');
+      const scanBankButton = buttons[3];
+
+      expect(scanBankButton.getAttribute('data-section')).toBe('scan-bank-pdf');
+      expect(scanBankButton.textContent).toContain('Scan Bank PDF');
+      expect(scanBankButton.querySelector('.text-2xl').textContent).toBe('🏦');
+    });
+
+    it('should be inactive by default', () => {
+      const scanBankButton = document.querySelector('[data-section="scan-bank-pdf"]');
+
+      expect(scanBankButton).toBeDefined();
+      expect(scanBankButton.getAttribute('data-active')).toBe('false');
+    });
+  });
+
+  describe('Calendar Button', () => {
+    it('should exist as fifth button with calendar icon', () => {
+      const buttons = document.querySelectorAll('.nav-button');
+      const calendarButton = buttons[4];
+
+      expect(calendarButton.getAttribute('data-section')).toBe('calendar');
+      expect(calendarButton.textContent).toContain('Calendar');
+      expect(calendarButton.querySelector('.text-2xl').textContent).toBe('📅');
+    });
+
+    it('should be inactive by default', () => {
+      const calendarButton = document.querySelector('[data-section="calendar"]');
+
+      expect(calendarButton).toBeDefined();
+      expect(calendarButton.getAttribute('data-active')).toBe('false');
     });
   });
 
@@ -102,16 +133,7 @@ describe('Navigation Structure - TDD RED Phase', () => {
       const buttons = Array.from(document.querySelectorAll('.nav-button'));
       const oldUploadButton = buttons.find(btn => btn.textContent.includes('Upload to Computer'));
 
-      // EXPECTED TO FAIL: This button still exists
       expect(oldUploadButton).toBeUndefined();
-    });
-
-    it('should NOT have Calendar button in main navigation', () => {
-      const calendarButton = document.querySelector('[data-section="calendar"]');
-
-      // Calendar button should be removed in this refactor
-      // EXPECTED TO FAIL: Calendar button still exists
-      expect(calendarButton).toBeNull();
     });
   });
 
@@ -120,8 +142,7 @@ describe('Navigation Structure - TDD RED Phase', () => {
       const buttons = document.querySelectorAll('.nav-button');
       const sections = Array.from(buttons).map(btn => btn.getAttribute('data-section'));
 
-      // EXPECTED TO FAIL: Wrong sections currently
-      expect(sections).toEqual(['expenses', 'upload-bank-statement', 'scan-receipt']);
+      expect(sections).toEqual(['expenses', 'upload-bank-statement', 'scan-receipt', 'scan-bank-pdf', 'calendar']);
     });
 
     it('should have keyboard accessibility attributes', () => {

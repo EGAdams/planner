@@ -1,20 +1,13 @@
 {
-  "dashboard-ops-agent": {
-    "id": "dashboard-ops-agent",
-    "pid": 66370,
-    "command": "/home/adamsl/planner/.venv/bin/python main.py",
-    "cwd": "/home/adamsl/planner/dashboard_ops_agent",
-    "startTime": "2025-11-19T22:29:10.191Z",
+  "api-server": {
+    "id": "api-server",
+    "pid": 242718,
+    "command": "/home/adamsl/planner/.venv/bin/python nonprofit_finance_db/api_server.py",
+    "cwd": "/home/adamsl/planner/",
+    "startTime": "2025-11-21T01:58:38.117Z",
     "status": "running",
-    "ports": []
-  },
-  "orchestrator-agent": {
-    "id": "orchestrator-agent",
-    "pid": 66659,
-    "command": "/home/adamsl/planner/.venv/bin/python main.py",
-    "cwd": "/home/adamsl/planner/orchestrator_agent",
-    "startTime": "2025-11-19T22:29:16.707Z",
-    "status": "running",
-    "ports": []
+    "ports": [
+      8080
+    ]
   }
 }

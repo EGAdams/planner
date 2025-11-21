@@ -2,10 +2,17 @@
 PDF Extractor Module
 
 This module provides PDF document extraction capabilities using Docling.
-It's designed with a single responsibility: parsing PDF documents and extracting
-structured data including text, tables, and metadata.
+It also exposes a Gemini 2.5 fallback for scenarios where Docling yields no
+transactions.
 """
 
-from .docling_extractor import DoclingPDFExtractor
+try:
+    from .docling_extractor import DoclingPDFExtractor
+except Exception as exc:  # pragma: no cover - docling optional in tests
+    DoclingPDFExtractor = None
+    __docling_import_error__ = exc
+from .gemini_bank_fallback import GeminiBankFallback
 
-__all__ = ["DoclingPDFExtractor"]
+__all__ = ["GeminiBankFallback"]
+if DoclingPDFExtractor:
+    __all__.append("DoclingPDFExtractor")

@@ -3,7 +3,7 @@
 FastAPI server for Daily Expense Categorizer
 Serves transaction data from MySQL database
 """
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -15,12 +15,13 @@ except ImportError:
     SSE_AVAILABLE = False
     EventSourceResponse = None
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime, date, timedelta
 from decimal import Decimal
 import sys
 import os
 import subprocess
+import tempfile
 from pathlib import Path
 
 # Add app directory to path
@@ -28,6 +29,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from app.db import query_all, query_one, execute
 from app.api.receipt_endpoints import router as receipt_router
+from parsers import PDFParser
 
 app = FastAPI(title="Daily Expense Categorizer API")
 
@@ -108,6 +110,16 @@ def convert_value(val):
 @app.get("/api")
 async def root():
     return {"message": "Daily Expense Categorizer API", "status": "running"}
+
+
+# Alias for legacy clients expecting /api/transactions
+@app.get("/api/transactions", response_model=List[Expense])
+async def get_transactions(start_date: Optional[str] = None, end_date: Optional[str] = None):
+    """
+    Legacy-compatible route that returns expenses; mirrors /api/expenses.
+    """
+    return await get_expenses(start_date=start_date, end_date=end_date)
+
 
 @app.get("/api/expenses", response_model=List[Expense])
 async def get_expenses(
@@ -320,6 +332,70 @@ async def get_recent_downloads():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading downloads: {str(e)}")
+
+
+async def _handle_parse_bank_pdf(file: UploadFile, org_id: int = 1) -> Dict[str, Any]:
+    """Shared handler for parse-bank-pdf routes."""
+    if file.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="File must be a PDF")
+
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = tmp.name
+
+        parser = PDFParser(org_id)
+        if not parser.validate_format(tmp_path):
+            raise HTTPException(status_code=400, detail="Invalid or unreadable PDF")
+
+        transactions = parser.parse(tmp_path) or []
+        account_info = parser.extract_account_info(tmp_path) or {}
+
+        total_amount = sum(t.get("amount", 0) for t in transactions if t.get("amount") is not None)
+        total_debits = sum(abs(t.get("amount", 0)) for t in transactions if t.get("amount", 0) < 0)
+        total_credits = sum(t.get("amount", 0) for t in transactions if t.get("amount", 0) > 0)
+
+        totals = {
+            "sum": round(total_amount, 2),
+            "debits": round(total_debits, 2),
+            "credits": round(total_credits, 2),
+            "count": len(transactions),
+            "statement_total": account_info.get("statement_total") if isinstance(account_info, dict) else None,
+        }
+
+        return {
+            "transactions": transactions,
+            "totals": totals,
+            "account_info": account_info,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error parsing PDF: {e}")
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+
+@app.post("/api/parse-bank-pdf")
+async def parse_bank_pdf(file: UploadFile = File(...), org_id: int = 1) -> Dict[str, Any]:
+    """
+    Parse a PDF bank statement without importing it.
+    Uses Docling first, then Gemini 2.5 fallback to extract transactions.
+    """
+    return await _handle_parse_bank_pdf(file, org_id)
+
+
+# Allow legacy/non-prefixed path to avoid 404s when frontend base is misconfigured.
+@app.post("/parse-bank-pdf")
+async def parse_bank_pdf_legacy(file: UploadFile = File(...), org_id: int = 1) -> Dict[str, Any]:
+    return await _handle_parse_bank_pdf(file, org_id)
 
 @app.post("/api/import-pdf")
 async def import_pdf(request: PDFImportRequest):

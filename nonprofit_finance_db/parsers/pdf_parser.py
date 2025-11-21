@@ -9,14 +9,12 @@ from typing import List, Dict, Any, Optional
 import logging
 from datetime import date
 
+import pdf_extractor
 from .base_parser import BaseParser
+from pdf_extractor import GeminiBankFallback, DoclingPDFExtractor
 
-try:
-    from pdf_extractor import DoclingPDFExtractor
-    DOCLING_AVAILABLE = True
-except ImportError as e:
-    DOCLING_AVAILABLE = False
-    DOCLING_IMPORT_ERROR = str(e)
+DOCLING_AVAILABLE = DoclingPDFExtractor is not None
+DOCLING_IMPORT_ERROR = str(getattr(pdf_extractor, "__docling_import_error__", ""))
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +36,13 @@ class PDFParser(BaseParser):
         """
         super().__init__(org_id)
         self.supported_formats = ['PDF']
+
+        self.gemini_fallback = None
+        try:
+            self.gemini_fallback = GeminiBankFallback()
+            logger.info("Gemini fallback initialized for PDF parsing")
+        except Exception as exc:
+            logger.warning("Gemini fallback unavailable: %s", exc)
 
         if not DOCLING_AVAILABLE:
             logger.error(f"Docling PDF extractor not available: {DOCLING_IMPORT_ERROR}")
@@ -94,6 +99,19 @@ class PDFParser(BaseParser):
                     standardized_transactions.append(standardized_txn)
 
             logger.info(f"Successfully parsed {len(standardized_transactions)} transactions from {file_path}")
+
+            # If Docling returned nothing, fall back to Gemini for a best-effort parse
+            if not standardized_transactions and self.gemini_fallback:
+                logger.info("Docling returned no transactions; invoking Gemini fallback")
+                statement_text = self.extractor.extract_text(file_path) if self.extractor else ""
+                fallback_transactions = self.gemini_fallback.parse_transactions(statement_text)
+                for raw_txn in fallback_transactions:
+                    standardized_txn = self.standardize_transaction(raw_txn)
+                    if standardized_txn:
+                        standardized_transactions.append(standardized_txn)
+
+                logger.info("Gemini fallback produced %d transactions", len(standardized_transactions))
+
             return standardized_transactions
 
         except Exception as e:

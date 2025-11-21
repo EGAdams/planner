@@ -68,3 +68,66 @@ ModuleNotFoundError: No module named 'docling'
     '    from docling.document_converter import DocumentConverter\n' +
     "ModuleNotFoundError: No module named 'docling'\n"
 }
+Server api-server started with PID 1772694
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 1792399
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 1909777
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 1927670
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 1934363
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 2279241
+Process api-server died unexpectedly
+Server api-server started with PID 2424648
+Process api-server died unexpectedly
+Server api-server started with PID 2433618
+Server api-server stopped
+Server api-server started with PID 2433973
+Process api-server died unexpectedly
+Server api-server started with PID 2437748
+Server livekit-server started with PID 2438642
+Server livekit-voice-agent started with PID 2438924
+Process livekit-voice-agent died unexpectedly
+Server pydantic-web-server started with PID 2439105
+Process pydantic-web-server died unexpectedly
+=== Dashboard Startup: Thu Nov 20 18:49:35 EST 2025 ===
+Starting Admin Dashboard Server on port 3000...
+
+> admin-dashboard@1.0.0 start
+> node backend/dist/server.js
+
+Admin dashboard server running on http://0.0.0.0:3000
+Process management enabled with persistent state
+Discovering agents in: [ '/home/adamsl/planner', '/home/adamsl/ottomator-agents' ]
+Discovered agent: planner-agent in /home/adamsl/planner
+Discovered agent: dashboard-ops-agent in /home/adamsl/planner/dashboard_ops_agent
+Discovered agent: orchestrator-agent in /home/adamsl/planner/orchestrator_agent
+Registered 3 discovered agents
+Server orchestrator initialized
+Verification:
+✓ Admin Dashboard Server is running on port 3000
+Server pydantic-web-server started with PID 170109
+Process pydantic-web-server died unexpectedly
+Server api-server started with PID 172511
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 222899
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 232309
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 241340
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 242056
+Process api-server died unexpectedly
+Server api-server stopped
+Server api-server started with PID 242718

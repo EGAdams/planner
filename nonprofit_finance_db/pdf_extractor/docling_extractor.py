@@ -365,6 +365,8 @@ class DoclingPDFExtractor:
                 header_text = ' '.join(str(h) for h in header).lower()
                 logger.debug(f"Table header: {header}")
 
+                sign_hint = 0
+
                 # Skip balance summary tables explicitly
                 if any(keyword in header_text for keyword in [
                     'daily balance summary', 'balance summary', 'daily balance',
@@ -378,6 +380,11 @@ class DoclingPDFExtractor:
                     keyword in header_text
                     for keyword in ['withdrawal', 'deposit', 'debit', 'credit', 'checks']
                 )
+
+                if 'withdrawal' in header_text or 'debit' in header_text or 'checks' in header_text:
+                    sign_hint = -1
+                elif 'deposit' in header_text or 'credit' in header_text:
+                    sign_hint = 1
 
                 # Also check for explicit transaction table patterns
                 if not is_transaction_table:
@@ -421,7 +428,13 @@ class DoclingPDFExtractor:
                     # Look for transaction-like patterns in table
                     for row in table[1:]:  # Skip header row
                         if len(row) >= 2:  # Need at least date and amount (description might be combined)
-                            transaction = self._extract_transaction_from_row(row, start_date, end_date)
+                            if 'check' in header_text and len(row) >= 3:
+                                multi = self._extract_multiple_transactions_from_row(row, start_date, end_date, sign_hint, header_text)
+                                if multi:
+                                    transactions.extend(multi)
+                                    continue
+
+                            transaction = self._extract_transaction_from_row(row, start_date, end_date, sign_hint, header_text)
                             if transaction:
                                 transactions.append(transaction)
 
@@ -450,7 +463,9 @@ class DoclingPDFExtractor:
 
     def _extract_transaction_from_row(self, row: List[str],
                                     start_date: Optional[date],
-                                    end_date: Optional[date]) -> Optional[Dict[str, Any]]:
+                                    end_date: Optional[date],
+                                    sign_hint: int = 0,
+                                    header_text: str = "") -> Optional[Dict[str, Any]]:
         """Extract transaction data from a table row."""
         try:
             # Clean the row data
@@ -498,12 +513,55 @@ class DoclingPDFExtractor:
                 if not description:
                     description = "Transaction"  # Default description
 
-                return self._create_transaction_dict(date_str, description, amount_str, start_date, end_date)
+                return self._create_transaction_dict(date_str, description, amount_str, start_date, end_date, sign_hint, header_text)
 
         except Exception as e:
             logger.debug(f"Failed to extract transaction from row {row}: {e}")
 
         return None
+
+    def _extract_multiple_transactions_from_row(self, row: List[str],
+                                      start_date: Optional[date],
+                                      end_date: Optional[date],
+                                      sign_hint: int = 0,
+                                      header_text: str = "") -> List[Dict[str, Any]]:
+        """
+        Some check tables pack multiple check number/date/amount triplets into a single row.
+        Split those out so each check becomes its own transaction.
+        """
+        transactions: List[Dict[str, Any]] = []
+        cleaned = [cell.strip() if cell else '' for cell in row]
+
+        for i in range(0, len(cleaned), 3):
+            chunk = cleaned[i:i+3]
+            if len(chunk) < 3:
+                continue
+
+            check_fragment, date_cell, amount_cell = chunk
+            date_cell = str(date_cell).strip()
+            amount_cell = str(amount_cell).strip()
+
+            if not DATE_MD.match(date_cell) or not self._is_amount(amount_cell):
+                continue
+
+            description = check_fragment or "Check"
+            match = re.search(r'(\d{3,8})', description)
+            if match:
+                description = f"Check #{match.group(1)}"
+
+            txn = self._create_transaction_dict(
+                date_cell,
+                description,
+                amount_cell,
+                start_date,
+                end_date,
+                sign_hint,
+                header_text
+            )
+            if txn:
+                transactions.append(txn)
+
+        return transactions
 
     def _is_amount(self, cell: str) -> bool:
         """Check if a cell contains a monetary amount."""
@@ -539,7 +597,8 @@ class DoclingPDFExtractor:
             return None
 
     def _create_transaction_dict(self, date_str: str, description: str, amount_str: str,
-                               start_date: Optional[date], end_date: Optional[date]) -> Optional[Dict[str, Any]]:
+                               start_date: Optional[date], end_date: Optional[date],
+                               sign_hint: int = 0, header_text: str = "") -> Optional[Dict[str, Any]]:
         """Create a standardized transaction dictionary."""
         try:
             # Ensure inputs are strings
@@ -556,6 +615,7 @@ class DoclingPDFExtractor:
             amount = self._parse_amount(amount_str)
             if amount is None:
                 return None
+            amount = self._apply_sign_hints(amount, description, sign_hint, header_text)
 
             # Clean description
             description = self._clean_description(description)
@@ -572,6 +632,46 @@ class DoclingPDFExtractor:
         except Exception as e:
             logger.debug(f"Failed to create transaction dict: {e}")
             return None
+
+    def _apply_sign_hints(self, amount: float, description: str, sign_hint: int, header_text: str) -> float:
+        """Apply sign hints from headers and description keywords."""
+        if amount is None:
+            return amount
+
+        # Explicit negatives should stay negative
+        if amount < 0:
+            return amount
+
+        header = (header_text or "").lower()
+        desc = (description or "").lower()
+
+        if sign_hint == -1:
+            return -abs(amount)
+        if sign_hint == 1:
+            return abs(amount)
+
+        debit_keywords = [
+            'withdrawal', 'debit', 'purchase', 'pymt', 'payment', 'withdraw',
+            'atm', 'ach', 'transfer to', 'bill pay', 'check #', 'check#',
+            'pos ', 'card purchase', 'merchant payment'
+        ]
+        credit_keywords = [
+            'deposit', 'refund', 'credit', 'reversal', 'transfer from', 'interest',
+            'payroll', 'ssa', 'irs', 'treas'
+        ]
+
+        if any(keyword in desc for keyword in debit_keywords):
+            return -abs(amount)
+        if any(keyword in desc for keyword in credit_keywords):
+            return abs(amount)
+
+        # Fallback to header cues if description is inconclusive
+        if 'withdrawal' in header or 'debit' in header or 'check' in header:
+            return -abs(amount)
+        if 'deposit' in header or 'credit' in header:
+            return abs(amount)
+
+        return amount
 
     def _parse_transaction_date(self, date_str: str,
                               start_date: Optional[date],
@@ -634,6 +734,10 @@ class DoclingPDFExtractor:
 
         # Remove extra whitespace
         description = re.sub(r'\s+', ' ', description.strip())
+
+        explicit_check_match = re.match(r'^check\s*#?\s*(\d{3,8})', description, re.I)
+        if explicit_check_match:
+            return f"Check #{explicit_check_match.group(1)}"
 
         # Check for check number patterns and convert to meaningful description
 

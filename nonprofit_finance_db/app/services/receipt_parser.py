@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from typing import Tuple
+import asyncio
 from PIL import Image
 from io import BytesIO
 import mimetypes
@@ -38,7 +39,15 @@ class ReceiptParser:
         processed_image_data, processed_mime_type = await self._process_image(image_data, mime_type)
 
         # 4. Parse with AI engine
-        parsed_data = await self.receipt_engine.parse_receipt(processed_image_data, processed_mime_type)
+        try:
+            parsed_data = await asyncio.wait_for(
+                self.receipt_engine.parse_receipt(processed_image_data, processed_mime_type),
+                timeout=settings.RECEIPT_PARSE_TIMEOUT_SECONDS,
+            )
+        except asyncio.TimeoutError:
+            raise TimeoutError(
+                f"Receipt parsing exceeded {settings.RECEIPT_PARSE_TIMEOUT_SECONDS} seconds"
+            )
 
         return parsed_data, temp_file_path
 

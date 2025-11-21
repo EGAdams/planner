@@ -241,6 +241,7 @@ class ReceiptScanner extends HTMLElement {
         this.categoriesPromise = null;
         this.orgId = 1; // Default org; can be overridden via host context
         this.apiBase = this._computeApiBase();
+        this.parseTimeoutMs = 60000; // Keep longer than backend parse timeout
 
         this._setupEventListeners();
         this.categoriesPromise = this._fetchCategories();
@@ -317,10 +318,14 @@ class ReceiptScanner extends HTMLElement {
         const formData = new FormData();
         formData.append('file', file);
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.parseTimeoutMs); // avoid hanging forever
+
         try {
             const response = await fetch(`${this.apiBase}/parse-receipt`, {
                 method: 'POST',
                 body: formData,
+                signal: controller.signal,
             });
 
             console.log('Parse receipt response status:', response.status, response.statusText);
@@ -354,10 +359,14 @@ class ReceiptScanner extends HTMLElement {
 
         } catch (error) {
             console.error('Error parsing receipt:', error);
-            const errorMessage = error?.message || error?.toString() || 'Unknown error occurred';
+            const errorMessage = error?.name === 'AbortError'
+                ? 'Receipt parsing timed out. Please try again.'
+                : error?.message || error?.toString() || 'Unknown error occurred';
             this._showError(errorMessage);
             this._showLoading(false);
             emit('receipt:error', { message: errorMessage });
+        } finally {
+            clearTimeout(timeoutId);
         }
     }
 

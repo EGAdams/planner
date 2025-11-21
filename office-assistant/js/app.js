@@ -3,6 +3,7 @@
 class OfficeAssistant {
     constructor() {
         this.currentSection = 'expenses';
+        this.loadTimeout = null;
         this.init();
     }
 
@@ -52,8 +53,14 @@ class OfficeAssistant {
         // Add loading state
         contentArea.innerHTML = '<div class="flex items-center justify-center py-20"><div class="text-gray-500">Loading...</div></div>';
 
+        // Cancel any previously scheduled load to avoid race conditions
+        if (this.loadTimeout) {
+            clearTimeout(this.loadTimeout);
+            this.loadTimeout = null;
+        }
+
         // Load actual content or show placeholder
-        setTimeout(() => {
+        this.loadTimeout = setTimeout(() => {
             switch(section) {
                 case 'expenses':
                     this.loadExpensesSection();
@@ -64,12 +71,16 @@ class OfficeAssistant {
                 case 'scan-receipt':
                     this.loadScanReceiptSection();
                     break;
+                case 'scan-bank-pdf':
+                    this.loadScanBankPdfSection();
+                    break;
                 case 'calendar':
                     this.loadCalendarSection();
                     break;
                 default:
                     this.showNotImplementedAlert(section);
             }
+            this.loadTimeout = null;
         }, 300);
     }
 
@@ -108,6 +119,17 @@ class OfficeAssistant {
         contentArea.innerHTML = `
             <div class="fade-in">
                 <receipt-scanner></receipt-scanner>
+            </div>
+        `;
+    }
+
+    loadScanBankPdfSection() {
+        console.log('Loading scan bank PDF section...');
+        const contentArea = document.getElementById('content-area');
+        contentArea.className = 'bg-white rounded-lg shadow-md p-4 min-h-[70vh]';
+        contentArea.innerHTML = `
+            <div class="fade-in">
+                <bank-pdf-scanner></bank-pdf-scanner>
             </div>
         `;
     }

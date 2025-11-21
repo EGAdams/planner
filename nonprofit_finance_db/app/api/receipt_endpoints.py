@@ -31,7 +31,7 @@ class SaveReceiptRequest(BaseModel):
     total_amount: float
     tax_amount: Optional[float] = 0.0
     category_id: Optional[int] = None
-    payment_method: PaymentMethod
+    payment_method: PaymentMethod = "OTHER"
     description: Optional[str] = None
     original_file_name: str # The original filename from the user upload
     temp_file_name: str    # The temporary filename saved on the server
@@ -55,13 +55,22 @@ async def parse_receipt_endpoint(file: UploadFile = File(...)):
     Uploads a receipt image and parses it using the AI engine.
     Returns the structured data and a temporary file reference.
     """
+    temp_file_name: Optional[str] = None
     try:
         parsed_data, temp_file_name = await receipt_parser.process_receipt(file)
         
         return ParseReceiptResponse(parsed_data=parsed_data, temp_file_name=temp_file_name)
+    except TimeoutError as e:
+        if temp_file_name:
+            receipt_parser.cleanup_temp_file(temp_file_name)
+        raise HTTPException(status_code=504, detail=str(e))
     except ValueError as e:
+        if temp_file_name:
+            receipt_parser.cleanup_temp_file(temp_file_name)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        if temp_file_name:
+            receipt_parser.cleanup_temp_file(temp_file_name)
         raise HTTPException(status_code=500, detail=f"Error parsing receipt: {e}")
 
 
