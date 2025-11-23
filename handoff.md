@@ -3,14 +3,15 @@
 Workspace root: `C:\Users\NewUser\Desktop\blue_time\planner`
 
 ## Summary Of Progress
-- Implemented the first TDD slice for the A2A collective hub so our system can mirror the Claude collective architecture. The new spec lives in `tests\unit\test_a2a_collective_hub.py` and requires each discovered agent to receive a dedicated Letta-backed memory instance.
-- Added the mediator scaffolding in `agent_messaging\a2a_collective.py`, wired it to the existing `MemoryFactory`, and confirmed the new test passes (`pytest tests/unit/test_a2a_collective_hub.py`).
-- Reviewed the relevant documentation for the CLAUDE collective (`.claude\agents\*.md`), Task Master workflow (`.taskmaster\CODEX.md`), and the A2A protocol (`doc\usage\agent_communication_guide.md`) so the design aligns with the existing hub-and-spoke contracts.
+- Built out the A2A collective hub (tests in `tests\unit\test_a2a_collective_hub.py`, implementation in `agent_messaging\a2a_collective.py`) so it now handles agent discovery, routing snapshots, JSON-RPC delegation payloads, and per-agent Letta memory logging.
+- Added the `A2ADispatcher` adapter (`orchestrator_agent\a2a_dispatcher.py`) plus `tests\unit\test_a2a_dispatcher.py` to validate orchestrator-facing integration without a live Letta server.
+- Updated `orchestrator_agent\main.py` so every delegation flows through the dispatcher/hub, meaning routing decisions automatically record Letta memory entries instead of relying on manual handoff notes.
+- Modernized message models (`agent_messaging\message_models.py`) and test stubs (`tests\unit\a2a_test_utils.py`) to eliminate local deprecation warnings and keep timestamps timezone-aware.
 
 ## Current Focus (If Power Is Lost)
-- Planning the next TDD test to extend `A2ACollectiveHub` so it exposes routing metadata (capabilities/topics) in a form the orchestrator can consume for automatic delegation. No code has been written yet for this test; only analysis is in progress.
+- Hooking the orchestrator into a real Letta instance so the dispatcher’s Letta-backed memory writes persist outside the dummy backend. We paused after wiring the hub—no live Letta server was launched yet.
 
 ## Next Steps After Current Focus
-1. Write the next failing unit test in `tests\unit\test_a2a_collective_hub.py` (or a companion file) that asserts the hub produces a normalized routing table (e.g., agent name -> topics/capabilities) suitable for the orchestrator.
-2. Implement the minimal code in `agent_messaging\a2a_collective.py` to satisfy that test, ensuring the mediator keeps enforcing per-agent Letta memory and the routing info matches the CLAUDE collective expectations.
-3. Iterate through additional TDD cycles to layer JSON-RPC delegation helpers and, eventually, integrate the new hub with the existing orchestrator entry point (`orchestrator_agent\main.py`).
+1. Bring up the Letta server (see `start_a2a_system.sh` or `agent_messaging\memory_factory.py` configs) so the dispatcher’s `memory_backend` references point at the real persistence layer.
+2. Add an integration smoke test or script to prove that delegations from `orchestrator_agent\main.py` hit Letta memory (possibly by running a minimal mock task and querying via `agent_messaging\remember/recall` helpers).
+3. Once Letta logging is confirmed, we can retire `handoff.md` and rely entirely on persistent agent memory for shift continuity.

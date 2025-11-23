@@ -19,8 +19,9 @@ load_dotenv()
 # Add parent directory to path to import shared modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agent_messaging import inbox, post_message, create_jsonrpc_request, create_jsonrpc_response
+from agent_messaging import inbox, post_message, create_jsonrpc_response
 from rag_system.core.document_manager import DocumentManager
+from orchestrator_agent.a2a_dispatcher import A2ADispatcher
 
 AGENT_NAME = "orchestrator-agent"
 WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +33,7 @@ def log_update(message):
 class Orchestrator:
     def __init__(self):
         self.known_agents = {}
+        self.dispatcher = A2ADispatcher(workspace_root=WORKSPACE_ROOT)
         api_key = os.environ.get("GOOGLE_API_KEY")
         if api_key:
             self.client: Optional[genai.Client] = genai.Client(api_key=api_key)
@@ -43,22 +45,17 @@ class Orchestrator:
     def discover_agents(self):
         """Scan workspace for agent.json files"""
         print(f"[{AGENT_NAME}] Scanning for agents...")
-        agent_files = WORKSPACE_ROOT.rglob("agent.json")
-        
-        for file_path in agent_files:
-            try:
-                with open(file_path, 'r') as f:
-                    data = json.load(f)
-                    agent_name = data.get("name")
-                    if agent_name and agent_name != AGENT_NAME:
-                        self.known_agents[agent_name] = {
-                            "description": data.get("description"),
-                            "capabilities": data.get("capabilities", []),
-                            "topics": data.get("topics", [])
-                        }
-            except Exception as e:
-                print(f"[{AGENT_NAME}] Error reading {file_path}: {e}")
-                
+        registry = self.dispatcher.refresh_registry()
+        snapshot = self.dispatcher.routing_snapshot()
+
+        for agent_name, info in snapshot.items():
+            if agent_name == AGENT_NAME:
+                continue
+            self.known_agents[agent_name] = {
+                "description": info.get("description"),
+                "capabilities": info.get("capabilities", []),
+                "topics": info.get("topics", []),
+            }
         print(f"[{AGENT_NAME}] Discovered {len(self.known_agents)} agents: {list(self.known_agents.keys())}")
 
     def decide_route(self, user_request: str) -> Dict:
@@ -168,21 +165,22 @@ Return ONLY valid JSON.
                     if decision and decision.get("target_agent"):
                         target = decision["target_agent"]
                         log_update(f"[{AGENT_NAME}] Routing to {target}")
-                        
-                        # Construct JSON-RPC for the target agent
-                        rpc_payload = create_jsonrpc_request(
-                            method=decision.get("method", "agent.execute_task"),
-                            params=decision.get("params", {})
+
+                        params = decision.get("params", {})
+                        description = params.get("description", user_request)
+                        context = params.get("context", {})
+                        artifacts = params.get("artifacts")
+
+                        delegation = self.dispatcher.delegate(
+                            agent_name=target,
+                            description=description,
+                            context=context,
+                            artifacts=artifacts,
                         )
                         
-                        # Send to the target agent's topic (usually their name or a shared topic)
-                        # For simplicity, we'll assume agents listen to a topic named after them OR 'ops' for ops agent
-                        # Based on agent.json, dashboard-ops-agent listens to 'ops'
-                        
-                        target_topic = "general"
-                        if "ops" in self.known_agents[target]["topics"]:
-                            target_topic = "ops"
-                        
+                        rpc_payload = json.dumps(delegation["payload"])
+                        target_topic = delegation["topic"]
+
                         post_message(
                             message=rpc_payload,
                             topic=target_topic,

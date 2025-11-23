@@ -6,7 +6,7 @@ Uses Pydantic for type safety and automatic serialization.
 
 from enum import Enum
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -36,7 +36,7 @@ class AgentMessage(BaseModel):
     content: str = Field(..., min_length=1, description="Message content")
     topic: str = Field(default="general", description="Message topic/channel")
     priority: MessagePriority = Field(default=MessagePriority.NORMAL)
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Optional[Dict[str, Any]] = Field(default=None)
     
     @field_validator('to_agent', 'from_agent')

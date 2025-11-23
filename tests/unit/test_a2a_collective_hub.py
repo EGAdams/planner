@@ -8,115 +8,12 @@ hub-and-spoke system that uses Google's A2A protocol plus per-agent Letta memory
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 import pytest
 
-from agent_messaging.memory_backend import MemoryBackend, MemoryEntry
 from agent_messaging.a2a_collective import A2ACollectiveHub
-
-
-class DummyMemoryBackend(MemoryBackend):
-    """
-    Minimal in-memory backend so the hub can attach a unique memory to each agent.
-
-    Implements the MemoryBackend Strategy interface so we preserve the API surface
-    while keeping assertions focused on per-agent isolation.
-    """
-
-    def __init__(self, namespace: str) -> None:
-        self.namespace = namespace
-        self._connected = True
-        self._entries: List[MemoryEntry] = []
-
-    async def connect(self) -> None:
-        self._connected = True
-
-    async def disconnect(self) -> None:
-        self._connected = False
-
-    async def remember(
-        self,
-        content: str,
-        memory_type: str = "general",
-        source: str = "unknown",
-        tags: Optional[List[str]] = None,
-        metadata: Optional[Dict] = None,
-    ) -> str:
-        entry_id = f"{self.namespace}:{len(self._entries)}"
-        entry = MemoryEntry(
-            id=entry_id,
-            content=content,
-            timestamp=datetime.utcnow(),
-            metadata=metadata or {},
-            tags=tags or [],
-            source=source,
-            memory_type=memory_type,
-        )
-        self._entries.append(entry)
-        return entry_id
-
-    async def recall(
-        self,
-        query: str,
-        limit: int = 5,
-        memory_type: Optional[str] = None,
-        tags: Optional[List[str]] = None,
-        metadata_filter: Optional[Dict] = None,
-    ) -> List[MemoryEntry]:
-        return self._entries[:limit]
-
-    async def get_recent(
-        self, limit: int = 10, memory_type: Optional[str] = None
-    ) -> List[MemoryEntry]:
-        return list(reversed(self._entries[-limit:]))
-
-    async def forget(self, memory_id: str) -> bool:
-        for index, entry in enumerate(self._entries):
-            if entry.id == memory_id:
-                self._entries.pop(index)
-                return True
-        return False
-
-    async def get_stats(self) -> Dict:
-        return {"entries": len(self._entries)}
-
-    def is_connected(self) -> bool:
-        return self._connected
-
-
-@dataclass
-class StubMemoryFactory:
-    """Records each agent that requests a memory backend."""
-
-    created_for: List[str]
-
-    async def create_memory_async(self, agent_id: str, **_: Dict) -> Tuple[str, MemoryBackend]:
-        self.created_for.append(agent_id)
-        return ("letta", DummyMemoryBackend(namespace=f"letta://{agent_id}"))
-
-
-def _write_agent_card(root: Path, name: str, topics: List[str]) -> None:
-    agent_dir = root / name
-    agent_dir.mkdir(parents=True)
-    card = {
-        "name": name,
-        "version": "1.0.0",
-        "description": f"{name} test agent",
-        "capabilities": [
-            {
-                "name": "execute_task",
-                "description": "Run assigned work items",
-                "input_schema": {"type": "object"},
-                "output_schema": {"type": "object"},
-            }
-        ],
-        "topics": topics,
-    }
-    (agent_dir / "agent.json").write_text(json.dumps(card), encoding="utf-8")
+from .a2a_test_utils import DummyMemoryBackend, StubMemoryFactory, write_agent_card
 
 
 @pytest.mark.asyncio
@@ -128,8 +25,8 @@ async def test_discover_agents_assigns_dedicated_letta_memory(tmp_path: Path) ->
     """
     workspace = tmp_path / "workspace"
     workspace.mkdir()
-    _write_agent_card(workspace, "planner-agent", ["general", "planner"])
-    _write_agent_card(workspace, "dashboard-ops-agent", ["ops"])
+    write_agent_card(workspace, "planner-agent", ["general", "planner"])
+    write_agent_card(workspace, "dashboard-ops-agent", ["ops"])
 
     memory_factory = StubMemoryFactory(created_for=[])
     hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=memory_factory)
@@ -157,8 +54,8 @@ async def test_routing_metadata_exposes_topics_and_capabilities(tmp_path: Path) 
     """
     workspace = tmp_path / "workspace"
     workspace.mkdir()
-    _write_agent_card(workspace, "planner-agent", ["general", "planner"])
-    _write_agent_card(workspace, "dashboard-ops-agent", ["ops"])
+    write_agent_card(workspace, "planner-agent", ["general", "planner"])
+    write_agent_card(workspace, "dashboard-ops-agent", ["ops"])
 
     memory_factory = StubMemoryFactory(created_for=[])
     hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=memory_factory)
@@ -179,12 +76,12 @@ async def test_prepare_delegation_returns_jsonrpc_payload(tmp_path: Path) -> Non
     """
     workspace = tmp_path / "workspace"
     workspace.mkdir()
-    _write_agent_card(workspace, "planner-agent", ["planning", "general"])
+    write_agent_card(workspace, "planner-agent", ["planning", "general"])
 
     hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=StubMemoryFactory(created_for=[]))
     registry = await hub.discover_agents()
 
-    routing = hub.prepare_delegation(
+    routing = await hub.prepare_delegation(
         registry=registry,
         agent_name="planner-agent",
         description="Investigate failing dashboard tests",
@@ -199,3 +96,32 @@ async def test_prepare_delegation_returns_jsonrpc_payload(tmp_path: Path) -> Non
     assert payload["params"]["context"]["priority"] == "high"
     assert payload["params"]["target_agent"] == "planner-agent"
     assert isinstance(payload["params"]["task_id"], str) and payload["params"]["task_id"]
+
+
+@pytest.mark.asyncio
+async def test_delegation_is_logged_to_agent_memory(tmp_path: Path) -> None:
+    """
+    Preparing a delegation should write a memory entry for that agent so Letta
+    histories capture every hub handoff.
+    """
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    write_agent_card(workspace, "planner-agent", ["planner"])
+
+    memory_factory = StubMemoryFactory(created_for=[])
+    hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=memory_factory)
+    registry = await hub.discover_agents()
+
+    await hub.prepare_delegation(
+        registry=registry,
+        agent_name="planner-agent",
+        description="Draft CLAUDE collective charter",
+        context={"phase": "research"},
+    )
+
+    backend = registry["planner-agent"].memory_backend
+    assert isinstance(backend, DummyMemoryBackend)
+    assert len(backend._entries) == 1
+    entry = backend._entries[0]
+    assert "Draft CLAUDE collective charter" in entry.content
+    assert entry.metadata.get("kind") == "delegation"

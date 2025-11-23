@@ -149,7 +149,7 @@ class A2ACollectiveHub:
             }
         return snapshot
 
-    def prepare_delegation(
+    async def prepare_delegation(
         self,
         registry: Dict[str, AgentSpoke],
         agent_name: str,
@@ -186,4 +186,32 @@ class A2ACollectiveHub:
             "id": 1,
         }
 
+        await self._log_delegation(spoke, payload["params"])
+
         return {"topic": topic, "payload": payload}
+
+    async def _log_delegation(self, spoke: AgentSpoke, params: Dict) -> None:
+        """Record delegation metadata in the agent's memory backend."""
+        memory = spoke.memory_backend
+        if not memory:
+            return
+
+        content = (
+            f"Task {params['task_id']} delegated to {spoke.card.name}: "
+            f"{params['description']}"
+        )
+        metadata = {
+            "kind": "delegation",
+            "target_agent": spoke.card.name,
+        }
+
+        try:
+            await memory.remember(
+                content=content,
+                memory_type="task",
+                source="a2a-collective-hub",
+                metadata=metadata,
+            )
+        except Exception:
+            # Memory logging failures should not block orchestration
+            pass
