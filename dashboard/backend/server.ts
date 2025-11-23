@@ -12,6 +12,7 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as dotenv from 'dotenv';
 import { ServerOrchestrator, ServerConfig } from './services/serverOrchestrator';
+import { AgentDiscoveryService } from './services/agentDiscovery';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
@@ -77,6 +78,26 @@ const orchestrator = new ServerOrchestrator(stateDbPath, 3000);
 
 // Register all servers
 orchestrator.registerServers(SERVER_REGISTRY);
+
+// Initialize agent discovery
+const agentDiscovery = new AgentDiscoveryService();
+const workspaceRoot = path.resolve(__dirname, '../..');
+const plannerRoot = path.resolve(workspaceRoot, '..');
+
+// Discover and register agents
+agentDiscovery.discover([plannerRoot]).then((discoveredAgents) => {
+  console.log(`Discovered ${Object.keys(discoveredAgents).length} agents`);
+
+  // Merge discovered agents into SERVER_REGISTRY
+  Object.assign(SERVER_REGISTRY, discoveredAgents);
+
+  // Re-register all servers including the new agents
+  orchestrator.registerServers(SERVER_REGISTRY);
+
+  console.log('Agent discovery complete. Registered agents:', Object.keys(discoveredAgents));
+}).catch(err => {
+  console.error('Failed to discover agents:', err);
+});
 
 // Initialize and recover state
 orchestrator.initialize().then(() => {

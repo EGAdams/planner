@@ -273,7 +273,7 @@ class AgentMessenger:
                 transport = self.transport
             else:
                 from rag_system.core.document_manager import DocumentManager
-                from agent_messaging.rag_board_transport import RAGBoardTransport
+                # from agent_messaging.rag_board_transport import RAGBoardTransport
                 transport= RAGBoardTransport(DocumentManager())
                 asyncio.run(transport.connect())
 

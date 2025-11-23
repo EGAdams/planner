@@ -68,7 +68,8 @@ class RAGBoardTransport(MessageTransport):
             # Persist to RAG with tags for filtering
             artifact_id = await asyncio.to_thread(
                 self.doc_manager.add_runtime_artifact,
-                content=content,
+                artifact_text=content,
+                artifact_type="message",
                 source=f"agent:{message.from_agent}",
                 tags=[
                     message.topic,
@@ -123,11 +124,15 @@ class RAGBoardTransport(MessageTransport):
             if topic:
                 query += f" topic:{topic}"
             
+            print(f"[RAGBoardTransport] Polling with query: {query}")
+            
             results = await asyncio.to_thread(
                 self.doc_manager.search_artifacts,
                 query=query,
                 limit=10
             )
+            
+            print(f"[RAGBoardTransport] Found {len(results)} results")
             
             # Parse results back into AgentMessage objects
             # (This is simplified - real implementation would parse the stored format)
@@ -139,5 +144,8 @@ class RAGBoardTransport(MessageTransport):
             
             return messages
             
-        except Exception:
+        except Exception as e:
+            print(f"[RAGBoardTransport] Error polling messages: {e}")
+            import traceback
+            traceback.print_exc()
             return []
