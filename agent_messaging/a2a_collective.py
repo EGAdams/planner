@@ -12,11 +12,13 @@ cycle. Functional logic will be implemented after the red test is in place.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Protocol, Tuple
 
 from .memory_backend import MemoryBackend
+from .memory_factory import MemoryFactory
 
 
 @dataclass
@@ -65,12 +67,61 @@ class A2ACollectiveHub:
         memory_factory: Optional[MemoryFactoryProtocol] = None,
     ) -> None:
         self.workspace_root = workspace_root
-        self.memory_factory = memory_factory
+        self.memory_factory = memory_factory or MemoryFactory
+
+    async def _create_memory_for_agent(self, agent_id: str) -> Tuple[str, MemoryBackend]:
+        """
+        Allocate a dedicated memory backend for a given agent.
+
+        Uses the injected memory factory when provided, otherwise falls back to the
+        production MemoryFactory implementation (Letta ƒƒ Chroma fallback chain).
+        """
+        factory = self.memory_factory
+        if not factory or not hasattr(factory, "create_memory_async"):
+            raise RuntimeError("No valid memory factory configured for the collective hub")
+        return await factory.create_memory_async(agent_id=agent_id)
 
     async def discover_agents(self) -> Dict[str, AgentSpoke]:
         """
         Scan the workspace for agent cards and register each agent as a spoke.
 
-        TDD placeholder: actual implementation arrives in the next (green) phase.
+        Discovers every `agent.json` file under the workspace root and provisions a
+        unique memory backend per agent so that the orchestrator can enforce
+        hub-and-spoke isolation with Letta memory as the canonical backing store.
         """
-        raise NotImplementedError("discover_agents is not implemented yet")
+        registry: Dict[str, AgentSpoke] = {}
+
+        if not self.workspace_root.exists():
+            return registry
+
+        for card_path in sorted(self.workspace_root.rglob("agent.json")):
+            try:
+                card_data = json.loads(card_path.read_text(encoding="utf-8"))
+            except (OSError, json.JSONDecodeError):
+                continue
+
+            agent_name = card_data.get("name")
+            if not agent_name or agent_name in registry:
+                continue
+
+            capabilities = card_data.get("capabilities") or []
+            topics = card_data.get("topics") or []
+
+            agent_card = AgentCard(
+                name=agent_name,
+                version=card_data.get("version", "0.0.0"),
+                description=card_data.get("description", ""),
+                capabilities=capabilities,
+                topics=topics,
+            )
+
+            memory_backend_name, memory_backend = await self._create_memory_for_agent(agent_name)
+
+            registry[agent_name] = AgentSpoke(
+                card=agent_card,
+                memory_backend=memory_backend,
+                memory_backend_name=memory_backend_name,
+                topics=topics,
+            )
+
+        return registry
