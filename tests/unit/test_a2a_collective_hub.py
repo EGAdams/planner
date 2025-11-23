@@ -147,3 +147,25 @@ async def test_discover_agents_assigns_dedicated_letta_memory(tmp_path: Path) ->
     backend_ids = {id(spoke.memory_backend) for spoke in registry.values()}
     assert len(backend_ids) == 2
     assert sorted(memory_factory.created_for) == ["dashboard-ops-agent", "planner-agent"]
+
+
+@pytest.mark.asyncio
+async def test_routing_metadata_exposes_topics_and_capabilities(tmp_path: Path) -> None:
+    """
+    After discovery, the hub should produce a routing snapshot that mirrors the
+    Claude collective routing matrix—topics and capability names per agent.
+    """
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    _write_agent_card(workspace, "planner-agent", ["general", "planner"])
+    _write_agent_card(workspace, "dashboard-ops-agent", ["ops"])
+
+    memory_factory = StubMemoryFactory(created_for=[])
+    hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=memory_factory)
+
+    registry = await hub.discover_agents()
+    snapshot = hub.routing_snapshot(registry)
+
+    assert snapshot["planner-agent"]["topics"] == ["general", "planner"]
+    assert snapshot["dashboard-ops-agent"]["topics"] == ["ops"]
+    assert snapshot["planner-agent"]["capabilities"] == ["execute_task"]

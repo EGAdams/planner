@@ -125,3 +125,25 @@ class A2ACollectiveHub:
             )
 
         return registry
+
+    def routing_snapshot(self, registry: Dict[str, AgentSpoke]) -> Dict[str, Dict[str, List[str]]]:
+        """
+        Produce a normalized routing table similar to CLAUDE's collective routing matrix.
+
+        Each entry includes topics, capability names, and descriptive metadata so the
+        orchestrator can reason about delegations without re-reading every agent card.
+        """
+        snapshot: Dict[str, Dict[str, List[str]]] = {}
+        for agent_name, spoke in registry.items():
+            capability_names = [
+                cap.get("name")
+                for cap in (spoke.card.capabilities or [])
+                if isinstance(cap, dict) and isinstance(cap.get("name"), str)
+            ]
+            snapshot[agent_name] = {
+                "topics": spoke.topics or spoke.card.topics,
+                "capabilities": capability_names,
+                "description": spoke.card.description,
+                "version": spoke.card.version,
+            }
+        return snapshot
