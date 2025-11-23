@@ -18,6 +18,10 @@ def test_dispatcher_refresh_and_delegate(tmp_path: Path) -> None:
     assert "planner-agent" in registry
     snapshot = dispatcher.routing_snapshot()
     assert snapshot["planner-agent"]["topics"] == ["planning"]
+    memory_info = snapshot["planner-agent"]["memory"]
+    assert memory_info["backend"] == "letta"
+    assert memory_info["connected"] is True
+    assert memory_info["namespace"] == "letta://planner-agent"
 
     routing = dispatcher.delegate(
         agent_name="planner-agent",

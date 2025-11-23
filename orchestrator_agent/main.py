@@ -9,7 +9,7 @@ import os
 import time
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from google import genai
 from dotenv import load_dotenv
 
@@ -42,6 +42,14 @@ class Orchestrator:
             log_update("GOOGLE_API_KEY not set. Falling back to heuristic routing.")
         self.doc_manager = DocumentManager()
         
+    def _format_memory_status(self, memory_info: Dict[str, Any]) -> str:
+        backend = memory_info.get("backend") or "unknown"
+        namespace = memory_info.get("namespace")
+        connected = memory_info.get("connected")
+        status = "connected" if connected else ("disconnected" if connected is False else "unknown")
+        namespace_segment = f" ({namespace})" if namespace else ""
+        return f"{backend}{namespace_segment} -> {status}"
+
     def discover_agents(self):
         """Scan workspace for agent.json files"""
         print(f"[{AGENT_NAME}] Scanning for agents...")
@@ -51,11 +59,16 @@ class Orchestrator:
         for agent_name, info in snapshot.items():
             if agent_name == AGENT_NAME:
                 continue
+            memory_info = info.get("memory") or {}
             self.known_agents[agent_name] = {
                 "description": info.get("description"),
                 "capabilities": info.get("capabilities", []),
                 "topics": info.get("topics", []),
+                "memory": memory_info,
             }
+            log_update(
+                f"{agent_name} memory backend: {self._format_memory_status(memory_info)}"
+            )
         print(f"[{AGENT_NAME}] Discovered {len(self.known_agents)} agents: {list(self.known_agents.keys())}")
 
     def decide_route(self, user_request: str) -> Dict:
