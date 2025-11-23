@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Protocol, Tuple
+from typing import Any, Dict, List, Optional, Protocol, Tuple
 from uuid import uuid4
 
 from .memory_backend import MemoryBackend
@@ -45,6 +45,7 @@ class AgentSpoke:
     memory_backend: MemoryBackend
     memory_backend_name: str
     topics: List[str] = field(default_factory=list)
+    memory_namespace: Optional[str] = None
 
 
 class MemoryFactoryProtocol(Protocol):
@@ -118,34 +119,53 @@ class A2ACollectiveHub:
 
             memory_backend_name, memory_backend = await self._create_memory_for_agent(agent_name)
 
+            memory_namespace = getattr(memory_backend, "namespace", None)
+
             registry[agent_name] = AgentSpoke(
                 card=agent_card,
                 memory_backend=memory_backend,
                 memory_backend_name=memory_backend_name,
                 topics=topics,
+                memory_namespace=memory_namespace,
             )
 
         return registry
 
-    def routing_snapshot(self, registry: Dict[str, AgentSpoke]) -> Dict[str, Dict[str, List[str]]]:
+    def routing_snapshot(self, registry: Dict[str, AgentSpoke]) -> Dict[str, Dict[str, Any]]:
         """
         Produce a normalized routing table similar to CLAUDE's collective routing matrix.
 
         Each entry includes topics, capability names, and descriptive metadata so the
         orchestrator can reason about delegations without re-reading every agent card.
         """
-        snapshot: Dict[str, Dict[str, List[str]]] = {}
+        snapshot: Dict[str, Dict[str, Any]] = {}
         for agent_name, spoke in registry.items():
             capability_names = [
                 cap.get("name")
                 for cap in (spoke.card.capabilities or [])
                 if isinstance(cap, dict) and isinstance(cap.get("name"), str)
             ]
+            memory_backend = spoke.memory_backend
+            backend_connected: Optional[bool] = None
+            if memory_backend and hasattr(memory_backend, "is_connected"):
+                try:
+                    backend_connected = bool(memory_backend.is_connected())
+                except Exception:
+                    backend_connected = None
+
+            memory_info: Dict[str, Any] = {
+                "backend": spoke.memory_backend_name,
+                "connected": backend_connected,
+            }
+            if spoke.memory_namespace:
+                memory_info["namespace"] = spoke.memory_namespace
+
             snapshot[agent_name] = {
                 "topics": spoke.topics or spoke.card.topics,
                 "capabilities": capability_names,
                 "description": spoke.card.description,
                 "version": spoke.card.version,
+                "memory": memory_info,
             }
         return snapshot
 

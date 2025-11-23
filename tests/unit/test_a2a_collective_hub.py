@@ -66,6 +66,10 @@ async def test_routing_metadata_exposes_topics_and_capabilities(tmp_path: Path) 
     assert snapshot["planner-agent"]["topics"] == ["general", "planner"]
     assert snapshot["dashboard-ops-agent"]["topics"] == ["ops"]
     assert snapshot["planner-agent"]["capabilities"] == ["execute_task"]
+    planner_memory = snapshot["planner-agent"]["memory"]
+    assert planner_memory["backend"] == "letta"
+    assert planner_memory["connected"] is True
+    assert planner_memory["namespace"] == "letta://planner-agent"
 
 
 @pytest.mark.asyncio
