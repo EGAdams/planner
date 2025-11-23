@@ -129,7 +129,7 @@ class RAGBoardTransport(MessageTransport):
             results = await asyncio.to_thread(
                 self.doc_manager.search_artifacts,
                 query=query,
-                limit=10
+                n_results=10
             )
             
             print(f"[RAGBoardTransport] Found {len(results)} results")

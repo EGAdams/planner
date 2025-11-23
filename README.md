@@ -15,6 +15,19 @@ cd /home/adamsl/planner/dashboard
 env ADMIN_PORT=3000 npm start
 ```
 
+### Cross-Platform Launcher (Windows or WSL)
+Use the helper script to boot every service (Letta, orchestrator, dashboard agents, dashboard UI, and the expense categorizer API) with one command:
+
+```powershell
+python scripts/start_dev_servers.py --mode windows
+```
+
+The script keeps the servers attached to the current terminal—press `Ctrl+C` to stop everything cleanly.  
+Pass `--mode wsl` (plus `--wsl-root /home/adamsl/planner` if needed) to keep using the old WSL stack, or `--standalone-letta` when you want a second dedicated `./letta server` instance just like the legacy workflow.
+
+On Windows, the launcher will automatically install Python (pip) dependencies, build the dashboard backend (`npm install && npm run build`), and cache a `.windows_python_bootstrap` sentinel so subsequent runs start immediately.  
+Use `--skip-bootstrap` to manage dependencies yourself, or `--force-bootstrap` if you need to reinstall packages after an upgrade.
+
 ### Access Dashboard
 - **URL**: http://localhost:3000
 - **Dashboard Port**: 3000 (consolidated, stable)

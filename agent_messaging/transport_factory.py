@@ -80,13 +80,13 @@ class TransportFactory:
                     transport = transport_class(ws_config)
                     transport.agent_id = agent_id
                     await transport.connect()
-                    print(f"✅ Using WebSocket transport ({websocket_url})")
+                    print(f"  Using WebSocket transport ({websocket_url})")
                     return (name, transport)
                 
                 elif name == "letta":
                     transport = transport_class(letta_config)
                     await transport.connect()
-                    print(f"⚠️  WebSocket unavailable, using Letta transport ({letta_config.base_url})")
+                    print(f"    WebSocket unavailable, using Letta transport ({letta_config.base_url})")
                     return (name, transport)
                 
                 elif name == "rag":
@@ -97,7 +97,7 @@ class TransportFactory:
                     
                     transport = transport_class(doc_manager)
                     await transport.connect()
-                    print(f"⚠️  Letta unavailable, using RAG message board (fallback)")
+                    print(f"    Letta unavailable, using RAG message board (fallback)")
                     return (name, transport)
                     
             except Exception as e:

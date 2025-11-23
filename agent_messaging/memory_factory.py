@@ -72,7 +72,7 @@ class MemoryFactory:
                 if name == "letta":
                     memory = memory_class(letta_config)
                     await memory.connect()
-                    print(f"✅ Using Letta memory ({letta_base_url})")
+                    print(f"  Using Letta memory ({letta_base_url})")
                     return (name, memory)
                 
                 elif name == "chromadb":
@@ -83,7 +83,7 @@ class MemoryFactory:
                     
                     memory = memory_class(doc_manager)
                     await memory.connect()
-                    print(f"⚠️  Letta unavailable, using ChromaDB memory (fallback)")
+                    print(f"    Letta unavailable, using ChromaDB memory (fallback)")
                     return (name, memory)
                     
             except Exception as e:

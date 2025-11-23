@@ -20,6 +20,7 @@ const execAsync = promisify(exec);
 const PORT = process.env.ADMIN_PORT || 3030;
 const HOST = process.env.ADMIN_HOST || '127.0.0.1';
 const SUDO_PASSWORD = process.env.SUDO_PASSWORD || '';
+const IS_WINDOWS = process.platform === 'win32';
 
 interface ProcessInfo {
   pid: string;
@@ -148,62 +149,107 @@ function getServerByProgramName(programName: string): { serverId: string; color:
 
 async function getListeningPorts(): Promise<ProcessInfo[]> {
   try {
-    const { stdout } = await execAsync('ss -tulpn 2>/dev/null || netstat -tulpn 2>/dev/null');
-    const lines = stdout.split('\n').slice(1); // Skip header
-    const processes: ProcessInfo[] = [];
-
-    for (const line of lines) {
-      if (!line.trim()) continue;
-
-      const parts = line.trim().split(/\s+/);  // Trim line to remove trailing spaces
-      if (parts.length < 6) continue;
-
-      const localAddress = parts[4] || '';
-      const programInfo = parts[parts.length - 1] || '';
-
-      const portMatch = localAddress.match(/:(\d+)$/);
-
-      // Handle both netstat format (123/program) and ss format (users:(("program",pid=123,fd=N)))
-      let pidMatch = programInfo.match(/(\d+)\//);  // netstat format
-      if (!pidMatch) {
-        pidMatch = programInfo.match(/pid=(\d+)/);  // ss format
-      }
-
-      let programMatch = programInfo.match(/\/(.+)$/);  // netstat format
-      if (!programMatch) {
-        programMatch = programInfo.match(/\( \("(.+?)",pid=/);  // ss format
-      }
-
-      if (portMatch && pidMatch) {
-        const programName = programMatch ? programMatch[1] : 'unknown';
-
-        // Try to match by port first, then fall back to program name
-        let serverInfo = getServerByPort(portMatch[1]);
-        if (!serverInfo) {
-          serverInfo = getServerByProgramName(programName);
-        }
-
-        processes.push({
-          pid: pidMatch[1],
-          port: portMatch[1],
-          protocol: parts[0] || '',
-          program: programName,
-          command: await getCommandForPid(pidMatch[1]),
-          color: serverInfo?.color,
-          serverId: serverInfo?.serverId,
-        });
-      }
+    if (IS_WINDOWS) {
+      return await parseWindowsNetstat();
     }
-
-    return processes;
+    return await parsePosixSockets();
   } catch (error) {
     console.error('Error getting listening ports:', error);
     return [];
   }
 }
 
+async function parseWindowsNetstat(): Promise<ProcessInfo[]> {
+  const { stdout } = await execAsync('netstat -ano -p tcp');
+  const processes: ProcessInfo[] = [];
+  const lines = stdout.split('\n');
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line.toUpperCase().startsWith('TCP')) continue;
+    const parts = line.split(/\s+/);
+    if (parts.length < 5) continue;
+
+    const protocol = parts[0];
+    const localAddress = parts[1];
+    const state = parts[3];
+    const pid = parts[4];
+
+    if (state.toUpperCase() !== 'LISTENING') continue;
+    const portMatch = localAddress.match(/:(\d+)$/);
+    if (!portMatch) continue;
+
+    const port = portMatch[1];
+    const serverInfo = getServerByPort(port);
+    processes.push({
+      pid,
+      port,
+      protocol,
+      program: 'unknown',
+      command: await getCommandForPid(pid),
+      color: serverInfo?.color,
+      serverId: serverInfo?.serverId,
+    });
+  }
+
+  return processes;
+}
+
+async function parsePosixSockets(): Promise<ProcessInfo[]> {
+  const { stdout } = await execAsync('ss -tulpn 2>/dev/null || netstat -tulpn 2>/dev/null');
+  const lines = stdout.split('\n').slice(1);
+  const processes: ProcessInfo[] = [];
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+
+    const parts = line.trim().split(/\s+/);
+    if (parts.length < 6) continue;
+
+    const localAddress = parts[4] || '';
+    const programInfo = parts[parts.length - 1] || '';
+    const portMatch = localAddress.match(/:(\d+)$/);
+
+    let pidMatch = programInfo.match(/(\d+)\//);
+    if (!pidMatch) {
+      pidMatch = programInfo.match(/pid=(\d+)/);
+    }
+
+    let programMatch = programInfo.match(/\/(.+)$/);
+    if (!programMatch) {
+      programMatch = programInfo.match(/\( \("(.+?)",pid=/);
+    }
+
+    if (portMatch && pidMatch) {
+      const programName = programMatch ? programMatch[1] : 'unknown';
+      let serverInfo = getServerByPort(portMatch[1]);
+      if (!serverInfo) {
+        serverInfo = getServerByProgramName(programName);
+      }
+
+      processes.push({
+        pid: pidMatch[1],
+        port: portMatch[1],
+        protocol: parts[0] || '',
+        program: programName,
+        command: await getCommandForPid(pidMatch[1]),
+        color: serverInfo?.color,
+        serverId: serverInfo?.serverId,
+      });
+    }
+  }
+
+  return processes;
+}
+
 async function getCommandForPid(pid: string): Promise<string> {
   try {
+    if (IS_WINDOWS) {
+      const { stdout } = await execAsync(
+        `powershell -NoProfile -Command \"(Get-CimInstance Win32_Process -Filter 'ProcessId=${pid}').CommandLine\"`
+      );
+      return stdout.trim() || 'unknown';
+    }
     const { stdout } = await execAsync(`ps -p ${pid} -o command=`);
     return stdout.trim();
   } catch {
@@ -213,9 +259,14 @@ async function getCommandForPid(pid: string): Promise<string> {
 
 async function killProcess(pid: string, useSudo: boolean = false): Promise<{ success: boolean; message: string }> {
   try {
-    const killCmd = useSudo && SUDO_PASSWORD
-      ? `echo "${SUDO_PASSWORD}" | sudo -S kill -9 ${pid}`
-      : `kill -9 ${pid}`;
+    let killCmd: string;
+    if (IS_WINDOWS) {
+      killCmd = `taskkill /PID ${pid} /F`;
+    } else {
+      killCmd = useSudo && SUDO_PASSWORD
+        ? `echo "${SUDO_PASSWORD}" | sudo -S kill -9 ${pid}`
+        : `kill -9 ${pid}`;
+    }
 
     await execAsync(killCmd);
     return { success: true, message: `Process ${pid} killed successfully` };

@@ -8,8 +8,8 @@ import sys
 import os
 import time
 import json
-import glob
-from typing import Dict, List
+from pathlib import Path
+from typing import Dict, List, Optional
 from google import genai
 from dotenv import load_dotenv
 
@@ -19,11 +19,11 @@ load_dotenv()
 # Add parent directory to path to import shared modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from agent_messaging import inbox, send, post_message, create_jsonrpc_request, create_jsonrpc_response
+from agent_messaging import inbox, post_message, create_jsonrpc_request, create_jsonrpc_response
 from rag_system.core.document_manager import DocumentManager
 
 AGENT_NAME = "orchestrator-agent"
-WORKSPACE_ROOT = "/home/adamsl/planner"
+WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
 MODEL_ID = "gemini-2.0-flash"
 
 def log_update(message):
@@ -32,13 +32,18 @@ def log_update(message):
 class Orchestrator:
     def __init__(self):
         self.known_agents = {}
-        self.client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
+        api_key = os.environ.get("GOOGLE_API_KEY")
+        if api_key:
+            self.client: Optional[genai.Client] = genai.Client(api_key=api_key)
+        else:
+            self.client = None
+            log_update("GOOGLE_API_KEY not set. Falling back to heuristic routing.")
         self.doc_manager = DocumentManager()
         
     def discover_agents(self):
         """Scan workspace for agent.json files"""
         print(f"[{AGENT_NAME}] Scanning for agents...")
-        agent_files = glob.glob(os.path.join(WORKSPACE_ROOT, "**/agent.json"), recursive=True)
+        agent_files = WORKSPACE_ROOT.rglob("agent.json")
         
         for file_path in agent_files:
             try:
@@ -58,7 +63,10 @@ class Orchestrator:
 
     def decide_route(self, user_request: str) -> Dict:
         """Use Gemini to decide which agent should handle the request"""
-        
+
+        if not self.client:
+            return self._fallback_route(user_request)
+
         prompt = f"""
 You are the Orchestrator Agent. Your job is to route a user request to the best available specialist agent.
 
@@ -88,6 +96,43 @@ Return ONLY valid JSON.
         except Exception as e:
             print(f"[{AGENT_NAME}] Error in decision making: {e}")
             return None
+
+    def _fallback_route(self, user_request: str) -> Optional[Dict]:
+        """Simple keyword-based router when no API client is available."""
+        normalized = user_request.lower()
+        best_agent = None
+        best_score = 0
+
+        for agent_name, metadata in self.known_agents.items():
+            score = 0
+            if agent_name.lower() in normalized:
+                score += 5
+
+            descriptions: List[str] = []
+            if isinstance(metadata.get("description"), str):
+                descriptions.append(metadata["description"])
+            if isinstance(metadata.get("capabilities"), list):
+                descriptions.extend(metadata["capabilities"])
+            if isinstance(metadata.get("topics"), list):
+                descriptions.extend(metadata["topics"])
+
+            combined = " ".join(descriptions).lower()
+            for token in normalized.split():
+                if token and token in combined:
+                    score += 1
+
+            if score > best_score:
+                best_score = score
+                best_agent = agent_name
+
+        if best_agent and best_score:
+            return {
+                "target_agent": best_agent,
+                "reasoning": "Heuristic keyword match (no Gemini API key available).",
+                "method": "agent.execute_task",
+                "params": {"description": user_request},
+            }
+        return None
 
 
     def run(self):

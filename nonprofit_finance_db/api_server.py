@@ -679,8 +679,8 @@ async def import_pdf(request: PDFImportRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    print("🚀 Starting Daily Expense Categorizer on http://localhost:8080")
-    print("   Main App:         http://localhost:8080/")
+    print("[API] Starting Daily Expense Categorizer on http://localhost:8080")
+    print("   Main App:          http://localhost:8080/")
     print("   API Documentation: http://localhost:8080/docs")
     print("   API Endpoints:")
     print("   - GET  /api/expenses")

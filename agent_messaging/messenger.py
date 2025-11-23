@@ -70,10 +70,10 @@ class AgentMessenger:
                 letta_base_url=base_url,
                 letta_api_key=api_key
             )
-            console.print(f"✅ Messenger initialized using: {self.transport_name}", style="green")
+            console.print(f"  Messenger initialized using: {self.transport_name}", style="green")
         except Exception as e:
-            console.print(f"⚠️  Failed to initialize transport: {e}", style="yellow")
-            console.print("⚠️  Messaging may be limited to RAG board.", style="yellow")
+            console.print(f"    Failed to initialize transport: {e}", style="yellow")
+            console.print("    Messaging may be limited to RAG board.", style="yellow")
             self.transport = None
             self.transport_name = "none"
 
@@ -109,7 +109,7 @@ class AgentMessenger:
             Response dict (simulated for async transports)
         """
         if not self.transport:
-            console.print("❌ No active transport", style="red")
+            console.print("  No active transport", style="red")
             return {"error": "No transport"}
 
         try:
@@ -124,14 +124,14 @@ class AgentMessenger:
             success = asyncio.run(self.transport.send(msg))
             
             if success:
-                console.print(f"✅ Message sent to {agent_id[:8]} via {self.transport_name}", style="green")
+                console.print(f"  Message sent to {agent_id[:8]} via {self.transport_name}", style="green")
                 return {"status": "sent", "transport": self.transport_name}
             else:
-                console.print(f"❌ Failed to send message via {self.transport_name}", style="red")
+                console.print(f"  Failed to send message via {self.transport_name}", style="red")
                 return {"error": "Send failed"}
 
         except Exception as e:
-            console.print(f"❌ Error sending message: {e}", style="red")
+            console.print(f"  Error sending message: {e}", style="red")
             raise
 
     def read_messages(self, agent_id: str, limit: int = 10) -> List[Dict]:
@@ -145,10 +145,10 @@ class AgentMessenger:
             try:
                 messages = asyncio.run(self.transport.poll_messages(agent_id))
                 if messages:
-                    console.print(f"📬 Found {len(messages)} messages (RAG)", style="cyan")
+                    console.print(f"  Found {len(messages)} messages (RAG)", style="cyan")
                     return messages
             except Exception as e:
-                console.print(f"❌ Error reading RAG messages: {e}", style="red")
+                console.print(f"  Error reading RAG messages: {e}", style="red")
         
         # Fallback to Letta client if available
         if self.client:
@@ -158,7 +158,7 @@ class AgentMessenger:
                     limit=limit
                 )
                 if messages:
-                    console.print(f"📬 Found {len(messages)} messages (Letta)", style="cyan")
+                    console.print(f"  Found {len(messages)} messages (Letta)", style="cyan")
                     return messages
             except Exception:
                 pass
@@ -190,7 +190,7 @@ class AgentMessenger:
                     console.print(table)
                 return agents_list
             except Exception as e:
-                console.print(f"❌ Error listing agents: {e}", style="red")
+                console.print(f"  Error listing agents: {e}", style="red")
         return []
 
     # ========================================================================
@@ -200,21 +200,21 @@ class AgentMessenger:
     def create_group(self, name: str, description: str = "") -> Optional[str]:
         """Create an agent group (Letta only for now)"""
         if not self.client:
-            console.print("❌ Group management requires Letta connection", style="red")
+            console.print("  Group management requires Letta connection", style="red")
             return None
             
         try:
             group = self.client.groups.create(name=name, description=description)
-            console.print(f"✅ Created group: {name} (ID: {group.id})", style="green")
+            console.print(f"  Created group: {name} (ID: {group.id})", style="green")
             return group.id
         except Exception as e:
-            console.print(f"❌ Error creating group: {e}", style="red")
+            console.print(f"  Error creating group: {e}", style="red")
             return None
 
     def send_to_group(self, group_id: str, message: str) -> Dict:
         """Send a message to all agents in a group"""
         if not self.client:
-            console.print("❌ Group messaging requires Letta connection", style="red")
+            console.print("  Group messaging requires Letta connection", style="red")
             return {"error": "No Letta connection"}
 
         try:
@@ -222,10 +222,10 @@ class AgentMessenger:
                 group_id=group_id,
                 messages=[{"role": "user", "content": message}]
             )
-            console.print(f"✅ Broadcast to group {group_id[:8]}...", style="green")
+            console.print(f"  Broadcast to group {group_id[:8]}...", style="green")
             return response
         except Exception as e:
-            console.print(f"❌ Failed to broadcast: {e}", style="red")
+            console.print(f"  Failed to broadcast: {e}", style="red")
             raise
 
     def list_groups(self) -> List[Dict]:
@@ -255,7 +255,7 @@ class AgentMessenger:
                 console.print(table)
             return groups_list
         except Exception as e:
-            console.print(f"❌ Error listing groups: {e}", style="red")
+            console.print(f"  Error listing groups: {e}", style="red")
             return []
 
     # ========================================================================
@@ -288,14 +288,14 @@ class AgentMessenger:
             success = asyncio.run(transport.send(msg))
             
             if success:
-                console.print(f"✅ Posted to message board: {topic}", style="green")
+                console.print(f"  Posted to message board: {topic}", style="green")
                 return "msg-id-placeholder"
             else:
-                console.print("❌ Failed to post to board", style="red")
+                console.print("  Failed to post to board", style="red")
                 return None
 
         except Exception as e:
-            console.print(f"❌ Error posting to board: {e}", style="red")
+            console.print(f"  Error posting to board: {e}", style="red")
             return None
 
     def read_board(self, topic: Optional[str] = None, limit: int = 10):
@@ -311,7 +311,7 @@ class AgentMessenger:
             messages = asyncio.run(transport.poll_messages("board", topic=topic))
             
             if messages:
-                console.print(f"\n📋 Message Board ({len(messages)} messages):", style="cyan")
+                console.print(f"\n  Message Board ({len(messages)} messages):", style="cyan")
                 for i, msg in enumerate(messages[:limit], 1):
                     # Handle both dict results and AgentMessage objects
                     content = msg.content if hasattr(msg, 'content') else str(msg)
@@ -325,11 +325,11 @@ class AgentMessenger:
                     console.print(panel)
                 return messages
             else:
-                console.print("📭 Message board is empty", style="yellow")
+                console.print("  Message board is empty", style="yellow")
                 return []
 
         except Exception as e:
-            console.print(f"❌ Error reading board: {e}", style="red")
+            console.print(f"  Error reading board: {e}", style="red")
             return []
 
 

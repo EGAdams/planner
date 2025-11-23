@@ -1,0 +1,346 @@
+[orchestrator-agent] GOOGLE_API_KEY not set. Falling back to heuristic routing.
+chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+[orchestrator-agent] Started. Listening on topic 'orchestrator'...
+[orchestrator-agent] Scanning for agents...
+[orchestrator-agent] Discovered 2 agents: ['planner-agent', 'dashboard-ops-agent']
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+    Letta unavailable, using RAG message board (fallback)
+  Messenger initialized using: rag
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+httpx - INFO - HTTP Request: GET https://chroma-onnx-models.s3.amazonaws.com/all-MiniLM-L6-v2/onnx.tar.gz "HTTP/1.1 200 OK"
+C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   0%|          | 0.00/79.3M [00:00<?, ?iB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   0%|          | 136k/79.3M [00:00<01:19, 1.04MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   1%|          | 510k/79.3M [00:00<00:34, 2.42MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   1%|1         | 1.06M/79.3M [00:00<00:21, 3.85MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   2%|2         | 1.70M/79.3M [00:00<00:20, 4.03MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   4%|3         | 2.96M/79.3M [00:00<00:11, 6.70MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   5%|4         | 3.64M/79.3M [00:00<00:13, 6.07MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   7%|6         | 5.27M/79.3M [00:00<00:08, 9.05MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   8%|7         | 6.21M/79.3M [00:00<00:08, 9.23MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:   9%|8         | 7.13M/79.3M [00:01<00:08, 8.67MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  10%|#         | 8.00M/79.3M [00:01<00:09, 8.21MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  11%|#1        | 9.07M/79.3M [00:01<00:08, 8.90MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  13%|#2        | 9.95M/79.3M [00:01<00:08, 8.62MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  14%|#3        | 10.9M/79.3M [00:01<00:07, 8.99MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  15%|#4        | 11.8M/79.3M [00:01<00:07, 8.98MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  16%|#5        | 12.6M/79.3M [00:01<00:08, 8.68MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  17%|#6        | 13.5M/79.3M [00:01<00:08, 8.59MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  18%|#8        | 14.3M/79.3M [00:01<00:08, 8.51MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  19%|#9        | 15.1M/79.3M [00:02<00:07, 8.46MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  20%|##        | 15.9M/79.3M [00:02<00:08, 8.20MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  21%|##1       | 16.8M/79.3M [00:02<00:07, 8.47MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  22%|##2       | 17.6M/79.3M [00:02<00:07, 8.27MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  23%|##3       | 18.4M/79.3M [00:02<00:07, 8.18MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  24%|##4       | 19.3M/79.3M [00:02<00:07, 8.29MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  25%|##5       | 20.1M/79.3M [00:02<00:07, 8.08MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  26%|##6       | 20.8M/79.3M [00:02<00:07, 8.06MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  27%|##7       | 21.6M/79.3M [00:02<00:07, 7.91MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  28%|##8       | 22.4M/79.3M [00:03<00:07, 8.06MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  29%|##9       | 23.3M/79.3M [00:03<00:07, 8.15MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  30%|###       | 24.1M/79.3M [00:03<00:07, 8.17MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  31%|###1      | 24.8M/79.3M [00:03<00:07, 8.14MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  32%|###2      | 25.6M/79.3M [00:03<00:07, 8.01MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  33%|###3      | 26.4M/79.3M [00:03<00:06, 8.05MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  34%|###4      | 27.2M/79.3M [00:03<00:06, 8.03MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  35%|###5      | 28.0M/79.3M [00:03<00:06, 7.86MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  36%|###6      | 28.9M/79.3M [00:03<00:06, 8.13MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  37%|###7      | 29.7M/79.3M [00:03<00:06, 8.19MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  38%|###8      | 30.5M/79.3M [00:04<00:06, 8.22MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  39%|###9      | 31.3M/79.3M [00:04<00:06, 8.10MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  40%|####      | 32.1M/79.3M [00:04<00:06, 8.15MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  42%|####1     | 32.9M/79.3M [00:04<00:05, 8.28MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  43%|####2     | 33.7M/79.3M [00:04<00:05, 8.07MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  44%|####3     | 34.6M/79.3M [00:04<00:05, 8.34MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  45%|####4     | 35.4M/79.3M [00:04<00:05, 7.98MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  46%|####5     | 36.3M/79.3M [00:04<00:05, 8.33MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  47%|####6     | 37.1M/79.3M [00:04<00:05, 8.32MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  48%|####7     | 37.9M/79.3M [00:04<00:05, 8.14MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  49%|####8     | 38.7M/79.3M [00:05<00:05, 8.19MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  50%|####9     | 39.5M/79.3M [00:05<00:05, 8.00MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  51%|#####     | 40.4M/79.3M [00:05<00:04, 8.26MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  52%|#####1    | 41.1M/79.3M [00:05<00:04, 8.07MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  53%|#####2    | 41.9M/79.3M [00:05<00:05, 7.83MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  54%|#####3    | 42.8M/79.3M [00:05<00:04, 8.24MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  55%|#####4    | 43.6M/79.3M [00:05<00:04, 8.21MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  56%|#####5    | 44.4M/79.3M [00:05<00:04, 8.23MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  57%|#####6    | 45.2M/79.3M [00:05<00:04, 8.10MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  58%|#####7    | 46.0M/79.3M [00:06<00:04, 8.15MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  59%|#####8    | 46.8M/79.3M [00:06<00:04, 8.14MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  60%|#####9    | 47.5M/79.3M [00:06<00:04, 8.11MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  61%|######1   | 48.4M/79.3M [00:06<00:03, 8.34MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  62%|######2   | 49.2M/79.3M [00:06<00:04, 6.93MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  63%|######3   | 50.3M/79.3M [00:06<00:03, 8.04MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  65%|######4   | 51.2M/79.3M [00:06<00:03, 8.51MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  66%|######5   | 52.1M/79.3M [00:06<00:03, 8.22MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  67%|######6   | 52.9M/79.3M [00:06<00:03, 8.28MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  68%|######7   | 53.7M/79.3M [00:07<00:03, 7.86MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  69%|######8   | 54.5M/79.3M [00:07<00:03, 8.04MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  70%|######9   | 55.3M/79.3M [00:07<00:03, 8.00MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  71%|#######   | 56.1M/79.3M [00:07<00:02, 8.14MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  72%|#######1  | 56.9M/79.3M [00:07<00:02, 7.88MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  73%|#######2  | 57.7M/79.3M [00:07<00:02, 7.88MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  74%|#######3  | 58.4M/79.3M [00:07<00:02, 7.83MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  75%|#######4  | 59.2M/79.3M [00:07<00:02, 7.87MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  76%|#######5  | 59.9M/79.3M [00:07<00:02, 7.67MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  77%|#######6  | 60.8M/79.3M [00:07<00:02, 8.14MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  78%|#######7  | 61.6M/79.3M [00:08<00:02, 7.82MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  79%|#######8  | 62.4M/79.3M [00:08<00:02, 7.52MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  80%|#######9  | 63.1M/79.3M [00:08<00:02, 7.40MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  80%|########  | 63.8M/79.3M [00:08<00:02, 7.40MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  81%|########1 | 64.5M/79.3M [00:08<00:02, 7.19MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  82%|########2 | 65.3M/79.3M [00:08<00:02, 7.32MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  83%|########3 | 66.0M/79.3M [00:08<00:01, 7.29MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  84%|########4 | 66.7M/79.3M [00:08<00:01, 7.43MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  85%|########5 | 67.5M/79.3M [00:08<00:01, 7.37MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  86%|########5 | 68.2M/79.3M [00:09<00:01, 7.40MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  87%|########6 | 68.9M/79.3M [00:09<00:01, 7.14MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  88%|########7 | 69.8M/79.3M [00:09<00:01, 7.50MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  89%|########8 | 70.5M/79.3M [00:09<00:01, 7.49MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  90%|########9 | 71.2M/79.3M [00:09<00:01, 7.49MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  91%|######### | 71.9M/79.3M [00:09<00:01, 7.46MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  92%|#########1| 72.6M/79.3M [00:09<00:00, 7.43MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  92%|#########2| 73.4M/79.3M [00:09<00:00, 7.33MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  93%|#########3| 74.1M/79.3M [00:09<00:00, 7.31MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  94%|#########4| 74.8M/79.3M [00:09<00:00, 7.31MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  95%|#########5| 75.4M/79.3M [00:10<00:00, 7.11MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  96%|#########6| 76.2M/79.3M [00:10<00:00, 7.19MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  97%|#########6| 76.9M/79.3M [00:10<00:00, 7.38MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  98%|#########7| 77.6M/79.3M [00:10<00:00, 7.36MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz:  99%|#########8| 78.3M/79.3M [00:10<00:00, 7.08MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz: 100%|#########9| 79.1M/79.3M [00:10<00:00, 7.36MiB/s]C:\Users\NewUser\.cache\chroma\onnx_models\all-MiniLM-L6-v2\onnx.tar.gz: 100%|##########| 79.3M/79.3M [00:10<00:00, 7.80MiB/s]
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query: to:board topic:orchestrator
+[RAGBoardTransport] Found 0 results
+  Message board is empty

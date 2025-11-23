@@ -61,7 +61,7 @@ async def remember(
     """
     Convenience function to store a memory.
     
-    Uses MemoryFactory to automatically select backend (Letta → ChromaDB).
+    Uses MemoryFactory to automatically select backend (Letta   ChromaDB).
     
     Args:
         content: Memory content to store
@@ -91,7 +91,7 @@ async def recall(
     """
     Convenience function to search memories.
     
-    Uses MemoryFactory to automatically select backend (Letta → ChromaDB).
+    Uses MemoryFactory to automatically select backend (Letta   ChromaDB).
     
     Args:
         query: Search query

@@ -1,13 +1,1 @@
-{
-  "letta-server": {
-    "id": "letta-server",
-    "pid": 3601938,
-    "command": "/home/adamsl/planner/.venv/bin/letta server",
-    "cwd": "/home/adamsl/planner",
-    "startTime": "2025-11-23T19:01:08.756Z",
-    "status": "running",
-    "ports": [
-      8283
-    ]
-  }
-}
+{}

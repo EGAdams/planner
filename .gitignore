@@ -26,4 +26,4 @@ server-monitor-app/node_modules/
 .codex-collective/.env
 .codex-collective/tmp_mysql/
 .env
-
+.windows_python_bootstrap

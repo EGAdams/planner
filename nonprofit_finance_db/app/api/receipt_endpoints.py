@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import os
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse, FileResponse
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field
@@ -15,10 +17,28 @@ from app.repositories.expenses import ExpenseRepository
 router = APIRouter()
 
 # Initialize services and repositories
-receipt_engine = GeminiReceiptEngine()
-receipt_parser = ReceiptParser(receipt_engine)
+receipt_parser: ReceiptParser | None = None
+receipt_parser_error: str | None = None
 receipt_metadata_repo = ReceiptMetadataRepository()
 expense_repo = ExpenseRepository() # Assuming this is available
+
+
+def get_receipt_parser() -> ReceiptParser:
+    """Return the shared ReceiptParser, initializing it lazily."""
+    global receipt_parser, receipt_parser_error
+    if receipt_parser is not None:
+        return receipt_parser
+    try:
+        receipt_parser = ReceiptParser(GeminiReceiptEngine())
+        receipt_parser_error = None
+        return receipt_parser
+    except Exception as exc:
+        receipt_parser = None
+        receipt_parser_error = str(exc)
+        raise HTTPException(
+            status_code=503,
+            detail=f"Receipt parsing temporarily unavailable: {receipt_parser_error}",
+        )
 
 class ParseReceiptResponse(BaseModel):
     parsed_data: ReceiptExtractionResult
@@ -55,22 +75,23 @@ async def parse_receipt_endpoint(file: UploadFile = File(...)):
     Uploads a receipt image and parses it using the AI engine.
     Returns the structured data and a temporary file reference.
     """
+    parser = get_receipt_parser()
     temp_file_name: Optional[str] = None
     try:
-        parsed_data, temp_file_name = await receipt_parser.process_receipt(file)
+        parsed_data, temp_file_name = await parser.process_receipt(file)
         
         return ParseReceiptResponse(parsed_data=parsed_data, temp_file_name=temp_file_name)
     except TimeoutError as e:
         if temp_file_name:
-            receipt_parser.cleanup_temp_file(temp_file_name)
+            parser.cleanup_temp_file(temp_file_name)
         raise HTTPException(status_code=504, detail=str(e))
     except ValueError as e:
         if temp_file_name:
-            receipt_parser.cleanup_temp_file(temp_file_name)
+            parser.cleanup_temp_file(temp_file_name)
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         if temp_file_name:
-            receipt_parser.cleanup_temp_file(temp_file_name)
+            parser.cleanup_temp_file(temp_file_name)
         raise HTTPException(status_code=500, detail=f"Error parsing receipt: {e}")
 
 
@@ -111,8 +132,9 @@ async def save_receipt_endpoint(request: SaveReceiptRequest):
     Saves the parsed receipt data and creates an expense entry in the database.
     Moves the temporary receipt file to permanent storage.
     """
+    parser = get_receipt_parser()
     try:
-        permanent_receipt_url = await receipt_parser.move_temp_file_to_permanent(
+        permanent_receipt_url = await parser.move_temp_file_to_permanent(
             request.temp_file_name,
             request.original_file_name,
             "application/octet-stream"
@@ -124,7 +146,7 @@ async def save_receipt_endpoint(request: SaveReceiptRequest):
         ]
 
         if not categorized_items:
-            receipt_parser.cleanup_temp_file(request.temp_file_name)
+            parser.cleanup_temp_file(request.temp_file_name)
             raise HTTPException(
                 status_code=400,
                 detail="No categorized items provided; uncategorized lines are ignored."
@@ -162,7 +184,7 @@ async def save_receipt_endpoint(request: SaveReceiptRequest):
             raw_response=None,
         )
 
-        receipt_parser.cleanup_temp_file(request.temp_file_name)
+        parser.cleanup_temp_file(request.temp_file_name)
 
         return JSONResponse(content={
             "expense_ids": created_expense_ids,
@@ -174,7 +196,7 @@ async def save_receipt_endpoint(request: SaveReceiptRequest):
         raise
     except Exception as e:
         # If an error occurs, attempt to clean up the temp file
-        receipt_parser.cleanup_temp_file(request.temp_file_name)
+        parser.cleanup_temp_file(request.temp_file_name)
         raise HTTPException(status_code=500, detail=f"Error saving expense: {e}")
 
 @router.get("/receipts/file/{year}/{month}/{filename}")
