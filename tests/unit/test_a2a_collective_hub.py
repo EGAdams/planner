@@ -169,3 +169,33 @@ async def test_routing_metadata_exposes_topics_and_capabilities(tmp_path: Path) 
     assert snapshot["planner-agent"]["topics"] == ["general", "planner"]
     assert snapshot["dashboard-ops-agent"]["topics"] == ["ops"]
     assert snapshot["planner-agent"]["capabilities"] == ["execute_task"]
+
+
+@pytest.mark.asyncio
+async def test_prepare_delegation_returns_jsonrpc_payload(tmp_path: Path) -> None:
+    """
+    The hub should emit an A2A-compliant JSON-RPC payload (plus routing topic)
+    when orchestrator assigns a task to a known agent.
+    """
+    workspace = tmp_path / "workspace"
+    workspace.mkdir()
+    _write_agent_card(workspace, "planner-agent", ["planning", "general"])
+
+    hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=StubMemoryFactory(created_for=[]))
+    registry = await hub.discover_agents()
+
+    routing = hub.prepare_delegation(
+        registry=registry,
+        agent_name="planner-agent",
+        description="Investigate failing dashboard tests",
+        context={"priority": "high"},
+    )
+
+    assert routing["topic"] == "planning"
+    payload = routing["payload"]
+    assert payload["jsonrpc"] == "2.0"
+    assert payload["method"] == "agent.execute_task"
+    assert payload["params"]["description"] == "Investigate failing dashboard tests"
+    assert payload["params"]["context"]["priority"] == "high"
+    assert payload["params"]["target_agent"] == "planner-agent"
+    assert isinstance(payload["params"]["task_id"], str) and payload["params"]["task_id"]

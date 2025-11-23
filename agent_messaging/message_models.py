@@ -7,7 +7,7 @@ Uses Pydantic for type safety and automatic serialization.
 from enum import Enum
 from typing import Optional, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class MessagePriority(str, Enum):
@@ -39,8 +39,9 @@ class AgentMessage(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.utcnow)
     metadata: Optional[Dict[str, Any]] = Field(default=None)
     
-    @validator('to_agent', 'from_agent')
-    def validate_agent_id(cls, v):
+    @field_validator('to_agent', 'from_agent')
+    @classmethod
+    def validate_agent_id(cls, v: str) -> str:
         """Ensure agent IDs are valid format"""
         # Allow "*" for broadcast messages
         if v == "*":
@@ -49,19 +50,14 @@ class AgentMessage(BaseModel):
             raise ValueError(f"Invalid agent ID format: {v}")
         return v
     
-    class Config:
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
-    
     def serialize(self) -> str:
         """Serialize to JSON string"""
-        return self.json()
+        return self.model_dump_json()
     
     @classmethod
     def deserialize(cls, data: str) -> 'AgentMessage':
         """Deserialize from JSON string"""
-        return cls.parse_raw(data)
+        return cls.model_validate_json(data)
 
 
 class ConnectionConfig(BaseModel):
@@ -71,8 +67,9 @@ class ConnectionConfig(BaseModel):
     reconnect_delay: float = Field(default=1.0, ge=0.1, le=60.0)
     timeout: float = Field(default=30.0, ge=1.0, le=300.0)
     
-    @validator('url')
-    def validate_websocket_url(cls, v):
+    @field_validator('url')
+    @classmethod
+    def validate_websocket_url(cls, v: str) -> str:
         """Ensure URL is valid WebSocket format"""
         if not v.startswith(('ws://', 'wss://')):
             raise ValueError("URL must start with ws:// or wss://")

@@ -16,6 +16,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Protocol, Tuple
+from uuid import uuid4
 
 from .memory_backend import MemoryBackend
 from .memory_factory import MemoryFactory
@@ -147,3 +148,42 @@ class A2ACollectiveHub:
                 "version": spoke.card.version,
             }
         return snapshot
+
+    def prepare_delegation(
+        self,
+        registry: Dict[str, AgentSpoke],
+        agent_name: str,
+        description: str,
+        context: Optional[Dict] = None,
+        artifacts: Optional[List[str]] = None,
+    ) -> Dict[str, Dict]:
+        """
+        Build the JSON-RPC payload and routing topic for an agent delegation.
+
+        Returns a dict containing:
+            {
+                "topic": <topic string>,
+                "payload": <json-rpc dict>
+            }
+        """
+        if agent_name not in registry:
+            raise ValueError(f"Unknown agent '{agent_name}' in registry")
+
+        spoke = registry[agent_name]
+        topics = spoke.topics or spoke.card.topics
+        topic = topics[0] if topics else "general"
+
+        payload = {
+            "jsonrpc": "2.0",
+            "method": "agent.execute_task",
+            "params": {
+                "task_id": str(uuid4()),
+                "target_agent": agent_name,
+                "description": description,
+                "context": context or {},
+                "artifacts": artifacts or [],
+            },
+            "id": 1,
+        }
+
+        return {"topic": topic, "payload": payload}
