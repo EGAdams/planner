@@ -353,22 +353,107 @@ async def _handle_parse_bank_pdf(file: UploadFile, org_id: int = 1) -> Dict[str,
         transactions = parser.parse(tmp_path) or []
         account_info = parser.extract_account_info(tmp_path) or {}
 
+        def _classify(txn: Dict[str, Any]) -> str:
+            hint = str(txn.get("bank_item_type") or "").upper()
+            if hint in ("CHECK", "WITHDRAWAL", "DEPOSIT"):
+                return hint
+            desc = str(txn.get("description") or "").lower()
+            if "check" in desc:
+                return "CHECK"
+            amount = txn.get("amount")
+            if amount is None:
+                return "UNKNOWN"
+            return "DEPOSIT" if amount > 0 else "WITHDRAWAL"
+
+        def _compute_breakdown(txns: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+            breakdown = {
+                "checks": {"count": 0, "total": 0.0},
+                "withdrawals": {"count": 0, "total": 0.0},
+                "deposits": {"count": 0, "total": 0.0},
+            }
+            for txn in txns:
+                amount = txn.get("amount")
+                if amount is None:
+                    continue
+                bucket = _classify(txn)
+                if bucket == "CHECK":
+                    breakdown["checks"]["count"] += 1
+                    breakdown["checks"]["total"] += abs(amount)
+                elif bucket == "DEPOSIT":
+                    breakdown["deposits"]["count"] += 1
+                    breakdown["deposits"]["total"] += abs(amount)
+                else:
+                    breakdown["withdrawals"]["count"] += 1
+                    breakdown["withdrawals"]["total"] += abs(amount)
+
+            for key in breakdown:
+                breakdown[key]["total"] = round(breakdown[key]["total"], 2)
+            return breakdown
+
+        def _close(a: Optional[float], b: Optional[float], tol: float = 0.01) -> bool:
+            if a is None or b is None:
+                return False
+            return abs(a - b) <= tol
+
+        account_summary = account_info.get("summary", {}) if isinstance(account_info, dict) else {}
+        breakdown = _compute_breakdown(transactions)
+
+        computed_ending = None
+        if account_summary.get("beginning_balance") is not None:
+            computed_ending = round(
+                account_summary["beginning_balance"]
+                - breakdown["checks"]["total"]
+                - breakdown["withdrawals"]["total"]
+                + breakdown["deposits"]["total"],
+                2,
+            )
+
+        errors = []
+        if account_summary:
+            for key in ("checks", "withdrawals", "deposits"):
+                expected_group = account_summary.get(key) or {}
+                expected_count = expected_group.get("count")
+                expected_total = expected_group.get("total")
+                if expected_count is not None and expected_count != breakdown[key]["count"]:
+                    errors.append(f"{key} count mismatch")
+                if expected_total is not None and not _close(expected_total, breakdown[key]["total"]):
+                    errors.append(f"{key} total mismatch")
+
+            if account_summary.get("ending_balance") is not None and computed_ending is not None:
+                if not _close(account_summary["ending_balance"], computed_ending):
+                    errors.append("ending balance mismatch")
+
+        verification = {
+            "expected": account_summary,
+            "calculated": breakdown,
+            "beginning_balance_expected": account_summary.get("beginning_balance"),
+            "ending_balance_expected": account_summary.get("ending_balance"),
+            "ending_balance_calculated": computed_ending,
+            "passes": bool(account_summary) and not errors,
+            "errors": errors,
+        }
+
         total_amount = sum(t.get("amount", 0) for t in transactions if t.get("amount") is not None)
         total_debits = sum(abs(t.get("amount", 0)) for t in transactions if t.get("amount", 0) < 0)
         total_credits = sum(t.get("amount", 0) for t in transactions if t.get("amount", 0) > 0)
+        statement_total = None
+        if isinstance(account_info, dict):
+            statement_total = account_summary.get("ending_balance") or account_info.get("statement_total")
 
         totals = {
             "sum": round(total_amount, 2),
             "debits": round(total_debits, 2),
             "credits": round(total_credits, 2),
             "count": len(transactions),
-            "statement_total": account_info.get("statement_total") if isinstance(account_info, dict) else None,
+            "statement_total": statement_total,
+            "breakdown": breakdown,
         }
 
         return {
             "transactions": transactions,
             "totals": totals,
             "account_info": account_info,
+            "verification": verification,
         }
 
     except HTTPException:

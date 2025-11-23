@@ -5,12 +5,19 @@ class BankPdfScanner extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.transactions = [
-            { id: 'txn-1', description: 'Opening balance check', amount: 150.0 },
-            { id: 'txn-2', description: 'Groceries', amount: -45.75 },
-            { id: 'txn-3', description: 'Utilities', amount: -62.1 }
+            { id: 'txn-1', description: 'Opening balance check', amount: -150.0, bank_item_type: 'WITHDRAWAL' },
+            { id: 'txn-2', description: 'Groceries', amount: -45.75, bank_item_type: 'WITHDRAWAL' },
+            { id: 'txn-3', description: 'Utilities', amount: -62.1, bank_item_type: 'WITHDRAWAL' }
         ];
+        this.allTransactions = [...this.transactions];
+        this.transactions = this._filterDisplayTransactions(this.allTransactions);
         this.categoryPickers = [];
-        this.calculatedTotal = 0;
+        this.calculatedTotal = this._computeNetTotal(this.allTransactions);
+        this.accountSummary = null;
+        this.breakdown = this._computeBreakdown(this.allTransactions);
+        this.verification = { passes: false, issues: [], ending: null };
+        this.hasParsed = false;
+        this.backendIssues = [];
         this.fileName = '';
         this.apiBase = this._computeApiBase();
         this.apiEndpoint = `${this.apiBase}/parse-bank-pdf`;
@@ -98,32 +105,60 @@ class BankPdfScanner extends HTMLElement {
                     margin-bottom: 8px;
                     font-size: 0.9rem;
                 }
-                .totals {
-                    display: flex;
-                    gap: 16px;
-                    align-items: center;
-                    flex-wrap: wrap;
-                    margin-bottom: 12px;
+                .summary-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                    gap: 12px;
+                    margin: 12px 0 10px;
                 }
-                .totals label {
-                    display: flex;
-                    flex-direction: column;
-                    font-size: 0.9rem;
+                .summary-card {
+                    background: #fff;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 10px;
+                    padding: 12px;
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+                }
+                .summary-card h3 {
+                    margin: 0 0 8px 0;
+                    font-size: 1rem;
                     color: #0f172a;
                 }
-                .totals input {
-                    padding: 8px;
-                    border-radius: 8px;
-                    border: 1px solid #cbd5e1;
-                    margin-top: 4px;
-                    min-width: 160px;
+                .summary-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 4px 0;
+                    font-size: 0.95rem;
                 }
-                .calculated-total {
-                    background: #e2e8f0;
-                    padding: 10px 12px;
-                    border-radius: 8px;
+                .summary-row span.value {
                     font-weight: 600;
                 }
+                .summary-row.mismatch span.value {
+                    color: #b91c1c;
+                }
+                .pill {
+                    display: inline-block;
+                    padding: 4px 8px;
+                    border-radius: 999px;
+                    font-size: 0.82rem;
+                    background: #e2e8f0;
+                    color: #0f172a;
+                }
+                .pill.mismatch {
+                    background: #fee2e2;
+                    color: #991b1b;
+                    border: 1px solid #fecdd3;
+                }
+                .issues {
+                    margin: 4px 0 12px;
+                    color: #991b1b;
+                    background: #fef2f2;
+                    border: 1px solid #fecdd3;
+                    border-radius: 8px;
+                    padding: 8px 10px;
+                    font-size: 0.9rem;
+                }
+                .issues.hidden { display: none; }
                 table {
                     width: 100%;
                     border-collapse: collapse;
@@ -190,17 +225,24 @@ class BankPdfScanner extends HTMLElement {
                 <p class="status warning" data-testid="status-text">
                     Totals must balance before you can start categorizing.
                 </p>
-                <div class="totals">
-                    <label>
-                        Statement Total
-                        <input type="number" step="0.01" data-testid="statement-total" aria-label="Statement total">
-                    </label>
-                    <div class="calculated-total">
-                        Calculated Total:
-                        <span data-testid="calculated-total">${this.formatCurrency(this.calculatedTotal)}</span>
+                <div class="summary-grid">
+                    <div class="summary-card" data-testid="account-summary-card">
+                        <h3>Account Summary (Statement)</h3>
+                        <div class="summary-row"><span>Beginning Balance</span><span class="value" data-testid="account-beginning">--</span></div>
+                        <div class="summary-row"><span>Ending Balance</span><span class="value" data-testid="account-ending">--</span></div>
+                        <div class="summary-row"><span>Checks</span><span class="value" data-testid="account-checks">--</span></div>
+                        <div class="summary-row"><span>Withdrawals / Debits</span><span class="value" data-testid="account-withdrawals">--</span></div>
+                        <div class="summary-row"><span>Deposits / Credits</span><span class="value" data-testid="account-deposits">--</span></div>
                     </div>
-                    <button class="secondary" id="rebalance">Recalculate</button>
+                    <div class="summary-card" data-testid="calculated-summary-card">
+                        <h3>Calculated Summary (Parsed)</h3>
+                        <div class="summary-row"><span>Ending Balance (calculated)</span><span class="value" data-testid="calc-ending">--</span></div>
+                        <div class="summary-row"><span>Checks</span><span class="value" data-testid="calc-checks">--</span></div>
+                        <div class="summary-row"><span>Withdrawals / Debits</span><span class="value" data-testid="calc-withdrawals">--</span></div>
+                        <div class="summary-row"><span>Deposits / Credits</span><span class="value" data-testid="calc-deposits">--</span></div>
+                    </div>
                 </div>
+                <div class="issues hidden" data-testid="verification-issues"></div>
                 <div class="table-wrapper">
                     <table>
                         <thead>
@@ -215,9 +257,8 @@ class BankPdfScanner extends HTMLElement {
                 </div>
                 <div class="actions">
                     <button class="secondary" id="addRow">Add Row</button>
-                    <button class="secondary" id="autoBalance">Set statement to calculated total</button>
                 </div>
-                <p class="note">Category pickers stay disabled until the calculated total matches your statement total.</p>
+                <p class="note">Category pickers stay disabled until the statement summary matches the parsed summary.</p>
             </div>
         `;
     }
@@ -225,24 +266,15 @@ class BankPdfScanner extends HTMLElement {
     connectedCallback() {
         this.rowsEl = this.shadowRoot.getElementById('rows');
         this.statusEl = this.shadowRoot.querySelector('[data-testid="status-text"]');
-        this.statementTotalInput = this.shadowRoot.querySelector('input[data-testid="statement-total"]');
-        this.calculatedTotalEl = this.shadowRoot.querySelector('[data-testid="calculated-total"]');
-        this.rebalanceBtn = this.shadowRoot.getElementById('rebalance');
+        this.issuesEl = this.shadowRoot.querySelector('[data-testid="verification-issues"]');
         this.addRowBtn = this.shadowRoot.getElementById('addRow');
-        this.autoBalanceBtn = this.shadowRoot.getElementById('autoBalance');
         this.dropArea = this.shadowRoot.getElementById('dropArea');
         this.fileInput = this.shadowRoot.getElementById('fileInput');
         this.loadingEl = this.shadowRoot.getElementById('loading');
         this.errorEl = this.shadowRoot.getElementById('error');
         this.fileNameEl = this.shadowRoot.getElementById('fileName');
 
-        this.statementTotalInput.addEventListener('input', () => this.updateBalanceState());
-        this.rebalanceBtn.addEventListener('click', () => this.updateTotals());
         this.addRowBtn.addEventListener('click', () => this.addTransaction());
-        this.autoBalanceBtn.addEventListener('click', () => {
-            this.statementTotalInput.value = this.calculatedTotal.toFixed(2);
-            this.updateBalanceState();
-        });
         this.dropArea.addEventListener('click', () => this.fileInput.click());
         this.fileInput.addEventListener('change', (e) => {
             const file = e.target.files?.[0];
@@ -282,28 +314,37 @@ class BankPdfScanner extends HTMLElement {
                 throw new Error(message || `Parse failed (${res.status})`);
             }
             const data = await res.json();
+            this.hasParsed = true;
+            this.backendIssues = data?.verification?.errors || [];
             this.fileName = file.name;
             this.fileNameEl.textContent = this.fileName;
             const parsed = Array.isArray(data.transactions) ? data.transactions : [];
+            const accountSummary = data?.account_info?.summary || data?.verification?.expected || null;
             const hasStatementTotal = data?.totals?.statement_total !== undefined && data.totals.statement_total !== null;
+            const knownStatementTotal = hasStatementTotal
+                ? data.totals.statement_total
+                : accountSummary?.ending_balance;
+
             if (parsed.length) {
-                this.transactions = parsed.map((txn, idx) => ({
+                this.allTransactions = parsed.map((txn, idx) => ({
                     id: txn.id || `txn-${idx}`,
                     description: txn.description || '',
-                    amount: Number(txn.amount) || 0
+                    amount: Number(txn.amount) || 0,
+                    bank_item_type: txn.bank_item_type || txn.transaction_type || '',
                 }));
             } else {
-                this.transactions = [{ id: 'txn-1', description: 'No transactions found', amount: 0 }];
+                this.allTransactions = [{ id: 'txn-1', description: 'No transactions found', amount: 0, bank_item_type: 'WITHDRAWAL' }];
             }
-            if (hasStatementTotal) {
-                this.statementTotalInput.value = Number(data.totals.statement_total);
-            }
+            this.transactions = this._filterDisplayTransactions(this.allTransactions);
+            this.accountSummary = accountSummary;
+            const apiBreakdown = data?.verification?.calculated;
+            this.breakdown = apiBreakdown && Object.keys(apiBreakdown).length
+                ? apiBreakdown
+                : this._computeBreakdown(this.allTransactions);
+            this.calculatedTotal = this._computeNetTotal(this.allTransactions);
+            this.verification = this._evaluateVerification();
             this.renderRows();
             this.updateTotals();
-            if (!hasStatementTotal) {
-                this.statementTotalInput.value = this.calculatedTotal.toFixed(2);
-                this.updateBalanceState();
-            }
         } catch (err) {
             // Surface endpoint for easier debugging when backend is unreachable
             const prefix = this.apiEndpoint ? `(${this.apiEndpoint}) ` : '';
@@ -330,11 +371,14 @@ class BankPdfScanner extends HTMLElement {
     }
 
     addTransaction() {
-        this.transactions.push({
+        const newTxn = {
             id: `txn-${Date.now()}`,
             description: 'Manual entry',
-            amount: 0
-        });
+            amount: 0,
+            bank_item_type: 'WITHDRAWAL',
+        };
+        this.transactions.push(newTxn);
+        this.allTransactions.push(newTxn);
         this.renderRows();
         this.updateTotals();
     }
@@ -392,31 +436,44 @@ class BankPdfScanner extends HTMLElement {
     }
 
     updateTotals() {
-        this.calculatedTotal = this.transactions.reduce((sum, txn) => {
-            const val = Number(txn.amount) || 0;
-            return sum + val;
-        }, 0);
-        const currentStatementVal = parseFloat(this.statementTotalInput?.value ?? '');
-        if (!Number.isFinite(currentStatementVal)) {
-            if (this.statementTotalInput) {
-                this.statementTotalInput.value = this.calculatedTotal.toFixed(2);
-            }
+        const filteredAll = this._filterDisplayTransactions(this.allTransactions || []);
+        const hasDisplay = Array.isArray(this.transactions) && this.transactions.length;
+        if (hasDisplay && (!this.allTransactions || filteredAll.length !== this.transactions.length)) {
+            const deposits = (this.allTransactions || []).filter(txn => this._isDeposit(txn));
+            this.allTransactions = [...this.transactions, ...deposits];
         }
-        if (this.calculatedTotalEl) {
-            this.calculatedTotalEl.textContent = this.formatCurrency(this.calculatedTotal);
-        }
+
+        const sourceTxns = this.allTransactions?.length ? this.allTransactions : this.transactions;
+        this.transactions = this._filterDisplayTransactions(sourceTxns);
+        this.calculatedTotal = this._computeNetTotal(sourceTxns);
+        this.breakdown = this._computeBreakdown(sourceTxns);
+        this.verification = this._evaluateVerification();
+        this.renderSummaries();
         this.updateBalanceState();
     }
 
     updateBalanceState() {
-        const expectedTotal = parseFloat(this.statementTotalInput?.value ?? '');
-        const expectedRounded = Number.isFinite(expectedTotal) ? Number(expectedTotal.toFixed(2)) : NaN;
-        const calculatedRounded = Number(this.calculatedTotal.toFixed(2));
-        const isBalanced = Number.isFinite(expectedRounded) && Math.abs(expectedRounded - calculatedRounded) < 0.001;
-        const statusClass = isBalanced ? 'status ok' : 'status warning';
-        const statusText = isBalanced
-            ? 'Totals balanced — categorization unlocked.'
-            : 'Totals do not match yet. Category pickers are locked.';
+        if (!this.hasParsed) {
+            if (this.statusEl) {
+                this.statusEl.className = 'status warning';
+                this.statusEl.textContent = 'Upload a bank statement to verify.';
+            }
+            this.categoryPickers.forEach(picker => {
+                picker.toggleAttribute('disabled', true);
+            });
+            if (this.issuesEl) {
+                this.issuesEl.classList.add('hidden');
+                this.issuesEl.textContent = '';
+            }
+            return;
+        }
+        const summary = this.verification || { passes: false, issues: [] };
+        const passes = !!summary.passes;
+        const issues = summary.issues || [];
+        const statusClass = passes ? 'status ok' : 'status warning';
+        const statusText = passes
+            ? 'Statement summary verified. Category pickers unlocked.'
+            : `Verification locked: ${issues.join(', ') || 'summary mismatch'}.`;
 
         if (this.statusEl) {
             this.statusEl.className = statusClass;
@@ -424,8 +481,204 @@ class BankPdfScanner extends HTMLElement {
         }
 
         this.categoryPickers.forEach(picker => {
-            picker.toggleAttribute('disabled', !isBalanced);
+            picker.toggleAttribute('disabled', !passes);
         });
+    }
+
+    _computeNetTotal(transactions = []) {
+        return transactions.reduce((sum, txn) => {
+            const val = Number(txn?.amount);
+            return sum + (Number.isFinite(val) ? val : 0);
+        }, 0);
+    }
+
+    _computeBreakdown(transactions = []) {
+        const breakdown = {
+            checks: { count: 0, total: 0 },
+            withdrawals: { count: 0, total: 0 },
+            deposits: { count: 0, total: 0 }
+        };
+
+        transactions.forEach(txn => {
+            const amount = Number(txn?.amount);
+            if (!Number.isFinite(amount)) return;
+            if (this._isCheck(txn)) {
+                breakdown.checks.count += 1;
+                breakdown.checks.total += Math.abs(amount);
+            } else if (this._isDeposit(txn)) {
+                breakdown.deposits.count += 1;
+                breakdown.deposits.total += Math.abs(amount);
+            } else {
+                breakdown.withdrawals.count += 1;
+                breakdown.withdrawals.total += Math.abs(amount);
+            }
+        });
+
+        breakdown.checks.total = Number(breakdown.checks.total.toFixed(2));
+        breakdown.withdrawals.total = Number(breakdown.withdrawals.total.toFixed(2));
+        breakdown.deposits.total = Number(breakdown.deposits.total.toFixed(2));
+        return breakdown;
+    }
+
+    _evaluateVerification() {
+        if (!this.hasParsed) {
+            return { passes: false, issues: [], ending_calculated: null, expected: this.accountSummary, calculated: this.breakdown };
+        }
+        const close = (a, b, tol = 0.01) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= tol;
+        const summary = this.accountSummary && Object.keys(this.accountSummary || {}).length ? this.accountSummary : null;
+        const breakdown = this.breakdown || this._computeBreakdown(this.allTransactions || this.transactions || []);
+
+        const beginningBalance = summary?.beginning_balance;
+        const endingBalance = summary?.ending_balance;
+        const endingCalculated = Number.isFinite(beginningBalance)
+            ? Number((beginningBalance - breakdown.checks.total - breakdown.withdrawals.total + breakdown.deposits.total).toFixed(2))
+            : null;
+
+        const issues = [...(this.backendIssues || [])];
+        if (!summary) {
+            issues.push('No account summary detected in PDF');
+        } else {
+            ['checks', 'withdrawals', 'deposits'].forEach(key => {
+                const expectedGroup = summary[key] || {};
+                const expectedCount = expectedGroup.count;
+                const expectedTotal = expectedGroup.total;
+                if (expectedCount !== undefined && expectedCount !== null && expectedCount !== breakdown[key].count) {
+                    issues.push(`${key} count mismatch (${breakdown[key].count} vs ${expectedCount})`);
+                }
+                if (expectedTotal !== undefined && expectedTotal !== null && !close(expectedTotal, breakdown[key].total)) {
+                    issues.push(`${key} total mismatch (${breakdown[key].total.toFixed(2)} vs ${expectedTotal.toFixed(2)})`);
+                }
+            });
+
+            if (endingBalance !== undefined && endingBalance !== null && endingCalculated !== null && !close(endingBalance, endingCalculated)) {
+                issues.push(`ending balance mismatch (${endingCalculated.toFixed(2)} vs ${Number(endingBalance).toFixed(2)})`);
+            }
+        }
+
+        return {
+            passes: issues.length === 0,
+            issues,
+            ending_calculated: endingCalculated,
+            expected: summary,
+            calculated: breakdown
+        };
+    }
+
+    renderSummaries() {
+        if (!this.hasParsed) {
+            const placeholders = [
+                '[data-testid="account-beginning"]',
+                '[data-testid="account-ending"]',
+                '[data-testid="account-checks"]',
+                '[data-testid="account-withdrawals"]',
+                '[data-testid="account-deposits"]',
+                '[data-testid="calc-ending"]',
+                '[data-testid="calc-checks"]',
+                '[data-testid="calc-withdrawals"]',
+                '[data-testid="calc-deposits"]'
+            ];
+            placeholders.forEach(sel => {
+                const el = this.shadowRoot.querySelector(sel);
+                if (el) el.textContent = '--';
+            });
+            if (this.issuesEl) {
+                this.issuesEl.classList.add('hidden');
+                this.issuesEl.textContent = '';
+            }
+            return;
+        }
+        const expected = this.accountSummary || {};
+        const calc = this.breakdown || { checks: { count: 0, total: 0 }, withdrawals: { count: 0, total: 0 }, deposits: { count: 0, total: 0 } };
+        const verification = this.verification || {};
+        const endingCalc = verification.ending_calculated;
+
+        const setText = (selector, value, fallback = '--') => {
+            const el = this.shadowRoot.querySelector(selector);
+            if (el) el.textContent = value ?? fallback;
+        };
+
+        setText('[data-testid="account-beginning"]', this._formatMoney(expected.beginning_balance));
+        setText('[data-testid="account-ending"]', this._formatMoney(expected.ending_balance));
+        setText('[data-testid="account-checks"]', this._formatCountTotal(expected.checks));
+        setText('[data-testid="account-withdrawals"]', this._formatCountTotal(expected.withdrawals));
+        setText('[data-testid="account-deposits"]', this._formatCountTotal(expected.deposits));
+
+        setText('[data-testid="calc-ending"]', this._formatMoney(endingCalc));
+        setText('[data-testid="calc-checks"]', this._formatCountTotal(calc.checks));
+        setText('[data-testid="calc-withdrawals"]', this._formatCountTotal(calc.withdrawals));
+        setText('[data-testid="calc-deposits"]', this._formatCountTotal(calc.deposits));
+
+        this._flagMismatch('[data-testid="account-ending"]', '[data-testid="calc-ending"]', expected.ending_balance, endingCalc);
+        this._flagMismatch('[data-testid="account-checks"]', null, expected.checks?.total, calc.checks?.total, expected.checks?.count, calc.checks?.count);
+        this._flagMismatch('[data-testid="account-withdrawals"]', null, expected.withdrawals?.total, calc.withdrawals?.total, expected.withdrawals?.count, calc.withdrawals?.count);
+        this._flagMismatch('[data-testid="account-deposits"]', null, expected.deposits?.total, calc.deposits?.total, expected.deposits?.count, calc.deposits?.count);
+
+        if (this.issuesEl) {
+            const issues = verification.issues || [];
+            if (issues.length === 0) {
+                this.issuesEl.classList.add('hidden');
+                this.issuesEl.textContent = '';
+            } else {
+                this.issuesEl.classList.remove('hidden');
+                this.issuesEl.textContent = issues.join(' • ');
+            }
+        }
+    }
+
+    _flagMismatch(accountSelector, calcSelector, expectedTotal, calcTotal, expectedCount, calcCount) {
+        const close = (a, b, tol = 0.01) => Number.isFinite(a) && Number.isFinite(b) && Math.abs(a - b) <= tol;
+        const mismatch = (expectedTotal !== undefined && expectedTotal !== null && calcTotal !== undefined && calcTotal !== null && !close(expectedTotal, calcTotal))
+            || (expectedCount !== undefined && expectedCount !== null && calcCount !== undefined && calcCount !== null && expectedCount !== calcCount);
+        if (accountSelector) {
+            const el = this.shadowRoot.querySelector(accountSelector);
+            if (el) el.classList.toggle('mismatch', !!mismatch);
+        }
+        if (calcSelector) {
+            const elCalc = this.shadowRoot.querySelector(calcSelector);
+            if (elCalc) elCalc.classList.toggle('mismatch', !!mismatch);
+        }
+    }
+
+    _formatMoney(value) {
+        if (!Number.isFinite(value)) return '--';
+        return this.formatCurrency(value);
+    }
+
+    _formatCountTotal(group) {
+        if (!group) return '--';
+        const count = group.count ?? '—';
+        const total = Number.isFinite(group.total) ? this.formatCurrency(group.total) : '--';
+        return `${count} / ${total}`;
+    }
+
+    _filterDisplayTransactions(transactions = []) {
+        return transactions.filter(txn => !this._isDeposit(txn));
+    }
+
+    _isCheck(txn) {
+        if (!txn) return false;
+        const hint = String(txn.bank_item_type || '').toUpperCase();
+        if (hint === 'CHECK') return true;
+        const desc = String(txn.description || '').toLowerCase();
+        return desc.includes('check');
+    }
+
+    _isDeposit(txn) {
+        if (!txn) return false;
+        const hint = String(txn.bank_item_type || '').toUpperCase();
+        if (hint === 'DEPOSIT' || hint === 'CREDIT') return true;
+        const amt = Number(txn.amount);
+        if (!Number.isFinite(amt)) return false;
+        return amt > 0 && !this._isCheck(txn);
+    }
+
+    _isWithdrawal(txn) {
+        if (!txn) return false;
+        const hint = String(txn.bank_item_type || '').toUpperCase();
+        if (hint === 'WITHDRAWAL' || hint === 'DEBIT') return true;
+        const amt = Number(txn.amount);
+        if (!Number.isFinite(amt)) return false;
+        return amt <= 0 && !this._isCheck(txn);
     }
 
     formatCurrency(value) {

@@ -1,0 +1,111 @@
+/**yyy
+ * SSEManager Module
+ * Responsibility: Manage Server-Sent Events connection and emit events to EventBus
+ */
+import { eventBus } from './event-bus.js';
+export class SSEManager {
+    constructor(apiUrl = '') {
+        this.eventSource = null;
+        this.reconnectTimeout = 5000;
+        this.reconnectTimer = null;
+        // Use relative URL if not provided (works with current origin)
+        this.apiUrl = apiUrl || `${window.location.protocol}//${window.location.host}`;
+    }
+    /**
+     * Connect to the SSE endpoint
+     */
+    connect() {
+        if (this.eventSource) {
+            console.warn('SSE connection already established');
+            return;
+        }
+        try {
+            this.eventSource = new EventSource(`${this.apiUrl}/api/events`);
+            // Handle ports updates
+            this.eventSource.addEventListener('ports', (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    eventBus.emit('ports-updated', data);
+                }
+                catch (error) {
+                    console.error('Error parsing ports data:', error);
+                }
+            });
+            // Handle servers updates
+            this.eventSource.addEventListener('servers', (e) => {
+                try {
+                    const data = JSON.parse(e.data);
+                    eventBus.emit('servers-updated', data);
+                }
+                catch (error) {
+                    console.error('Error parsing servers data:', error);
+                }
+            });
+            // Handle connection open
+            this.eventSource.onopen = () => {
+                console.log('SSE connection established');
+                eventBus.emit('connection-status', { status: 'connected', message: 'Connected to server' });
+                // Clear any reconnect timer
+                if (this.reconnectTimer) {
+                    clearTimeout(this.reconnectTimer);
+                    this.reconnectTimer = null;
+                }
+            };
+            // Handle connection errors
+            this.eventSource.onerror = (error) => {
+                console.error('SSE connection error:', error);
+                eventBus.emit('connection-status', { status: 'error', message: 'Connection error - Reconnecting...' });
+                // Close the connection and attempt to reconnect
+                this.disconnect();
+                this.scheduleReconnect();
+            };
+        }
+        catch (error) {
+            console.error('Failed to establish SSE connection:', error);
+            eventBus.emit('connection-status', { status: 'error', message: 'Failed to connect' });
+            this.scheduleReconnect();
+        }
+    }
+    /**
+     * Disconnect from the SSE endpoint
+     */
+    disconnect() {
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = null;
+            console.log('SSE connection closed');
+        }
+        if (this.reconnectTimer) {
+            clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = null;
+        }
+    }
+    /**
+     * Schedule a reconnection attempt
+     */
+    scheduleReconnect() {
+        if (this.reconnectTimer) {
+            return; // Already scheduled
+        }
+        console.log(`Reconnecting in ${this.reconnectTimeout}ms...`);
+        this.reconnectTimer = window.setTimeout(() => {
+            this.reconnectTimer = null;
+            this.connect();
+        }, this.reconnectTimeout);
+    }
+    /**
+     * Check if connected
+     */
+    isConnected() {
+        return this.eventSource !== null && this.eventSource.readyState === EventSource.OPEN;
+    }
+    /**
+     * Set reconnect timeout
+     */
+    setReconnectTimeout(timeout) {
+        this.reconnectTimeout = timeout;
+    }
+}
+// Export single instance
+export const sseManager = new SSEManager();
+//# sourceMappingURL=sse-manager.js.map

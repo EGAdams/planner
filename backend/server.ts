@@ -41,6 +41,13 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
   //   color: '#DBEAFE',
   //   ports: [7880, 7881], // Only track main TCP ports; UDP ports are dynamic
   // },
+  'letta-server': {
+    name: 'Letta Server',
+    command: '/home/adamsl/planner/.venv/bin/letta server',
+    cwd: '/home/adamsl/planner',
+    color: '#FED7AA',
+    ports: [8283],
+  },
   'livekit-voice-agent': {
     name: 'LiveKit Voice Agent',
     command: '/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev',
@@ -111,7 +118,7 @@ function getServerByProgramName(programName: string): { serverId: string; color:
   for (const [serverId, config] of Object.entries(SERVER_REGISTRY)) {
     // Check if the program name contains the server ID or command name
     if (normalizedProgram.includes(serverId.toLowerCase()) ||
-        config.command.toLowerCase().includes(normalizedProgram)) {
+      config.command.toLowerCase().includes(normalizedProgram)) {
       return { serverId, color: config.color };
     }
   }
@@ -136,7 +143,7 @@ async function getListeningPorts(): Promise<ProcessInfo[]> {
       const portMatch = localAddress.match(/:(\d+)$/);
 
       // Handle both netstat format (123/program) and ss format (users:(("program",pid=123,fd=N)))
-      let pidMatch = programInfo.match(/(\d+)\/);  // netstat format
+      let pidMatch = programInfo.match(/(\d+)\/);  / / netstat format
       if (!pidMatch) {
         pidMatch = programInfo.match(/pid=(\d+)/);  // ss format
       }

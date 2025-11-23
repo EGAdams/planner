@@ -12,13 +12,12 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as dotenv from 'dotenv';
 import { ServerOrchestrator, ServerConfig } from './services/serverOrchestrator';
-import { AgentDiscoveryService } from './services/agentDiscovery';
 
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const execAsync = promisify(exec);
 const PORT = process.env.ADMIN_PORT || 3030;
-const HOST = process.env.ADMIN_HOST || '0.0.0.0';
+const HOST = process.env.ADMIN_HOST || '127.0.0.1';
 const SUDO_PASSWORD = process.env.SUDO_PASSWORD || '';
 
 interface ProcessInfo {
@@ -34,67 +33,53 @@ interface ProcessInfo {
 
 // Server registry - define all servers that can be managed
 const SERVER_REGISTRY: Record<string, ServerConfig> = {
-  'api-server': {
-    name: 'Office Assistant API',
-    command: '/home/adamsl/planner/.venv/bin/python nonprofit_finance_db/api_server.py',
-    cwd: '/home/adamsl/planner/',
-    color: '#D1FAE5',
-    ports: [8080],
-    type: 'server',
-  },
-  'livekit-server': {
-    name: 'LiveKit Server',
-    command: './livekit-server --dev --bind 0.0.0.0',
-    cwd: '/home/adamsl/ottomator-agents/livekit-agent',
-    color: '#DBEAFE',
-    ports: [7880, 7881], // Only track main TCP ports; UDP ports are dynamic
-    type: 'server',
+  // Note: livekit-server binary not installed - uncomment and update path when available
+  // 'livekit-server': {
+  //   name: 'LiveKit Server',
+  //   command: './livekit-server --dev --bind 0.0.0.0',
+  //   cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+  //   color: '#DBEAFE',
+  //   ports: [7880, 7881], // Only track main TCP ports; UDP ports are dynamic
+  // },
+  'letta-server': {
+    name: 'Letta Server',
+    command: '/home/adamsl/planner/.venv/bin/letta server',
+    cwd: '/home/adamsl/planner',
+    color: '#FED7AA',
+    ports: [8283],
   },
   'livekit-voice-agent': {
     name: 'LiveKit Voice Agent',
-    command: '/usr/bin/python3 livekit_mcp_agent.py dev',
+    command: '/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev',
     cwd: '/home/adamsl/ottomator-agents/livekit-agent',
     color: '#c5cd3eff',
     ports: [],
-    type: 'server',
   },
   'pydantic-web-server': {
     name: 'Pydantic Web Server',
-    command: '/usr/bin/python3 pydantic_mcp_agent_endpoint.py',
+    command: '/home/adamsl/planner/venv/bin/python pydantic_mcp_agent_endpoint.py',
     cwd: '/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version',
     color: '#E9D5FF',
     ports: [8001],
-    type: 'server',
+  },
+  'api-server': {
+    name: 'Office Assistant API',
+    command: '/home/adamsl/planner/venv/bin/python nonprofit_finance_db/api_server.py',
+    cwd: '/home/adamsl/planner/',
+    color: '#D1FAE5',
+    ports: [8080],
   },
 };
 
 // Initialize orchestrator
 const stateDbPath = path.join(__dirname, '../process-state.json');
 const orchestrator = new ServerOrchestrator(stateDbPath, 3000);
-const agentDiscovery = new AgentDiscoveryService();
 
-// Initial registration
-async function initializeServers() {
-  // 1. Register static servers
-  orchestrator.registerServers(SERVER_REGISTRY);
-
-  // 2. Discover dynamic agents
-  // Scan current workspace and sibling ottomator-agents
-  const workspaceRoot = path.resolve(__dirname, '../../..');
-  const ottomatorRoot = path.resolve(workspaceRoot, '../ottomator-agents');
-
-  console.log('Discovering agents in:', [workspaceRoot, ottomatorRoot]);
-  const discoveredAgents = await agentDiscovery.discover([workspaceRoot, ottomatorRoot]);
-
-  // Register discovered agents (overwriting static ones if name collides, or we could check)
-  orchestrator.registerServers(discoveredAgents);
-
-  console.log(`Registered ${Object.keys(discoveredAgents).length} discovered agents`);
-}
+// Register all servers
+orchestrator.registerServers(SERVER_REGISTRY);
 
 // Initialize and recover state
-orchestrator.initialize().then(async () => {
-  await initializeServers();
+orchestrator.initialize().then(() => {
   console.log('Server orchestrator initialized');
 }).catch(err => {
   console.error('Failed to initialize orchestrator:', err);
@@ -165,7 +150,7 @@ async function getListeningPorts(): Promise<ProcessInfo[]> {
 
       let programMatch = programInfo.match(/\/(.+)$/);  // netstat format
       if (!programMatch) {
-        programMatch = programInfo.match(/\(\("(.+?)",pid=/);  // ss format
+        programMatch = programInfo.match(/\( \("(.+?)",pid=/);  // ss format
       }
 
       if (portMatch && pidMatch) {
@@ -287,7 +272,7 @@ const server = http.createServer(async (req, res) => {
     const ports = await getListeningPorts();
     const servers = await orchestrator.getServerStatus(ports);
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, servers }));
+    res.end(JSON.stringify(servers));
     return;
   }
 
@@ -363,133 +348,28 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (pathname.startsWith('/api/logs/') && req.method === 'GET') {
-    const serverId = pathname.split('/')[3];
-    const logs = orchestrator.getLogs(serverId);
-
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, logs }));
-    return;
-  }
-
-
-
-  if (pathname.startsWith('/api/agents/') && pathname.endsWith('/message') && req.method === 'POST') {
-    const pathParts = pathname.split('/');
-    const agentId = pathParts[3];
-
-    let body = '';
-    req.on('data', chunk => body += chunk.toString());
-    req.on('end', async () => {
-      try {
-        const { message } = JSON.parse(body);
-
-        if (!message) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, message: 'Message content is required' }));
-          return;
-        }
-
-        // Send message to agent using agent_messaging system
-        // Script is in the planner root
-        const agentMessagingScript = '/home/adamsl/planner/send_agent_message.py';
-        const escapedMessage = message.replace(/"/g, '\\"').replace(/'/g, "\\'");
-        const command = `/home/adamsl/planner/.venv/bin/python "${agentMessagingScript}" "${agentId}" "${escapedMessage}"`;
-
-        const { stdout, stderr } = await execAsync(command, {
-          cwd: path.join(__dirname, '../..'),
-          timeout: 15000,
-          env: process.env
-        });
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: true,
-          message: 'Message sent to agent',
-          response: stdout.trim()
-        }));
-      } catch (error: any) {
-        console.error('Error sending message to agent:', error);
-        res.writeHead(500, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          message: error.message || 'Failed to send message to agent'
-        }));
-      }
-    });
-    return;
-  }
-
-  if (pathname === '/api/discovery/refresh' && req.method === 'POST') {
-    try {
-      await initializeServers();
-      await broadcastServerUpdate();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, message: 'Agent discovery refreshed' }));
-    } catch (error: any) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: false, message: error.message }));
-    }
-    return;
-  }
-
   if (pathname === '/api/kill' && req.method === 'DELETE') {
     let body = '';
     req.on('data', chunk => body += chunk.toString());
     req.on('end', async () => {
-      try {
-        // Parse and validate JSON body
-        const { pid, port } = JSON.parse(body);
+      const { pid, port } = JSON.parse(body);
 
-        // Validate that at least one parameter is provided
-        if (!pid && !port) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, message: 'Either pid or port is required' }));
-          return;
-        }
-
-        // Validate PID format if provided (must be positive integer)
-        if (pid && (!/^\d+$/.test(pid) || parseInt(pid) <= 0)) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, message: 'Invalid PID format. Must be a positive integer.' }));
-          return;
-        }
-
-        // Validate port format if provided (must be valid port number)
-        if (port && (!/^\d+$/.test(port) || parseInt(port) < 1 || parseInt(port) > 65535)) {
-          res.writeHead(400, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, message: 'Invalid port number. Must be between 1 and 65535.' }));
-          return;
-        }
-
-        // Security check: Prevent killing critical system processes (PID < 1000)
-        if (pid && parseInt(pid) < 1000) {
-          res.writeHead(403, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: false, message: 'Cannot kill system processes (PID < 1000)' }));
-          return;
-        }
-
-        let result;
-        if (pid) {
-          result = await killProcess(pid, true);
-        } else {
-          result = await killProcessOnPort(port);
-        }
-
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result));
-
-        if (result.success) {
-          await broadcastServerUpdate();
-        }
-      } catch (error: any) {
-        // Handle JSON parsing errors or other exceptions
-        console.error('Error in /api/kill:', error);
+      let result;
+      if (pid) {
+        result = await killProcess(pid, true);
+      } else if (port) {
+        result = await killProcessOnPort(port);
+      } else {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          success: false,
-          message: error.message || 'Invalid request format. Expected JSON body with pid or port.'
-        }));
+        res.end(JSON.stringify({ success: false, message: 'Either pid or port is required' }));
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(result));
+
+      if (result.success) {
+        await broadcastServerUpdate();
       }
     });
     return;

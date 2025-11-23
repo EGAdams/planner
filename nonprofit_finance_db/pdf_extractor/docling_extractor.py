@@ -26,6 +26,13 @@ CHECK_TRIPLE_RE = re.compile(r'(\d{3,8})\s+(?:[is]\s*)?(\d{1,2}/\d{1,2})\s+([\d,
 STATEMENT_PERIOD_RE = re.compile(r'Statement\s+Period\s+Date\s*:\s*(\d{1,2}/\d{1,2}/\d{4})\s*-\s*(\d{1,2}/\d{1,2}/\d{4})', re.I)
 ACCOUNT_NUMBER_RE = re.compile(r'Account\s*Number\s*:\s*([\dxX*]+)', re.I)
 ACCOUNT_TYPE_RE = re.compile(r'Account\s*Type\s*:\s*(.+)', re.I)
+BEGINNING_BAL_RE = re.compile(r'Beginning\s+Balance[^\n$]*\$\s*\(?([\d,]+\.\d{2})\)?', re.I)
+ENDING_BAL_RE = re.compile(r'Ending\s+Balance[^\n$]*\$\s*\(?([\d,]+\.\d{2})\)?', re.I)
+SUMMARY_LINE_PATTERNS = {
+    'checks': re.compile(r'(?P<count>\d+)\s+Checks?\s+\$?\(?\s*(?P<amount>[\d,]+\.\d{2})\)?', re.I),
+    'withdrawals': re.compile(r'(?P<count>\d+)\s+Withdrawals\s*/\s*Debits?\s+\$?\(?\s*(?P<amount>[\d,]+\.\d{2})\)?', re.I),
+    'deposits': re.compile(r'(?P<count>\d+)\s+Deposits?\s*/\s*Credits?\s+\$?\(?\s*(?P<amount>[\d,]+\.\d{2})\)?', re.I),
+}
 
 
 class DoclingPDFExtractor:
@@ -195,6 +202,105 @@ class DoclingPDFExtractor:
             logger.error(f"[DOCLING] Traceback: {traceback.format_exc()}")
             return []
 
+    def _parse_currency(self, value: str, absolute: bool = False) -> Optional[float]:
+        """Parse a currency-like string into a float, respecting parentheses for negatives."""
+        if value is None:
+            return None
+        text = str(value)
+        is_negative = ('(' in text and ')' in text) or text.strip().startswith('-')
+        cleaned = re.sub(r'[^0-9.\-]', '', text)
+        try:
+            number = float(cleaned)
+            number = -number if is_negative and not absolute else number
+            return round(abs(number) if absolute else number, 2)
+        except ValueError:
+            return None
+
+    def _extract_account_summary_from_text(self, text: str) -> Dict[str, Any]:
+        """Extract beginning/ending balances and high-level counts from statement body."""
+        if not text:
+            return {}
+
+        summary: Dict[str, Any] = {}
+
+        # 1) Friendly regex matches when labels exist inline
+        begin_match = BEGINNING_BAL_RE.search(text)
+        if begin_match:
+            summary['beginning_balance'] = self._parse_currency(begin_match.group(1))
+
+        end_match = ENDING_BAL_RE.search(text)
+        if end_match:
+            summary['ending_balance'] = self._parse_currency(end_match.group(1))
+
+        for key, pattern in SUMMARY_LINE_PATTERNS.items():
+            matched = pattern.search(text)
+            if matched:
+                summary[key] = {
+                    "count": int(matched.group('count')),
+                    "total": self._parse_currency(matched.group('amount'), absolute=True)
+                }
+
+        # 2) Fallback: the summary often renders as a block of currency lines after "Account Summary"
+        #    (amounts first, labels later). Capture the first 5 currency values in that block.
+        lines = text.split('\n')
+        for i, line in enumerate(lines):
+            if 'account summary' in line.lower():
+                currency_vals = []
+                counts = []
+                window = lines[i + 1:i + 30]
+                for block_line in window:
+                    stripped = block_line.strip()
+                    if not stripped:
+                        continue
+                    # Skip obvious dates so they don't contaminate currency list
+                    if '/' in stripped and not re.search(r'[$()]', stripped):
+                        if re.fullmatch(r'\d{1,2}/\d{1,2}(?:/\d{2,4})?', stripped):
+                            continue
+                    # Count lines are plain integers without currency formatting
+                    if re.fullmatch(r'\d+', stripped):
+                        counts.append(int(stripped))
+                        if len(currency_vals) >= 5 and len(counts) >= 3:
+                            break
+                        continue
+                    amt = self._parse_currency(stripped, absolute=False)
+                    if amt is not None and re.search(r'[\d$.,()]', stripped):
+                        currency_vals.append(amt)
+                        if len(currency_vals) >= 5 and len(counts) >= 3:
+                            break
+                        continue
+                    if len(currency_vals) >= 5 and len(counts) >= 3:
+                        break
+
+                if len(currency_vals) >= 5:
+                    summary.setdefault('beginning_balance', currency_vals[0])
+                    summary.setdefault('checks', {"count": None, "total": abs(currency_vals[1])})
+                    summary.setdefault('withdrawals', {"count": None, "total": abs(currency_vals[2])})
+                    summary.setdefault('deposits', {"count": None, "total": abs(currency_vals[3])})
+                    summary.setdefault('ending_balance', currency_vals[4])
+
+                if len(counts) >= 3:
+                    checks_group = summary.setdefault('checks', {})
+                    withdrawals_group = summary.setdefault('withdrawals', {})
+                    deposits_group = summary.setdefault('deposits', {})
+                    if checks_group.get('count') is None:
+                        checks_group['count'] = counts[0]
+                    if withdrawals_group.get('count') is None:
+                        withdrawals_group['count'] = counts[1]
+                    if deposits_group.get('count') is None:
+                        deposits_group['count'] = counts[2]
+
+                break
+
+        return summary
+
+    def extract_account_summary(self, file_path: str) -> Dict[str, Any]:
+        """Public helper to extract account summary directly from a statement file."""
+        try:
+            text = self.extract_text(file_path)
+            return self._extract_account_summary_from_text(text)
+        except Exception:
+            return {}
+
     def extract_account_info(self, file_path: str) -> Dict[str, Optional[str]]:
         """
         Extract account information from the bank statement.
@@ -232,6 +338,12 @@ class DoclingPDFExtractor:
                 account_info['bank_name'] = 'Chase Bank'
             elif 'wells fargo' in text.lower():
                 account_info['bank_name'] = 'Wells Fargo'
+
+            summary = self._extract_account_summary_from_text(text)
+            if summary:
+                account_info['summary'] = summary
+                if summary.get('ending_balance') is not None:
+                    account_info['statement_total'] = summary['ending_balance']
 
             logger.debug(f"Extracted account info: {account_info}")
             return account_info
