@@ -3,15 +3,16 @@
 Workspace root: `C:\Users\NewUser\Desktop\blue_time\planner`
 
 ## Summary Of Progress
-- Built out the A2A collective hub (tests in `tests\unit\test_a2a_collective_hub.py`, implementation in `agent_messaging\a2a_collective.py`) so it now handles agent discovery, routing snapshots, JSON-RPC delegation payloads, and per-agent Letta memory logging.
-- Added the `A2ADispatcher` adapter (`orchestrator_agent\a2a_dispatcher.py`) plus `tests\unit\test_a2a_dispatcher.py` to validate orchestrator-facing integration without a live Letta server.
-- Updated `orchestrator_agent\main.py` so every delegation flows through the dispatcher/hub, meaning routing decisions automatically record Letta memory entries instead of relying on manual handoff notes.
-- Modernized message models (`agent_messaging\message_models.py`) and test stubs (`tests\unit\a2a_test_utils.py`) to eliminate local deprecation warnings and keep timestamps timezone-aware.
+- A2A collective hub + dispatcher stack are stable (`agent_messaging\a2a_collective.py`, `tests\unit\test_a2a_collective_hub.py`, `tests\unit\test_a2a_dispatcher.py`). Routing snapshots now expose each agent’s memory backend name/namespace/connected flag, and the dispatcher tests assert those details.
+- `orchestrator_agent\main.py` logs the Letta backend health for every discovered agent so we can see whether real persistence is available before delegations go out.
+- Added `tests\integration\test_orchestrator_dispatcher.py`:
+  - `test_orchestrator_delegation_records_memory` runs the orchestrator against a stubbed dispatcher to prove delegations hit the dummy Letta backend.
+  - `test_orchestrator_logs_to_real_letta` spins up `letta server`, points the orchestrator at it, and verifies delegations land in real Letta memory; if the server can’t boot (current state: missing Postgres), the test captures stdout/stderr and skips with a clear message.
 
 ## Current Focus (If Power Is Lost)
-- Hooking the orchestrator into a real Letta instance so the dispatcher’s Letta-backed memory writes persist outside the dummy backend. We paused after wiring the hub—no live Letta server was launched yet.
+- Give the Letta CLI a working datastore so the live integration test—and eventually the orchestrator runtime—can use the real backend instead of the dummy memory. Right now `letta server` fails immediately because it can’t reach Postgres at `localhost:5432`.
 
 ## Next Steps After Current Focus
-1. Bring up the Letta server (see `start_a2a_system.sh` or `agent_messaging\memory_factory.py` configs) so the dispatcher’s `memory_backend` references point at the real persistence layer.
-2. Add an integration smoke test or script to prove that delegations from `orchestrator_agent\main.py` hit Letta memory (possibly by running a minimal mock task and querying via `agent_messaging\remember/recall` helpers).
-3. Once Letta logging is confirmed, we can retire `handoff.md` and rely entirely on persistent agent memory for shift continuity.
+1. Stand up Postgres or set `LETTA_PG_URI` (or `%USERPROFILE%\.letta\pg_uri`) so `letta server` can start. If you prefer SQLite, leave all PG vars unset so the settings fall back to the desktop SQLite path.
+2. Re-run `pytest tests\integration\test_orchestrator_dispatcher.py -k real_letta` and confirm the “real” test passes (no skip) with a Letta memory entry recorded.
+3. Once Letta is reachable, bake those env vars into `start_a2a_system.sh` (or your runtime shell) so the orchestrator’s startup logs show “memory backend … -> connected” for each agent before routing work. At that point we can retire `handoff.md` and rely on persistent Letta memory for shift continuity.
