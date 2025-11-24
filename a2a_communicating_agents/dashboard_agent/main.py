@@ -19,9 +19,9 @@ from typing import Optional, Tuple
 import requests
 
 # Add parent directory to path to import shared modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
-PLANNER_ROOT = Path(__file__).resolve().parents[1]
+PLANNER_ROOT = Path(__file__).resolve().parents[2]
 os.chdir(PLANNER_ROOT)
 
 from agent_messaging import inbox, post_message, create_jsonrpc_response  # noqa: E402
@@ -64,6 +64,18 @@ def start_server() -> Tuple[bool, str]:
     )
 
     try:
+        # Start dev servers
+        dev_server_script = PLANNER_ROOT / "scripts" / "start_dev_servers.py"
+        if dev_server_script.exists():
+            print(f"[{AGENT_NAME}] Starting dev servers...")
+            subprocess.Popen(
+                [sys.executable, str(dev_server_script), "--mode", "windows"],
+                cwd=str(PLANNER_ROOT),
+                creationflags=CREATE_FLAGS,
+            )
+        else:
+            print(f"[{AGENT_NAME}] Warning: Could not find start_dev_servers.py at {dev_server_script}")
+
         cmd = _resolve_dashboard_command()
         dashboard_env = os.environ.copy()
         dashboard_env.setdefault("ADMIN_PORT", str(PORT))
