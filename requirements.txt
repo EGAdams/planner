@@ -53,3 +53,4 @@ reportlab==4.0.7
 
 # ===== Configuration =====
 pyyaml==6.0.1
+pgvector

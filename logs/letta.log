@@ -1,32 +1,8 @@
-Letta.letta.server.db - INFO - Database throttling is disabled
-Traceback (most recent call last):
-  File "/home/adamsl/planner/.venv/bin/letta", line 10, in <module>
-    sys.exit(app())
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/typer/main.py", line 340, in __call__
-    raise e
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/typer/main.py", line 323, in __call__
-    return get_command(self)(*args, **kwargs)
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/click/core.py", line 1157, in __call__
-    return self.main(*args, **kwargs)
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/typer/core.py", line 740, in main
-    return _main(
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/typer/core.py", line 195, in _main
-    rv = self.invoke(ctx)
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/click/core.py", line 1688, in invoke
-    return _process_result(sub_ctx.command.invoke(sub_ctx))
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/click/core.py", line 1434, in invoke
-    return ctx.invoke(self.callback, **ctx.params)
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/click/core.py", line 783, in invoke
-    return __callback(*args, **kwargs)
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/typer/main.py", line 698, in wrapper
-    return callback(**use_params)
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/letta/cli/cli.py", line 33, in server
-    from letta.server.rest_api.app import start_server
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/letta/server/rest_api/app.py", line 40, in <module>
-    from letta.server.rest_api.routers.v1 import ROUTERS as v1_routes
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/letta/server/rest_api/routers/v1/__init__.py", line 18, in <module>
-    from letta.server.rest_api.routers.v1.tools import router as tools_router
-  File "/home/adamsl/planner/.venv/lib/python3.10/site-packages/letta/server/rest_api/routers/v1/tools.py", line 751
-    except* HTTPStatusError:
-          ^
-SyntaxError: invalid syntax
+
+[[ Letta server // v0.14.0 ]]
+Letta.letta.server.global_exception_handler - INFO - Global exception handlers initialized
+Server running at: http://localhost:8283
+View using ADE at: https://app.letta.com/development-servers/local/dashboard
+
+Letta.letta.server.rest_api.app - INFO - [Worker 10672] Disabled pinecone
+Letta.letta.server.rest_api.app - INFO - [Worker 10672] Starting scheduler with leader election

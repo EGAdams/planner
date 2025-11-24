@@ -105,6 +105,59 @@ export class ServerOrchestrator extends EventEmitter {
   }
 
   /**
+   * Split a command string into the executable and argument list.
+   * Supports basic quoting so Windows paths with spaces can be launched.
+   */
+  private parseCommand(commandLine: string): { command: string; args: string[] } {
+    const tokens: string[] = [];
+    let current = '';
+    let quote: '"' | '\'' | null = null;
+
+    for (let i = 0; i < commandLine.length; i++) {
+      const char = commandLine[i];
+
+      if (quote) {
+        if (char === quote) {
+          quote = null;
+        } else {
+          current += char;
+        }
+        continue;
+      }
+
+      if (char === '"' || char === '\'') {
+        quote = char;
+        continue;
+      }
+
+      if (/\s/.test(char)) {
+        if (current) {
+          tokens.push(current);
+          current = '';
+        }
+        continue;
+      }
+
+      current += char;
+    }
+
+    if (current) {
+      tokens.push(current);
+    }
+
+    if (quote) {
+      throw new Error('Unterminated quoted section in command string.');
+    }
+
+    if (tokens.length === 0) {
+      throw new Error('Command string is empty.');
+    }
+
+    const [command, ...args] = tokens;
+    return { command, args };
+  }
+
+  /**
    * Start a server
    */
   async startServer(serverId: string): Promise<{ success: boolean; message: string }> {
@@ -121,8 +174,7 @@ export class ServerOrchestrator extends EventEmitter {
     }
 
     try {
-      // Parse command
-      const [command, ...args] = config.command.split(' ');
+      const { command, args } = this.parseCommand(config.command);
 
       // Spawn process
       const processInfo = await this.processManager.spawn({

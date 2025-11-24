@@ -10,3 +10,6 @@ Discovered agent: dashboard-ops-agent in C:\Users\NewUser\Desktop\blue_time\plan
 Discovered agent: orchestrator-agent in C:\Users\NewUser\Desktop\blue_time\planner\orchestrator_agent
 Discovered 3 agents
 Agent discovery complete. Registered agents: [ 'planner-agent', 'dashboard-ops-agent', 'orchestrator-agent' ]
+Server letta-server started with PID 2428
+Process letta-server died unexpectedly
+^CTerminate batch job (Y/N)? 

@@ -1,4 +1,44 @@
-INFO:     Started server process [2936]
+INFO:     Started server process [12456]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+[API] Starting Daily Expense Categorizer on http://localhost:8080
+   Main App:          http://localhost:8080/
+   API Documentation: http://localhost:8080/docs
+   API Endpoints:
+   - GET  /api/expenses
+   - GET  /api/categories
+   - PUT  /api/expenses/<id>/category
+   - GET  /api/recent-downloads
+   - POST /api/import-pdf
+   Category Picker:  http://localhost:8080/ui
+   Office Assistant: http://localhost:8080/office
+INFO:     127.0.0.1:58524 - "GET /office HTTP/1.1" 307 Temporary Redirect
+INFO:     127.0.0.1:58524 - "GET /office/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58524 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+Creating MySQL connection pool for: host=127.0.0.1, port=3306, user=root, database=nonprofit_finance
+INFO:     127.0.0.1:58524 - "GET /api/transactions HTTP/1.1" 500 Internal Server Error
+Executing SQL for categories: 
+            SELECT id, name, parent_id
+            FROM categories
+            WHERE kind = 'EXPENSE' AND is_active = 1
+            ORDER BY parent_id, name
+        
+Creating MySQL connection pool for: host=127.0.0.1, port=3306, user=root, database=nonprofit_finance
+INFO:     127.0.0.1:51784 - "GET /api/categories HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:58524 - "GET /office/data/transactions.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60850 - "GET /office/data/categories.json HTTP/1.1" 200 OK
+Creating MySQL connection pool for: host=127.0.0.1, port=3306, user=root, database=nonprofit_finance
+INFO:     127.0.0.1:59340 - "GET /api/transactions HTTP/1.1" 500 Internal Server Error
+Executing SQL for categories: 
+            SELECT id, name, parent_id
+            FROM categories
+            WHERE kind = 'EXPENSE' AND is_active = 1
+            ORDER BY parent_id, name
+        
+Creating MySQL connection pool for: host=127.0.0.1, port=3306, user=root, database=nonprofit_finance
+INFO:     127.0.0.1:61923 - "GET /api/categories HTTP/1.1" 500 Internal Server Error
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [12456]

@@ -8,7 +8,7 @@ import * as http from 'http';
 import * as url from 'url';
 import * as path from 'path';
 import * as fs from 'fs';
-import { exec } from 'child_process';
+import { exec, spawnSync } from 'child_process';
 import { promisify } from 'util';
 import * as dotenv from 'dotenv';
 import { ServerOrchestrator, ServerConfig } from './services/serverOrchestrator';
@@ -21,6 +21,9 @@ const PORT = process.env.ADMIN_PORT || 3030;
 const HOST = process.env.ADMIN_HOST || '127.0.0.1';
 const SUDO_PASSWORD = process.env.SUDO_PASSWORD || '';
 const IS_WINDOWS = process.platform === 'win32';
+const DASHBOARD_ROOT = path.resolve(__dirname, '../..');
+const PLANNER_ROOT = path.resolve(DASHBOARD_ROOT, '..');
+const LETTA_COMMAND = buildLettaCommand();
 
 interface ProcessInfo {
   pid: string;
@@ -31,6 +34,72 @@ interface ProcessInfo {
   color?: string;
   serverId?: string;
   orphaned?: boolean;
+}
+
+function quoteIfNeeded(value: string): string {
+  if (!value) {
+    return value;
+  }
+  return /\s/.test(value) && !(value.startsWith('"') && value.endsWith('"'))
+    ? `"${value}"`
+    : value;
+}
+
+function findExecutableOnPath(executable: string): string | null {
+  try {
+    const resolver = IS_WINDOWS ? 'where' : 'which';
+    const result = spawnSync(resolver, [executable], { encoding: 'utf-8' });
+    if (result.status === 0) {
+      const match = result.stdout.split(/\r?\n/).find(line => line.trim().length > 0);
+      if (match) {
+        return match.trim();
+      }
+    }
+  } catch {
+    // Ignore resolution failures; we'll fall back to raw executable names.
+  }
+  return null;
+}
+
+function buildLettaCommand(): string {
+  const override = (process.env.LETTA_COMMAND || process.env.LETTA_CMD || '').trim();
+  if (override) {
+    return override;
+  }
+
+  const binaryName = IS_WINDOWS ? 'letta.exe' : 'letta';
+  const pythonName = IS_WINDOWS ? 'python.exe' : 'python';
+  const candidateExecutables = [
+    path.join(PLANNER_ROOT, '.venv', IS_WINDOWS ? 'Scripts' : 'bin', binaryName),
+    path.join(PLANNER_ROOT, 'venv', IS_WINDOWS ? 'Scripts' : 'bin', binaryName),
+  ];
+
+  for (const candidate of candidateExecutables) {
+    if (fs.existsSync(candidate)) {
+      return `${quoteIfNeeded(candidate)} server`;
+    }
+  }
+
+  const resolvedCli = findExecutableOnPath('letta');
+  if (resolvedCli) {
+    return `${quoteIfNeeded(resolvedCli)} server`;
+  }
+
+  const pythonCandidates = [
+    path.join(PLANNER_ROOT, '.venv', IS_WINDOWS ? 'Scripts' : 'bin', pythonName),
+    process.env.PYTHON_FOR_PLANNER,
+    findExecutableOnPath('python'),
+    findExecutableOnPath('python3'),
+  ].filter((candidate): candidate is string => Boolean(candidate));
+
+  for (const candidate of pythonCandidates) {
+    const executable = path.isAbsolute(candidate) ? (fs.existsSync(candidate) ? candidate : null) : candidate;
+    if (executable) {
+      return `${quoteIfNeeded(executable)} -m letta server`;
+    }
+  }
+
+  return 'letta server';
 }
 
 // Server registry - define all servers that can be managed
@@ -45,8 +114,8 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
   // },
   'letta-server': {
     name: 'Letta Server',
-    command: '/home/adamsl/planner/.venv/bin/letta server',
-    cwd: '/home/adamsl/planner',
+    command: LETTA_COMMAND,
+    cwd: PLANNER_ROOT,
     color: '#FED7AA',
     ports: [8283],
   },
@@ -82,8 +151,8 @@ orchestrator.registerServers(SERVER_REGISTRY);
 
 // Initialize agent discovery
 const agentDiscovery = new AgentDiscoveryService();
-const workspaceRoot = path.resolve(__dirname, '../..');
-const plannerRoot = path.resolve(workspaceRoot, '..');
+const workspaceRoot = DASHBOARD_ROOT;
+const plannerRoot = PLANNER_ROOT;
 
 // Discover and register agents
 agentDiscovery.discover([plannerRoot]).then((discoveredAgents) => {
