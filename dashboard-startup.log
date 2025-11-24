@@ -6,8 +6,8 @@ Admin dashboard server running on http://127.0.0.1:3000
 Process management enabled with persistent state
 Server orchestrator initialized
 Discovered agent: planner-agent in /home/adamsl/planner
-Discovered agent: dashboard-ops-agent in /home/adamsl/planner/dashboard_ops_agent
+Discovered agent: dashboard-agent in /home/adamsl/planner/dashboard_ops_agent
 Discovered agent: orchestrator-agent in /home/adamsl/planner/orchestrator_agent
 Discovered 3 agents
-Agent discovery complete. Registered agents: [ 'planner-agent', 'dashboard-ops-agent', 'orchestrator-agent' ]
+Agent discovery complete. Registered agents: [ 'planner-agent', 'dashboard-agent', 'orchestrator-agent' ]
 Server letta-server started with PID 3601938

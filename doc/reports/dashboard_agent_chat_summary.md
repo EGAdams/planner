@@ -37,7 +37,7 @@ http://localhost:3030
 
 ### Step 2: Find Your Agent
 Look for the **"Managed Agents"** section. You should see:
-- `dashboard-ops-agent`
+- `dashboard-agent`
 - Any other discovered agents
 
 ### Step 3: Start Chatting
@@ -48,7 +48,7 @@ Look for the **"Managed Agents"** section. You should see:
 
 ## Example Commands
 
-For `dashboard-ops-agent`:
+For `dashboard-agent`:
 
 | Command | Description |
 |---------|-------------|

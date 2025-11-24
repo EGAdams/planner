@@ -16,7 +16,7 @@ The dashboard now supports **bidirectional communication** with agents. You can:
 Added a new POST endpoint: `/api/agents/:agentId/message`
 
 ```typescript
-POST /api/agents/dashboard-ops-agent/message
+POST /api/agents/dashboard-agent/message
 Content-Type: application/json
 
 {
@@ -29,7 +29,7 @@ Content-Type: application/json
 {
   "success": true,
   "message": "Message sent to agent",
-  "response": "Message sent to dashboard-ops-agent on topic 'ops'"
+  "response": "Message sent to dashboard-agent on topic 'ops'"
 }
 ```
 
@@ -112,7 +112,7 @@ sequenceDiagram
 
 ### 2. Example Messages
 
-For the `dashboard-ops-agent`, try these commands:
+For the `dashboard-agent`, try these commands:
 
 ```
 check status
@@ -129,7 +129,7 @@ The agent will respond based on its capabilities defined in [`agent.json`](file:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│ Terminal Output              dashboard-ops-agent│
+│ Terminal Output              dashboard-agent│
 ├─────────────────────────────────────────────────┤
 │ [Agent logs appear here...]                     │
 │                                                  │
@@ -173,7 +173,7 @@ The Python script maps agent IDs to topics:
 
 ```python
 topic_mapping = {
-    'dashboard-ops-agent': 'ops',
+    'dashboard-agent': 'ops',
     'orchestrator-agent': 'orchestrator'
 }
 ```
@@ -214,12 +214,12 @@ topic_mapping = {
 Test the Python script directly:
 ```bash
 cd /home/adamsl/planner
-python send_agent_message.py dashboard-ops-agent "check status"
+python send_agent_message.py dashboard-agent "check status"
 ```
 
 Expected output:
 ```
-Message sent to dashboard-ops-agent on topic 'ops'
+Message sent to dashboard-agent on topic 'ops'
 ```
 
 ## Troubleshooting

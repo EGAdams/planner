@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Test script to demonstrate the dashboard agent's browser testing capability.
-This script sends a message to the dashboard-ops-agent to launch a test browser.
+This script sends a message to the dashboard-agent to launch a test browser.
 """
 
 import sys
@@ -28,7 +28,7 @@ def test_browser_launch(url=None, headless=False):
         params=request_params
     )
     
-    print(f"Sending browser test request to dashboard-ops-agent...")
+    print(f"Sending browser test request to dashboard-agent...")
     print(f"  URL: {request_params['url']}")
     print(f"  Headless: {request_params['headless']}")
     
@@ -54,7 +54,7 @@ def test_browser_launch(url=None, headless=False):
             break
     else:
         print("\nNo response yet. The agent may be processing the request.")
-        print("Check the dashboard-ops-agent logs for more details.")
+        print("Check the dashboard-agent logs for more details.")
 
 if __name__ == "__main__":
     import argparse

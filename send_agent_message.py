@@ -16,10 +16,10 @@ def send_to_agent(agent_id: str, message: str):
     """Send a message to an agent"""
     
     # Determine the topic based on agent type
-    # For now, we'll use 'ops' for dashboard-ops-agent
+    # For now, we'll use 'ops' for dashboard-agent
     # You can extend this mapping as needed
     topic_mapping = {
-        'dashboard-ops-agent': 'ops',
+        'dashboard-agent': 'ops',
         'orchestrator-agent': 'orchestrator'
     }
     

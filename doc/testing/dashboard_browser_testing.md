@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `dashboard-ops-agent` now has the ability to launch a test browser to verify that the dashboard is working correctly. This capability is useful for automated testing, debugging, and verification workflows.
+The `dashboard-agent` now has the ability to launch a test browser to verify that the dashboard is working correctly. This capability is useful for automated testing, debugging, and verification workflows.
 
 ## What Was Added
 
@@ -170,7 +170,7 @@ Or on failure:
 
 All browser launch attempts are logged to the RAG memory system with:
 - **Type:** `runlog` or `error`
-- **Source:** `dashboard-ops-agent`
+- **Source:** `dashboard-agent`
 - **Project:** `dashboard`
 - **Details:** URL, headless mode, browser path, and PID
 
@@ -198,7 +198,7 @@ You can query these logs later for debugging or audit purposes.
 ### Agent not responding
 - **Issue:** No response after sending the request
 - **Solution:** 
-  - Verify the dashboard-ops-agent is running
+  - Verify the dashboard-agent is running
   - Check the agent logs for errors
   - Ensure you're posting to the correct topic ("ops")
 

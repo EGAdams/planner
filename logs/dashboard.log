@@ -1,0 +1,12 @@
+
+> admin-dashboard@1.0.0 start
+> node backend/dist/server.js
+
+Admin dashboard server running on http://127.0.0.1:3030
+Process management enabled with persistent state
+Server orchestrator initialized
+Discovered agent: planner-agent in C:\Users\NewUser\Desktop\blue_time\planner
+Discovered agent: dashboard-agent in C:\Users\NewUser\Desktop\blue_time\planner\dashboard_ops_agent
+Discovered agent: orchestrator-agent in C:\Users\NewUser\Desktop\blue_time\planner\orchestrator_agent
+Discovered 3 agents
+Agent discovery complete. Registered agents: [ 'planner-agent', 'dashboard-agent', 'orchestrator-agent' ]

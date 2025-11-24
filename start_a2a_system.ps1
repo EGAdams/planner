@@ -135,7 +135,7 @@ Log-Info "System Dashboard:   http://localhost:3000"
 Log-Info ""
 Log-Info "Active A2A Agents:"
 if ($orchestratorProcess) { Log-Info "  - orchestrator-agent    (PID: $($orchestratorProcess.Id))" }
-if ($dashboardOpsProcess) { Log-Info "  - dashboard-ops-agent   (PID: $($dashboardOpsProcess.Id))" }
+if ($dashboardOpsProcess) { Log-Info "  - dashboard-agent   (PID: $($dashboardOpsProcess.Id))" }
 Log-Info ""
 Log-Info "Logs: $LOG_DIR"
 Log-Info "PIDs: $PIDS_FILE"

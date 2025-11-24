@@ -229,7 +229,7 @@ async function getListeningPorts(): Promise<ProcessInfo[]> {
 }
 
 async function parseWindowsNetstat(): Promise<ProcessInfo[]> {
-  const { stdout } = await execAsync('netstat -ano -p tcp');
+  const { stdout } = await execAsync('netstat -ano -p tcp', { timeout: 2000 });
   const processes: ProcessInfo[] = [];
   const lines = stdout.split('\n');
 

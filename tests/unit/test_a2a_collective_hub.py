@@ -26,14 +26,14 @@ async def test_discover_agents_assigns_dedicated_letta_memory(tmp_path: Path) ->
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     write_agent_card(workspace, "planner-agent", ["general", "planner"])
-    write_agent_card(workspace, "dashboard-ops-agent", ["ops"])
+    write_agent_card(workspace, "dashboard-agent", ["ops"])
 
     memory_factory = StubMemoryFactory(created_for=[])
     hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=memory_factory)
 
     registry = await hub.discover_agents()
 
-    assert set(registry.keys()) == {"planner-agent", "dashboard-ops-agent"}
+    assert set(registry.keys()) == {"planner-agent", "dashboard-agent"}
     for agent_name, spoke in registry.items():
         assert spoke.card.name == agent_name
         assert spoke.memory_backend is not None
@@ -43,7 +43,7 @@ async def test_discover_agents_assigns_dedicated_letta_memory(tmp_path: Path) ->
     # Each agent must have a dedicated backend instance (no shared references)
     backend_ids = {id(spoke.memory_backend) for spoke in registry.values()}
     assert len(backend_ids) == 2
-    assert sorted(memory_factory.created_for) == ["dashboard-ops-agent", "planner-agent"]
+    assert sorted(memory_factory.created_for) == ["dashboard-agent", "planner-agent"]
 
 
 @pytest.mark.asyncio
@@ -55,7 +55,7 @@ async def test_routing_metadata_exposes_topics_and_capabilities(tmp_path: Path) 
     workspace = tmp_path / "workspace"
     workspace.mkdir()
     write_agent_card(workspace, "planner-agent", ["general", "planner"])
-    write_agent_card(workspace, "dashboard-ops-agent", ["ops"])
+    write_agent_card(workspace, "dashboard-agent", ["ops"])
 
     memory_factory = StubMemoryFactory(created_for=[])
     hub = A2ACollectiveHub(workspace_root=workspace, memory_factory=memory_factory)
@@ -64,7 +64,7 @@ async def test_routing_metadata_exposes_topics_and_capabilities(tmp_path: Path) 
     snapshot = hub.routing_snapshot(registry)
 
     assert snapshot["planner-agent"]["topics"] == ["general", "planner"]
-    assert snapshot["dashboard-ops-agent"]["topics"] == ["ops"]
+    assert snapshot["dashboard-agent"]["topics"] == ["ops"]
     assert snapshot["planner-agent"]["capabilities"] == ["execute_task"]
     planner_memory = snapshot["planner-agent"]["memory"]
     assert planner_memory["backend"] == "letta"

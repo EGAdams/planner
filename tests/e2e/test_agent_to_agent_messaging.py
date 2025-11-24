@@ -84,7 +84,7 @@ class TestAgentToAgentMessaging:
         agents = []
         message_logs = {}
         
-        for agent_id in ["planner-agent", "dashboard-ops-agent", "task-agent"]:
+        for agent_id in ["planner-agent", "dashboard-agent", "task-agent"]:
             transport = WebSocketTransport(config, mock_server=mock_server)
             transport.agent_id = agent_id
             await transport.connect()

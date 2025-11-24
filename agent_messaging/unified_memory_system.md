@@ -54,7 +54,7 @@ from agent_messaging import remember, recall, forget, get_recent_memories
 id = await remember(
     "Dashboard started on port 3000",
     memory_type="deployment",
-    source="dashboard-ops-agent"
+    source="dashboard-agent"
 )
 # Search memories
 results = await recall("dashboard errors", memory_type="error")
@@ -108,7 +108,7 @@ async def run_agent_loop():
     await remember(
         "Dashboard server started on port 3000",
         memory_type="deployment",
-        source="dashboard-ops-agent"
+        source="dashboard-agent"
     )
 ```
 ---

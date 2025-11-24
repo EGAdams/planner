@@ -4,5 +4,38 @@ Letta.letta.server.global_exception_handler - INFO - Global exception handlers i
 Server running at: http://localhost:8283
 View using ADE at: https://app.letta.com/development-servers/local/dashboard
 
-Letta.letta.server.rest_api.app - INFO - [Worker 10672] Disabled pinecone
-Letta.letta.server.rest_api.app - INFO - [Worker 10672] Starting scheduler with leader election
+Letta.letta.server.rest_api.app - INFO - [Worker 25920] Disabled pinecone
+Letta.letta.server.rest_api.app - INFO - [Worker 25920] Starting scheduler with leader election
+Default user: id='user-00000000-0000-4000-8000-000000000000' organization_id='org-00000000-0000-4000-8000-000000000000' name='default_user' created_at=datetime.datetime(2025, 11, 24, 2, 15, 45) updated_at=datetime.datetime(2025, 11, 24, 2, 15, 45) is_deleted=False and org: id='org-00000000-0000-4000-8000-000000000000' name='default_org' created_at=datetime.datetime(2025, 11, 24, 2, 15, 45, 901846) privileged_tools=False
+Letta.letta.data_sources.redis_client - INFO - Redis not configured, using noop client
+Letta.letta.jobs.scheduler - INFO - Batch job polling is disabled.
+Letta.letta.server.rest_api.app - INFO - [Worker 25920] Scheduler initialization completed
+Letta.letta.server.rest_api.app - INFO - [Worker 25920] Lifespan startup completed
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health
+INFO:     127.0.0.1:60829 - "GET /v1/health HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health
+INFO:     ::1:58347 - "GET /v1/health HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health
+INFO:     ::1:56811 - "GET /v1/health HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:56899 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:51227 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:61569 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:54587 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:51121 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:58486 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:64201 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:60802 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:59029 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:63735 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:61190 - "GET /health HTTP/1.1" 404 Not Found

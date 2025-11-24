@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Debug Console</title>
+  <link rel="stylesheet" href="/styles/output.css">
+  <style>
+    .debug-section {
+      background: white;
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid #e5e7eb;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .status-success { background: #d1fae5; color: #065f46; }
+    .status-error { background: #fee2e2; color: #991b1b; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .log-output {
+      background: #1f2937;
+      color: #10b981;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.875rem;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .test-button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin: 0.5rem;
+    }
+    .test-button:hover { transform: scale(1.05); }
+    .test-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .metric-card {
+      background: linear-gradient(135deg, #667eea15, #764ba215);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      border: 1px solid #e5e7eb;
+    }
+    .metric-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .metric-label {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">🔧 Dashboard Debug Console</h1>
+      <p class="text-gray-600">Diagnostic tools for troubleshooting API and server detection issues</p>
+      <a href="/" class="text-indigo-600 hover:text-indigo-800 text-sm">← Back to Dashboard</a>
+    </header>
+
+    <!-- Metrics Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div class="metric-card">
+        <div class="metric-value" id="metric-letta-status">❓</div>
+        <div class="metric-label">Letta Server</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-api-status">❓</div>
+        <div class="metric-label">Dashboard API</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-response-time">-</div>
+        <div class="metric-label">API Response Time</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value" id="metric-port-count">-</div>
+        <div class="metric-label">Detected Ports</div>
+      </div>
+    </div>
+
+    <!-- Test Controls -->
+    <div class="debug-section">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">🎮 Test Controls</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-2">Direct Endpoint Tests</h3>
+          <button class="test-button" onclick="testEndpoint('/api/ports')">Test /api/ports</button>
+          <button class="test-button" onclick="testEndpoint('/api/servers')">Test /api/servers</button>
+          <button class="test-button" onclick="testLettaHealth()">Test Letta Health</button>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-700 mb-2">Timeout Settings</h3>
+          <label class="block text-sm text-gray-600 mb-1">Request Timeout (ms):</label>
+          <input type="number" id="timeout-input" value="5000" min="1000" max="60000" step="1000"
+            class="px-3 py-2 border border-gray-300 rounded-md w-full mb-2">
+          <button class="test-button" onclick="clearLogs()">Clear Logs</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Log Output -->
+    <div class="debug-section">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Test Results & Logs</h2>
+      <div id="log-output" class="log-output">
+Waiting for tests to run...
+      </div>
+    </div>
+
+    <!-- Server Registry Info -->
+    <div class="debug-section">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">📋 Expected Server Registry</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h3 class="font-semibold text-indigo-600 mb-2">letta-server</h3>
+          <p class="text-sm text-gray-600">Port: <span class="font-mono">8283</span></p>
+          <p class="text-sm text-gray-600">Color: <span class="inline-block w-4 h-4 rounded" style="background: #FED7AA;"></span> #FED7AA</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-lg">
+          <h3 class="font-semibold text-indigo-600 mb-2">api-server</h3>
+          <p class="text-sm text-gray-600">Port: <span class="font-mono">8080</span></p>
+          <p class="text-sm text-gray-600">Color: <span class="inline-block w-4 h-4 rounded" style="background: #D1FAE5;"></span> #D1FAE5</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const logOutput = document.getElementById('log-output');
+    
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+      const line = `[${timestamp}] ${prefix} ${message}\n`;
+      logOutput.textContent += line;
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    function clearLogs() {
+      logOutput.textContent = 'Logs cleared. Ready for new tests...\n';
+    }
+
+    async function testEndpoint(endpoint) {
+      const timeout = parseInt(document.getElementById('timeout-input').value) || 5000;
+      const startTime = Date.now();
+      
+      log(`Testing ${endpoint} with ${timeout}ms timeout...`, 'info');
+      document.getElementById('metric-api-status').textContent = '⏳';
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        const response = await fetch(endpoint, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        const elapsed = Date.now() - startTime;
+        
+        if (response.ok) {
+          const data = await response.json();
+          log(`SUCCESS: ${endpoint} returned ${response.status} in ${elapsed}ms`, 'success');
+          log(`Response data: ${JSON.stringify(data, null, 2).substring(0, 500)}...`, 'info');
+          
+          document.getElementById('metric-api-status').textContent = '✅';
+          document.getElementById('metric-response-time').textContent = `${elapsed}ms`;
+          
+          if (endpoint === '/api/ports' && Array.isArray(data)) {
+            document.getElementById('metric-port-count').textContent = data.length;
+          }
+          
+          return data;
+        } else {
+          log(`ERROR: ${endpoint} returned ${response.status}`, 'error');
+          document.getElementById('metric-api-status').textContent = '❌';
+        }
+      } catch (error) {
+        const elapsed = Date.now() - startTime;
+        if (error.name === 'AbortError') {
+          log(`TIMEOUT: ${endpoint} exceeded ${timeout}ms (took ${elapsed}ms)`, 'error');
+        } else {
+          log(`ERROR: ${endpoint} failed - ${error.message}`, 'error');
+        }
+        document.getElementById('metric-api-status').textContent = '❌';
+        document.getElementById('metric-response-time').textContent = 'Timeout';
+      }
+    }
+
+    async function testLettaHealth() {
+      const timeout = parseInt(document.getElementById('timeout-input').value) || 5000;
+      const startTime = Date.now();
+      
+      log('Testing Letta server health at http://localhost:8283/health...', 'info');
+      document.getElementById('metric-letta-status').textContent = '⏳';
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        const response = await fetch('http://localhost:8283/health', {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        const elapsed = Date.now() - startTime;
+        
+        if (response.ok) {
+          log(`SUCCESS: Letta server is healthy (${elapsed}ms)`, 'success');
+          document.getElementById('metric-letta-status').textContent = '✅';
+        } else {
+          log(`WARNING: Letta returned ${response.status}`, 'error');
+          document.getElementById('metric-letta-status').textContent = '⚠️';
+        }
+      } catch (error) {
+        const elapsed = Date.now() - startTime;
+        if (error.name === 'AbortError') {
+          log(`TIMEOUT: Letta health check exceeded ${timeout}ms`, 'error');
+        } else {
+          log(`ERROR: Cannot reach Letta server - ${error.message}`, 'error');
+        }
+        document.getElementById('metric-letta-status').textContent = '❌';
+      }
+    }
+
+    // Auto-test on load
+    setTimeout(() => {
+      log('=== Auto-running initial diagnostics ===', 'info');
+      testLettaHealth();
+      setTimeout(() => testEndpoint('/api/ports'), 1500);
+    }, 500);
+  </script>
+</body>
+</html>

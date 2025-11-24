@@ -401,25 +401,34 @@ def start_windows_services(
     base_env = os.environ.copy()
     processes: List[ManagedProcess] = []
 
-    lette_env = base_env.copy()
-    database_url = get_database_url(lette_env)
+    letta_env = base_env.copy()
+
+    # Check if user explicitly skipped Letta
     if args.skip_letta:
         print("[SKIP] --skip-letta provided. Not starting Letta.")
-    elif not database_url:
-        print("[SKIP] DATABASE_URL not configured. Set it to your Postgres instance to launch Letta.")
-    elif not can_connect_to_database(database_url):
+    # Check if Letta is already running
+    elif is_port_in_use(args.letta_port):
         print(
-            "[SKIP] Unable to connect to the configured DATABASE_URL. "
-            "Verify your Postgres service is reachable before running Letta."
+            f"[SKIP] Letta server already running on port {args.letta_port}. "
+            "Use --letta-port to specify a different port if needed."
         )
     else:
+        # Check if PostgreSQL is configured and reachable
+        database_url = get_database_url(letta_env)
+        if database_url and not can_connect_to_database(database_url):
+            print(
+                f"[WARNING] DATABASE_URL is set but unreachable. "
+                f"Letta will fall back to SQLite at ~/.letta/letta.db"
+            )
+
+        # Start Letta (supports both SQLite default and PostgreSQL via env vars)
         processes.append(
             start_process(
                 name="Letta (Unified Memory)",
                 cmd=build_letta_command(args, python_exe),
                 cwd=PLANNER_ROOT,
                 log_name="windows_letta.log",
-                env=lette_env,
+                env=letta_env,
             )
         )
 

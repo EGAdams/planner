@@ -1,0 +1,57 @@
+
+[[ Letta server // v0.14.0 ]]
+Letta.letta.server.global_exception_handler - INFO - Global exception handlers initialized
+C:\Users\NewUser\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\openapi\utils.py:225: UserWarning: Duplicate Operation ID create_chat_completion for function create_chat_completion at C:\Users\NewUser\AppData\Local\Programs\Python\Python313\Lib\site-packages\letta\server\rest_api\routers\v1\chat_completions.py
+  warnings.warn(message, stacklevel=1)
+Server running at: http://localhost:8283
+View using ADE at: https://app.letta.com/development-servers/local/dashboard
+
+INFO:     Started server process [17112]
+INFO:     Waiting for application startup.
+Letta.letta.server.rest_api.app - INFO - [Worker 17112] Disabled pinecone
+Letta.letta.server.rest_api.app - INFO - [Worker 17112] Starting scheduler with leader election
+Letta.letta.data_sources.redis_client - INFO - Redis not configured, using noop client
+Default user: id='user-00000000-0000-4000-8000-000000000000' organization_id='org-00000000-0000-4000-8000-000000000000' name='default_user' created_at=datetime.datetime(2025, 11, 24, 2, 15, 45) updated_at=datetime.datetime(2025, 11, 24, 2, 15, 45) is_deleted=False and org: id='org-00000000-0000-4000-8000-000000000000' name='default_org' created_at=datetime.datetime(2025, 11, 24, 2, 15, 45, 901846) privileged_tools=False
+Letta.letta.services.tool_manager - INFO - Creating tool 'archival_memory_insert': total 0.45 KB (source: 0.00 KB, schema: 1.21 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'archival_memory_search': total 0.45 KB (source: 0.00 KB, schema: 1.82 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'conversation_search': total 0.45 KB (source: 0.00 KB, schema: 2.21 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'core_memory_append': total 0.45 KB (source: 0.00 KB, schema: 0.37 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'core_memory_replace': total 0.45 KB (source: 0.00 KB, schema: 0.54 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'memory': total 0.45 KB (source: 0.00 KB, schema: 2.37 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'memory_finish_edits': total 0.45 KB (source: 0.00 KB, schema: 0.31 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'memory_insert': total 0.45 KB (source: 0.00 KB, schema: 0.97 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'memory_replace': total 0.45 KB (source: 0.00 KB, schema: 1.87 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'memory_rethink': total 0.45 KB (source: 0.00 KB, schema: 0.70 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'send_message': total 0.45 KB (source: 0.00 KB, schema: 0.26 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'send_message_to_agent_and_wait_for_reply': total 0.45 KB (source: 0.00 KB, schema: 0.64 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'send_message_to_agent_async': total 0.45 KB (source: 0.00 KB, schema: 0.65 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'send_message_to_agents_matching_tags': total 0.45 KB (source: 0.00 KB, schema: 0.77 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'finish_rethinking_memory': total 0.45 KB (source: 0.00 KB, schema: 0.19 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'rethink_user_memory': total 0.45 KB (source: 0.00 KB, schema: 0.58 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'search_memory': total 0.45 KB (source: 0.00 KB, schema: 0.80 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'store_memories': total 0.45 KB (source: 0.00 KB, schema: 0.89 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'fetch_webpage': total 0.45 KB (source: 0.00 KB, schema: 0.27 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'run_code': total 0.45 KB (source: 0.00 KB, schema: 0.37 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'web_search': total 0.45 KB (source: 0.00 KB, schema: 1.83 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'grep_files': total 0.45 KB (source: 0.00 KB, schema: 1.53 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'open_files': total 0.45 KB (source: 0.00 KB, schema: 1.88 KB)
+Letta.letta.services.tool_manager - INFO - Creating tool 'semantic_search_files': total 0.45 KB (source: 0.00 KB, schema: 0.57 KB)
+2025-11-23 21:15:46,401 - Letta.letta.server.server - DEBUG - Successfully created default local sandbox config:
+{'sandbox_dir': 'C:\\Users\\NewUser\\.letta\\tool_execution_dir', 'use_venv': False, 'venv_name': 'venv', 'pip_requirements': []}
+Letta.letta.jobs.scheduler - INFO - Batch job polling is disabled.
+Letta.letta.server.rest_api.app - INFO - [Worker 17112] Scheduler initialization completed
+Letta.letta.server.rest_api.app - INFO - [Worker 17112] Lifespan startup completed
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://localhost:8283 (Press CTRL+C to quit)
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:63699 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     ::1:63807 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health
+INFO:     ::1:63808 - "GET /v1/health HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/agents
+INFO:     ::1:58293 - "GET /v1/agents HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/agents
+INFO:     ::1:58575 - "GET /v1/agents HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/agents/
+INFO:     ::1:61444 - "GET /v1/agents/ HTTP/1.1" 200 OK

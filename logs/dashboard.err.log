@@ -1,0 +1,8 @@
+cd : Cannot find path 'C:\Users\NewUser\Desktop\blue_time\planner\dashboard\dashboard' because it does not exist.
+At line:1 char:1
++ cd dashboard; npm run start
++ ~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (C:\Users\NewUse...board\dashboard:String) [Set-Location], ItemNotFoundE 
+   xception
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.SetLocationCommand
+ 

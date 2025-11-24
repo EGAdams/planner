@@ -5,7 +5,7 @@
 ```mermaid
 graph TD
     User[User/Orchestrator] -->|JSON-RPC Request| OPS[ops topic]
-    OPS -->|Inbox| Agent[dashboard-ops-agent]
+    OPS -->|Inbox| Agent[dashboard-agent]
     
     Agent -->|check_server_status| Server{Dashboard Server<br/>localhost:3000}
     Agent -->|start_server| Server
@@ -33,7 +33,7 @@ graph TD
 sequenceDiagram
     participant U as User/Test Script
     participant T as ops topic
-    participant A as dashboard-ops-agent
+    participant A as dashboard-agent
     participant B as Browser Process
     participant D as Dashboard Server
     participant M as Memory System
@@ -59,7 +59,7 @@ sequenceDiagram
 
 | Component | Responsibility |
 |-----------|---------------|
-| **dashboard-ops-agent** | Orchestrates browser testing, server management |
+| **dashboard-agent** | Orchestrates browser testing, server management |
 | **Browser Detection** | Finds available Chrome/Chromium installation |
 | **Process Management** | Launches browser as subprocess, tracks PID |
 | **Memory System** | Logs all operations for audit/debugging |

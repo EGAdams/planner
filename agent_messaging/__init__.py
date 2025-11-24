@@ -75,7 +75,7 @@ async def remember(
         Memory ID
         
     Example:
-        await remember("Dashboard started on port 3000", memory_type="deployment", source="dashboard-ops-agent")
+        await remember("Dashboard started on port 3000", memory_type="deployment", source="dashboard-agent")
     """
     memory = await get_memory(agent_id)
     return await memory.remember(content, memory_type, source, tags, metadata)
