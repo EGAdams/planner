@@ -17,11 +17,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Add parent directory to path to import shared modules
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PLANNER_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PLANNER_ROOT))
+os.chdir(PLANNER_ROOT)
 
 from agent_messaging import inbox, post_message, create_jsonrpc_response
 from rag_system.core.document_manager import DocumentManager
-from orchestrator_agent.a2a_dispatcher import A2ADispatcher
+from a2a_communicating_agents.orchestrator_agent.a2a_dispatcher import A2ADispatcher
 
 AGENT_NAME = "orchestrator-agent"
 WORKSPACE_ROOT = Path(__file__).resolve().parents[1]

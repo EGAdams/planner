@@ -9,6 +9,9 @@ PLANNER_ROOT="/home/adamsl/planner"
 LOG_DIR="$PLANNER_ROOT/logs"
 PIDS_FILE="$LOG_DIR/a2a_system.pids"
 
+# Activate virtual environment
+source "$PLANNER_ROOT/.venv/bin/activate"
+
 # Create logs directory
 mkdir -p "$LOG_DIR"
 
@@ -80,9 +83,9 @@ echo ""
 # 2. Start Orchestrator Agent
 # ========================================
 log_info "Step 2/4: Starting Orchestrator Agent..."
-log_info "Agent Card: $PLANNER_ROOT/orchestrator_agent/agent.json"
+log_info "Agent Card: $PLANNER_ROOT/a2a_communicating_agents/orchestrator_agent/agent.json"
 
-cd "$PLANNER_ROOT/orchestrator_agent"
+cd "$PLANNER_ROOT/a2a_communicating_agents/orchestrator_agent"
 nohup python main.py > "$LOG_DIR/orchestrator.log" 2>&1 &
 ORCHESTRATOR_PID=$!
 echo "orchestrator:$ORCHESTRATOR_PID" >> "$PIDS_FILE"
@@ -93,16 +96,16 @@ sleep 2
 echo ""
 
 # ========================================
-# 3. Start Dashboard Ops Agent
+# 3. Start Dashboard Agent
 # ========================================
-log_info "Step 3/4: Starting Dashboard Ops Agent..."
-log_info "Agent Card: $PLANNER_ROOT/dashboard_ops_agent/agent.json"
+log_info "Step 3/4: Starting Dashboard Agent..."
+log_info "Agent Card: $PLANNER_ROOT/a2a_communicating_agents/dashboard_agent/agent.json"
 
-cd "$PLANNER_ROOT/dashboard_ops_agent"
-nohup python main.py > "$LOG_DIR/dashboard_ops.log" 2>&1 &
-DASHBOARD_OPS_PID=$!
-echo "dashboard_ops:$DASHBOARD_OPS_PID" >> "$PIDS_FILE"
-log_info "Dashboard Ops agent started (PID: $DASHBOARD_OPS_PID)"
+cd "$PLANNER_ROOT/a2a_communicating_agents/dashboard_agent"
+nohup python main.py > "$LOG_DIR/dashboard_agent.log" 2>&1 &
+DASHBOARD_AGENT_PID=$!
+echo "dashboard_agent:$DASHBOARD_AGENT_PID" >> "$PIDS_FILE"
+log_info "Dashboard agent started (PID: $DASHBOARD_AGENT_PID)"
 log_info "  - Capabilities: check_status, start_server, start_test_browser"
 log_info "  - Topics: ops, dashboard, maintenance"
 sleep 2
@@ -143,7 +146,7 @@ log_info "System Dashboard:   http://localhost:3000"
 log_info ""
 log_info "Active A2A Agents:"
 log_info "  - orchestrator-agent    (PID: $ORCHESTRATOR_PID)"
-log_info "  - dashboard-agent   (PID: $DASHBOARD_OPS_PID)"
+log_info "  - dashboard-agent       (PID: $DASHBOARD_AGENT_PID)"
 log_info ""
 log_info "Logs: $LOG_DIR/"
 log_info "PIDs: $PIDS_FILE"

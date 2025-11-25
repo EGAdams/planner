@@ -1,0 +1,111 @@
+
+[[ Letta server // v0.14.0 ]]
+Letta.letta.server.global_exception_handler - INFO - Global exception handlers initialized
+/home/adamsl/planner/.venv/lib/python3.12/site-packages/fastapi/openapi/utils.py:225: UserWarning: Duplicate Operation ID create_chat_completion for function create_chat_completion at /home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/server/rest_api/routers/v1/chat_completions.py
+  warnings.warn(message, stacklevel=1)
+▶ Server running at: http://127.0.0.1:8283
+▶ View using ADE at: https://app.letta.com/development-servers/local/dashboard
+
+INFO:     Started server process [34301]
+INFO:     Waiting for application startup.
+Letta.letta.server.rest_api.app - INFO - [Worker 34301] Disabled pinecone
+Letta.letta.server.rest_api.app - INFO - [Worker 34301] Starting scheduler with leader election
+Letta.letta.data_sources.redis_client - INFO - Redis not configured, using noop client
+Default user: id='user-00000000-0000-4000-8000-000000000000' organization_id='org-00000000-0000-4000-8000-000000000000' name='default_user' created_at=datetime.datetime(2025, 11, 24, 19, 38, 7, 547016, tzinfo=datetime.timezone.utc) updated_at=datetime.datetime(2025, 11, 24, 19, 38, 7, 547016, tzinfo=datetime.timezone.utc) is_deleted=False and org: id='org-00000000-0000-4000-8000-000000000000' name='default_org' created_at=datetime.datetime(2025, 11, 24, 19, 38, 7, 394205, tzinfo=datetime.timezone.utc) privileged_tools=False
+Letta.letta.jobs.scheduler - INFO - Batch job polling is disabled.
+Letta.letta.server.rest_api.app - INFO - [Worker 34301] Scheduler initialization completed
+Letta.letta.server.rest_api.app - INFO - [Worker 34301] Lifespan startup completed
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8283 (Press CTRL+C to quit)
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     127.0.0.1:60682 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:60360 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     127.0.0.1:33590 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health
+INFO:     127.0.0.1:57688 - "GET /v1/health HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /api/health
+INFO:     127.0.0.1:51732 - "GET /api/health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/admin/server
+INFO:     127.0.0.1:59804 - "GET /v1/admin/server HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:38882 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:41108 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-048c9598.js
+INFO:     127.0.0.1:41108 - "GET /assets/index-048c9598.js HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-0e31b727.css
+INFO:     127.0.0.1:41114 - "GET /assets/index-0e31b727.css HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /favicon.ico
+INFO:     127.0.0.1:41114 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:43068 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:43068 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:41430 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:41432 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:45894 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:58338 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:58346 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:59496 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:59510 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:52254 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:51778 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:42620 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:42636 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     127.0.0.1:48052 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:46014 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:43010 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:36970 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:41434 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:41442 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:49324 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:49340 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:49340 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:45842 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:56380 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:41756 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:39770 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-048c9598.js
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-0e31b727.css
+INFO:     127.0.0.1:39770 - "GET /assets/index-048c9598.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:39782 - "GET /assets/index-0e31b727.css HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /favicon.ico
+INFO:     127.0.0.1:39770 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health
+INFO:     127.0.0.1:56068 - "GET /v1/health HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     127.0.0.1:46636 - "GET /v1/health/ HTTP/1.1" 200 OK
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+Letta.letta.server.rest_api.app - INFO - [Worker 34301] Starting lifespan shutdown
+Letta.letta.jobs.scheduler - INFO - Shutting down: Non-leader instance.
+Letta.letta.server.rest_api.app - INFO - [Worker 34301] Scheduler shutdown completed
+Letta.letta.server.rest_api.app - INFO - [Worker 34301] Lifespan shutdown completed
+INFO:     Application shutdown complete.
+INFO:     Finished server process [34301]
