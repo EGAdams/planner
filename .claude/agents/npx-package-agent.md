@@ -154,8 +154,8 @@ class Installer {
     
     processTemplate(template, config) {
         return template.content
-            .replace(//home/adamsl/planner/g, config.projectRoot)
-            .replace(/adamsl/g, config.userName)
+            .replace(/C:\Users\NewUser\Desktop\blue_time\planner/g, config.projectRoot)
+            .replace(/NewUser/g, config.userName)
             .replace(/{{AGENT_LIST}}/g, config.agents.join(', '));
     }
 }

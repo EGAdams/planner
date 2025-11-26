@@ -48,7 +48,6 @@ Request → 🧠 Quick Analysis → 🎯 Agent Selection → ⚡ Task Delegation
 | **"deploy/setup devops"** | **@devops-agent** | Direct deployment work |
 | **"enhance collective"** | **@task-orchestrator** | System-level coordination |
 | **"coordinate complex project"** | **@task-orchestrator** | Multi-agent orchestration |
-| **"migrate/convert agent to codex"** | **@convert-llm-claude-to-codex** | Automated LLM migration |
 
 ## 📊 COMPLEX REQUEST ANALYSIS
 

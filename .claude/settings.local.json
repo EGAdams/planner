@@ -1,16 +1,28 @@
 {
   "permissions": {
     "allow": [
-      "Bash(/home/adamsl/planner/.venv/bin/python:*)"
+      "Bash(Select-Object FullName)",
+      "Bash(python:*)",
+      "Bash(letta --help:*)",
+      "Bash(letta server --help:*)",
+      "Bash(cat:*)",
+      "Bash(find:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
   },
-  
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "chrome-devtools"
+  ],
   "mcpServers": {
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-chrome-devtools"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-chrome-devtools"
+      ]
     }
   }
 }

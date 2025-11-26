@@ -22,9 +22,6 @@
 - **@enhanced-quality-gate** - Comprehensive quality validation with mandatory gates
 - **@readiness-gate** - Phase advancement and project readiness assessment
 
-## 🔄 MIGRATION SPECIALISTS
-- **@convert-llm-claude-to-codex** - Automated Claude-to-Codex LLM migration with TDD validation and rollback
-
 ## Research-Backed Agent Intelligence
 
 **Context7 integration for current library documentation:**

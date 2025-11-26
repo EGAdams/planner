@@ -1,19 +1,19 @@
 {
   "models": {
     "main": {
-      "provider": "codex-code",
+      "provider": "claude-code",
       "modelId": "sonnet",
       "maxTokens": 8000,
       "temperature": 0.1    
     },
     "research": {
-      "provider": "codex-code",
+      "provider": "claude-code",
       "modelId": "sonnet",
       "maxTokens": 8000,
       "temperature": 0.1
     },
     "fallback": {
-      "provider": "codex-code",
+      "provider": "claude-code",
       "modelId": "sonnet",
       "maxTokens": 8000,
       "temperature": 0.1
@@ -32,5 +32,5 @@
     "azureOpenaiBaseURL": "https://your-endpoint.openai.azure.com/",
     "userId": "1234567890"
   },
-  "codexCode": {}
+  "claudeCode": {}
 }
