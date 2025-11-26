@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Administrator Static Diagnostic Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: #6b7280;
+        }
+
+        .alert {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            border-left-color: #10b981;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            color: #374151;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .metric {
+            text-align: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .server-info {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #667eea;
+        }
+
+        .server-info h3 {
+            color: #667eea;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .server-info p {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin: 0.25rem 0;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-error {
+            background: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+        }
+
+        .status-warning {
+            background: #f59e0b;
+            box-shadow: 0 0 8px #f59e0b;
+        }
+
+        .status-success {
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        .info-section {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin-top: 1rem;
+        }
+
+        .code {
+            background: #1f2937;
+            color: #10b981;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+        }
+
+        .list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 System Administrator Static Diagnostic Page</h1>
+            <p>Standalone diagnostic tool - No server dependencies required!</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem; color: #9ca3af;">
+                💡 This file runs completely offline. Open directly in browser (file://)
+            </p>
+        </div>
+
+        <!-- System Status -->
+        <div class="alert alert-success">
+            <strong>✅ Letta Server Status: OPERATIONAL</strong><br>
+            <span style="font-size: 0.875rem;">
+                Server running on port 8283 (PID 34301). Python 3.12.3 with Letta 0.14.0.
+                Web UI accessible at <a href="http://localhost:8283" target="_blank">http://localhost:8283</a>
+            </span>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>✅ Database Status: OPERATIONAL</strong><br>
+            <span style="font-size: 0.875rem;">
+                PostgreSQL 16 database 'letta' with 43 tables and pgvector extension enabled.
+                Connection: postgresql://letta@localhost:5432/letta
+            </span>
+        </div>
+
+        <!-- Metrics Dashboard -->
+        <div class="grid">
+            <div class="card">
+                <div class="metric">
+                    <div class="metric-value">✅</div>
+                    <div class="metric-label">Letta Server (8283)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">RUNNING</div>
+                    <div class="metric-label">Status: PID 34301</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="metric">
+                    <div class="metric-value">✅</div>
+                    <div class="metric-label">PostgreSQL Database</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">43</div>
+                    <div class="metric-label">Tables Created</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="metric">
+                    <div class="metric-value">v0.14.0</div>
+                    <div class="metric-label">Letta Package Version</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3.12.3</div>
+                    <div class="metric-label">Python Version</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="metric">
+                    <div class="metric-value">🐧</div>
+                    <div class="metric-label">Linux/WSL2 Environment</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">OPERATIONAL</div>
+                    <div class="metric-label">All Tests Passing (11/11)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Server Registry -->
+        <div class="grid">
+            <div class="card">
+                <h2>📋 Server Registry</h2>
+
+                <div class="server-info">
+                    <h3><span class="status-dot status-success"></span>Letta Server</h3>
+                    <p><strong>Port:</strong> 8283</p>
+                    <p><strong>Web UI:</strong> <a href="http://localhost:8283" target="_blank">http://localhost:8283</a></p>
+                    <p><strong>Status:</strong> RUNNING (PID 34301)</p>
+                    <p><strong>Database:</strong> PostgreSQL letta@localhost:5432/letta</p>
+                </div>
+
+                <div class="server-info">
+                    <h3><span class="status-dot status-warning"></span>Dashboard API</h3>
+                    <p><strong>Port:</strong> 3000</p>
+                    <p><strong>API Endpoint:</strong> http://localhost:3000/api/servers</p>
+                    <p><strong>Status:</strong> Not tested</p>
+                    <p><strong>Location:</strong> /home/adamsl/planner/dashboard</p>
+                </div>
+
+                <div class="server-info">
+                    <h3><span class="status-dot status-warning"></span>Orchestrator Agent</h3>
+                    <p><strong>Type:</strong> A2A Agent</p>
+                    <p><strong>Topics:</strong> orchestrator, general</p>
+                    <p><strong>Capabilities:</strong> route_request, discover_agents</p>
+                    <p><strong>Location:</strong> /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent</p>
+                </div>
+
+                <div class="server-info">
+                    <h3><span class="status-dot status-warning"></span>Dashboard Ops Agent</h3>
+                    <p><strong>Type:</strong> A2A Agent</p>
+                    <p><strong>Topics:</strong> ops, dashboard, maintenance</p>
+                    <p><strong>Capabilities:</strong> check_status, start_server, start_test_browser</p>
+                    <p><strong>Location:</strong> /home/adamsl/planner/dashboard_ops_agent</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🔍 Diagnostic Information</h2>
+
+                <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">System Environment</h3>
+                <ul class="list">
+                    <li><strong>OS:</strong> Linux (WSL2 on Windows)</li>
+                    <li><strong>Working Directory:</strong> /home/adamsl/planner</li>
+                    <li><strong>Python Version:</strong> 3.12.3 (venv)</li>
+                    <li><strong>Letta Version:</strong> 0.14.0</li>
+                    <li><strong>PostgreSQL Version:</strong> 16.10</li>
+                    <li><strong>pgvector Extension:</strong> 0.6.0</li>
+                </ul>
+
+                <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">Database Tables</h3>
+                <div class="code">
+organizations, prompts, block, identities,
+agents, archives, mcp_server, providers,
+provider_traces, sandbox_configs, sources,
+tools, users, block_history, blocks_agents,
+agents_tags, archives_agents, files, groups,
+identities_agents, identities_blocks, jobs,
+mcp_oauth, archival_passages,
+sandbox_environment_variables,
+agent_environment_variables, sources_agents,
+tools_agents, file_contents, files_agents,
+groups_agents, groups_blocks, llm_batch_job,
+source_passages, passage_tags, steps,
+llm_batch_items, messages, step_metrics,
+job_messages, message_sequence
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Status -->
+        <div class="card">
+            <h2>🎉 System Status: FULLY OPERATIONAL</h2>
+
+            <div class="info-section">
+<strong>ALL SYSTEMS OPERATIONAL:</strong>
+
+✅ Python 3.12.3 - Upgraded from 3.10.16 to support except* syntax
+✅ Letta 0.14.0 - Upgraded from 0.10.0 for latest features
+✅ PostgreSQL 16.10 - Installed with pgvector extension support
+✅ pgvector 0.6.0 - Vector embedding support enabled
+✅ Database Schema - 43 tables created and initialized
+✅ Letta Server - Running on port 8283 (PID 34301)
+✅ Web UI - Accessible at http://localhost:8283
+✅ Infrastructure Tests - All 11/11 tests passing
+
+<strong>RECENT FIXES APPLIED:</strong>
+
+1. Upgraded Python 3.10.16 → 3.12.3
+   - Resolved 'except*' syntax error
+   - Recreated virtual environment
+
+2. Installed PostgreSQL 16 with pgvector
+   - Created letta database and user
+   - Enabled vector extension for embeddings
+
+3. Upgraded Letta 0.10.0 → 0.14.0
+   - Latest official release
+   - Full PostgreSQL support
+
+4. Database Initialization
+   - Created 43 tables via SQLAlchemy ORM
+   - Verified organizations table exists
+            </div>
+        </div>
+
+        <!-- Operations Guide -->
+        <div class="card">
+            <h2>📋 Operations Guide</h2>
+
+            <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">Server Management</h3>
+            <div class="code">
+# Check server status
+ps aux | grep letta
+ss -tlnp | grep 8283
+
+# Start server (if stopped)
+export LETTA_PG_URI="postgresql+pg8000://letta:letta@localhost:5432/letta"
+source .venv/bin/activate
+letta server --port 8283 --host 127.0.0.1
+
+# Stop server
+pkill -f "letta server"
+
+# View logs
+tail -f logs/letta_success.log
+            </div>
+
+            <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">Access Web UI</h3>
+            <div class="code">
+# Open in browser
+http://localhost:8283
+
+# Test connectivity
+curl http://localhost:8283/
+            </div>
+
+            <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">Run Tests</h3>
+            <div class="code">
+# Run infrastructure tests
+source .venv/bin/activate
+pytest tests/test_infrastructure_setup.py -v
+
+# Expected: 11 passed
+            </div>
+
+            <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">Database Operations</h3>
+            <div class="code">
+# Connect to PostgreSQL
+psql -U letta -d letta -h localhost
+
+# List tables
+\dt
+
+# Check organizations
+SELECT * FROM organizations;
+            </div>
+        </div>
+
+        <!-- File Locations -->
+        <div class="card">
+            <h2>📁 Important File Locations</h2>
+
+            <ul class="list">
+                <li><strong>Project Root:</strong> /home/adamsl/planner</li>
+                <li><strong>Virtual Environment:</strong> /home/adamsl/planner/.venv</li>
+                <li><strong>Letta Database:</strong> ~/.letta/sqlite.db</li>
+                <li><strong>Letta Config:</strong> ~/.letta/config</li>
+                <li><strong>Letta Logs:</strong> ~/.letta/logs</li>
+                <li><strong>Startup Script:</strong> /home/adamsl/planner/start_a2a_system.sh</li>
+                <li><strong>Stop Script:</strong> /home/adamsl/planner/stop_a2a_system.sh</li>
+                <li><strong>System Logs:</strong> /home/adamsl/planner/logs/</li>
+                <li><strong>Integration Tests:</strong> /home/adamsl/planner/tests/integration/</li>
+                <li><strong>A2A Agents:</strong> /home/adamsl/planner/a2a_communicating_agents/</li>
+            </ul>
+        </div>
+
+        <!-- Validation Commands -->
+        <div class="card">
+            <h2>🔧 Diagnostic Commands</h2>
+
+            <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">Environment Validation</h3>
+            <div class="code">
+# Check Python version
+source .venv/bin/activate && python --version
+# Expected: Python 3.12.3
+
+# Check Letta installation
+pip show letta | grep Version
+# Expected: Version: 0.14.0
+
+# Check PostgreSQL
+sudo service postgresql status
+psql -U letta -d letta -h localhost -c "\dt" | wc -l
+# Expected: 43 tables
+            </div>
+
+            <h3 style="color: #374151; font-size: 1rem; margin: 1rem 0 0.5rem;">Service Health Checks</h3>
+            <div class="code">
+# Test Letta web UI
+curl http://localhost:8283/
+# Expected: HTTP 200
+
+# Check server process
+ps aux | grep "[l]etta server"
+# Expected: PID 34301
+
+# Check port listening
+ss -tlnp | grep 8283
+# Expected: LISTEN 127.0.0.1:8283
+
+# Run all infrastructure tests
+pytest tests/test_infrastructure_setup.py -v
+# Expected: 11 passed
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

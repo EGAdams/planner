@@ -1,0 +1,60 @@
+
+[[ Letta server // v0.14.0 ]]
+Letta.letta.server.global_exception_handler - INFO - Global exception handlers initialized
+Letta.letta.server.global_exception_handler - CRITICAL - Uncaught exception in main thread: KeyError: '$ref'
+Traceback (most recent call last):
+  File "/home/adamsl/planner/.venv/bin/letta", line 7, in <module>
+    sys.exit(app())
+             ^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/typer/main.py", line 325, in __call__
+    raise e
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/typer/main.py", line 308, in __call__
+    return get_command(self)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/click/core.py", line 1157, in __call__
+    return self.main(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/typer/core.py", line 784, in main
+    return _main(
+           ^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/typer/core.py", line 192, in _main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/click/core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/click/core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/click/core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/typer/main.py", line 685, in wrapper
+    return callback(**use_params)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/cli/cli.py", line 33, in server
+    from letta.server.rest_api.app import start_server
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/server/rest_api/app.py", line 629, in <module>
+    app = create_application()
+          ^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/server/rest_api/app.py", line 624, in create_application
+    generate_openapi_schema(app)
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/server/rest_api/app.py", line 94, in generate_openapi_schema
+    app.openapi_schema = app.openapi()
+                         ^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1060, in openapi
+    self.openapi_schema = get_openapi(
+                          ^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/fastapi/openapi/utils.py", line 504, in get_openapi
+    field_mapping, definitions = get_definitions(
+                                 ^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/fastapi/_compat/main.py", line 292, in get_definitions
+    v2_field_maps, v2_definitions = v2.get_definitions(
+                                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/fastapi/_compat/v2.py", line 249, in get_definitions
+    new_mapping, new_definitions = _remap_definitions_and_field_mappings(
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/fastapi/_compat/v2.py", line 310, in _remap_definitions_and_field_mappings
+    old_name = schema["$ref"].split("/")[-1]
+               ~~~~~~^^^^^^^^
+KeyError: '$ref'

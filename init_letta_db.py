@@ -1,64 +1,38 @@
-"""Initialize Letta SQLite database by creating all tables from ORM models."""
+#!/usr/bin/env python3
+"""Initialize Letta PostgreSQL database schema."""
 
-import sys
+import asyncio
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy import text
 
-# Import Letta ORM base
-from letta.orm.base import Base
-from letta.settings import settings
+# Set environment variable before importing Letta modules
+os.environ['LETTA_PG_URI'] = 'postgresql+pg8000://letta:letta@localhost:5432/letta'
 
-# Import all ORM model classes to register them with Base.metadata
-from letta.orm import (
-    Agent, AgentEnvironmentVariable, AgentsTags,
-    ArchivalPassage, Archive, ArchivesAgents,
-    BasePassage, Block, BlockHistory, BlocksAgents,
-    FileAgent, FileMetadata,
-    Group, GroupsAgents, GroupsBlocks,
-    IdentitiesAgents, IdentitiesBlocks, Identity,
-    Job, LLMBatchItem, LLMBatchJob,
-    MCPOAuth, MCPServer, Message,
-    Organization, PassageTag, Prompt,
-    Provider, ProviderModel, ProviderTrace,
-    Run, RunMetrics,
-    SandboxConfig, SandboxEnvironmentVariable,
-    Source, SourcePassage, SourcesAgents,
-    Step, StepMetrics,
-    Tool, ToolsAgents,
-    User
-)
+from letta.orm import Base
+from letta.server.db import engine
 
-def init_database():
-    """Create all tables in the Letta database."""
+async def init_db():
+    """Initialize database schema."""
+    print("🔧 Initializing Letta database schema...")
+    print(f"📊 Database: {os.environ['LETTA_PG_URI']}")
 
-    # Get database settings
-    print(f"Database engine: {settings.database_engine}")
+    async with engine.begin() as conn:
+        # Create all tables
+        print("✨ Creating tables...")
+        await conn.run_sync(Base.metadata.create_all)
 
-    # Construct SQLite database URI
-    db_path = os.path.join(settings.letta_dir, "letta.db")
-    db_uri = f"sqlite:///{db_path}"
+    print("✅ Database initialization complete!")
 
-    print(f"Database path: {db_path}")
-    print(f"Database URI: {db_uri}")
+    # Verify tables were created
+    async with engine.connect() as conn:
+        result = await conn.execute(text(
+            "SELECT table_name FROM information_schema.tables "
+            "WHERE table_schema = 'public' ORDER BY table_name;"
+        ))
+        tables = [row[0] for row in result]
+        print(f"\n📋 Created {len(tables)} tables:")
+        for table in tables:
+            print(f"   - {table}")
 
-    # Create engine
-    engine = create_engine(db_uri, echo=True)
-
-    # Create all tables
-    print("\nCreating all tables...")
-    Base.metadata.create_all(engine)
-
-    print(f"\n✅ Database initialized successfully!")
-    print(f"Tables created: {list(Base.metadata.tables.keys())}")
-
-    return True
-
-if __name__ == "__main__":
-    try:
-        init_database()
-    except Exception as e:
-        print(f"\n❌ Error initializing database: {e}")
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)
+if __name__ == '__main__':
+    asyncio.run(init_db())
