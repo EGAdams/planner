@@ -1,1 +1,20 @@
-{}
+{
+  "livekit-voice-agent": {
+    "id": "livekit-voice-agent",
+    "command": "/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev",
+    "cwd": "/home/adamsl/ottomator-agents/livekit-agent",
+    "startTime": "2025-11-25T21:12:13.272Z",
+    "status": "running",
+    "ports": []
+  },
+  "pydantic-web-server": {
+    "id": "pydantic-web-server",
+    "command": "/home/adamsl/planner/venv/bin/python pydantic_mcp_agent_endpoint.py",
+    "cwd": "/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version",
+    "startTime": "2025-11-25T21:12:13.281Z",
+    "status": "running",
+    "ports": [
+      8001
+    ]
+  }
+}

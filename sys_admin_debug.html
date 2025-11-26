@@ -236,10 +236,21 @@
             <div class="card">
                 <div class="metric">
                     <div class="metric-value" id="office-status">❓</div>
-                    <div class="metric-label">Office API (8080)</div>
+                    <div class="metric-label">Office API (WSL proxy 8081→8080)</div>
                 </div>
                 <div class="metric">
                     <div class="metric-value" id="office-time">-</div>
+                    <div class="metric-label">Response Time</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="metric">
+                    <div class="metric-value" id="office-native-status">❓</div>
+                    <div class="metric-label">Office API (Windows localhost:8080)</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="office-native-time">-</div>
                     <div class="metric-label">Response Time</div>
                 </div>
             </div>
@@ -262,7 +273,8 @@
                 <h2>⚡ Quick Tests</h2>
                 <button class="btn" onclick="testLetta()">Test Letta Server</button>
                 <button class="btn" onclick="testDashboard()">Test Dashboard API</button>
-                <button class="btn" onclick="testOfficeAPI()">Test Office API</button>
+                <button class="btn" onclick="testOfficeWSL()">Test Office API (WSL proxy)</button>
+                <button class="btn" onclick="testOfficeWindows()">Test Office API (Windows)</button>
                 <button class="btn btn-secondary" onclick="testAll()">🚀 Test All Servers</button>
                 <button class="btn btn-danger" onclick="clearLogs()">Clear Logs</button>
             </div>
@@ -276,152 +288,346 @@
                 </div>
                 <div class="input-group">
                     <label>Custom Endpoint URL</label>
-                    <input type="text" id="custom-url" placeholder="http://localhost:8283/health">
+                    <button class="btn btn-secondary" onclick="testAll()">🚀 Test All Servers</button>
+                    <button class="btn btn-danger" onclick="clearLogs()">Clear Logs</button>
                 </div>
-                <button class="btn" onclick="testCustom()">Test Custom Endpoint</button>
-            </div>
 
-            <!-- Server Registry -->
-            <div class="card">
-                <h2>📋 Server Registry</h2>
-                <div class="server-info">
-                    <h3>🟠 Letta Server</h3>
+                <!-- Advanced Controls -->
+                <div class="card">
+                    <h2>⚙️ Settings</h2>
+                    <div class="input-group">
+                        <label>Request Timeout (ms)</label>
+                        <input type="number" id="timeout" value="5000" min="1000" max="60000" step="1000">
+                    </div>
+                    <div class="input-group">
+                        <label>Custom Endpoint URL</label>
+                        <input type="text" id="custom-url" placeholder="http://localhost:8283/v1/health/">
+                    </div>
+                    <button class="btn" onclick="testCustom()">Test Custom Endpoint</button>
                 </div>
-            </div>
-        </div>
 
-        <!-- Log Output -->
-        <div class="card">
-            <h2>📊 Test Results & Live Log</h2>
-            <div id="logs" class="log-area">🔄 System ready. Run tests to see results...\n</div>
-        </div>
-    </div>
+                <!-- Server Registry -->
+                <div class="card">
+                    <h2>📋 Server Registry</h2>
+                    <div id="server-registry-list">
+                }
 
-    <script>
-        let testCount = 0;
-        let successCount = 0;
+                on(event, callback) {
+                    if (!this.subscribers.has(event)) {
+                        this.subscribers.set(event, new Set());
+                    }
+                    this.subscribers.get(event).add(callback);
+                    return () => this.off(event, callback);
+                }
 
-        function log(msg, type = 'info') {
-            const time = new Date().toLocaleTimeString();
-            const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warn' ? '⚠️' : 'ℹ️';
-            const logs = document.getElementById('logs');
-            logs.textContent += `[${time}] ${icon} ${msg}\n`;
-            logs.scrollTop = logs.scrollHeight;
-        }
+                emit(event, data) {
+                    const callbacks = this.subscribers.get(event);
+                    if (callbacks) {
+                        callbacks.forEach(callback => {
+                            try {
+                                callback(data);
+                            } catch (error) {
+                                console.error(`Error in event handler for "${event}":`, error);
+                            }
+                        });
+                    }
+                }
 
-        function clearLogs() {
-            document.getElementById('logs').textContent = '🔄 Logs cleared. Ready for testing...\n';
-            testCount = 0;
-            successCount = 0;
-            updateMetrics();
-        }
+                off(event, callback) {
+                    const callbacks = this.subscribers.get(event);
+                    if (callbacks) {
+                        callbacks.delete(callback);
+                        if (callbacks.size === 0) {
+                            this.subscribers.delete(event);
+                        }
+                    }
+                }
+            }
 
-        function updateMetrics() {
-            document.getElementById('total-tests').textContent = testCount;
-            const rate = testCount > 0 ? Math.round((successCount / testCount) * 100) : 0;
-            document.getElementById('success-rate').textContent = `${rate}%`;
-        }
+            const eventBus = new EventBus();
 
-        async function testEndpoint(url, name, statusId, timeId) {
-            const timeout = parseInt(document.getElementById('timeout').value) || 5000;
-            const startTime = Date.now();
+            // --- SSE Manager Module (Inlined) ---
+            class SSEManager {
+                constructor(apiUrl = 'http://localhost:3030') {
+                    this.apiUrl = apiUrl;
+                    this.eventSource = null;
+                    this.reconnectTimeout = 5000;
+                    this.reconnectTimer = null;
+                }
 
-            log(`Testing ${name} at ${url}...`, 'info');
-            document.getElementById(statusId).textContent = '⏳';
-            document.getElementById(timeId).textContent = '...';
-
-            testCount++;
-
-            try {
-                const controller = new AbortController();
-                const timeoutHandle = setTimeout(() => controller.abort(), timeout);
-
-                const response = await fetch(url, {
-                    method: 'GET',
-                    signal: controller.signal,
-                    mode: 'cors'
-                });
-
-                clearTimeout(timeoutHandle);
-                const elapsed = Date.now() - startTime;
-
-                if (response.ok) {
-                    log(`✅ SUCCESS: ${name} responded in ${elapsed}ms (Status: ${response.status})`, 'success');
-                    document.getElementById(statusId).textContent = '✅';
-                    document.getElementById(timeId).textContent = `${elapsed}ms`;
-                    successCount++;
+                connect() {
+                    if (this.eventSource) return;
 
                     try {
-                        const data = await response.text();
-                        log(`   Response preview: ${data.substring(0, 100)}...`, 'info');
-                    } catch (e) {
-                        log(`   Response body could not be read`, 'warn');
+                        this.eventSource = new EventSource(`${this.apiUrl}/api/events`);
+
+                        this.eventSource.addEventListener('ports', (e) => {
+                            try {
+                                const data = JSON.parse(e.data);
+                                eventBus.emit('ports-updated', data);
+                            } catch (error) {
+                                console.error('Error parsing ports data:', error);
+                            }
+                        });
+
+                        this.eventSource.addEventListener('servers', (e) => {
+                            try {
+                                const data = JSON.parse(e.data);
+                                eventBus.emit('servers-updated', data);
+                            } catch (error) {
+                                console.error('Error parsing servers data:', error);
+                            }
+                        });
+
+                        this.eventSource.onopen = () => {
+                            console.log('SSE connection established');
+                            log('🔌 Connected to Event Bus (Real-time updates active)', 'success');
+                            if (this.reconnectTimer) {
+                                clearTimeout(this.reconnectTimer);
+                                this.reconnectTimer = null;
+                            }
+                        };
+
+                        this.eventSource.onerror = (error) => {
+                            console.error('SSE connection error:', error);
+                            log('⚠️ Event Bus connection lost. Reconnecting...', 'warn');
+                            this.disconnect();
+                            this.scheduleReconnect();
+                        };
+
+                    } catch (error) {
+                        console.error('Failed to establish SSE connection:', error);
+                        this.scheduleReconnect();
                     }
-                } else {
-                    log(`⚠️ WARNING: ${name} returned status ${response.status} in ${elapsed}ms`, 'warn');
-                    document.getElementById(statusId).textContent = '⚠️';
-                    document.getElementById(timeId).textContent = `${elapsed}ms`;
                 }
-            } catch (error) {
-                const elapsed = Date.now() - startTime;
-                if (error.name === 'AbortError') {
-                    log(`❌ TIMEOUT: ${name} exceeded ${timeout}ms`, 'error');
-                    document.getElementById(timeId).textContent = 'Timeout';
-                } else {
-                    log(`❌ ERROR: ${name} - ${error.message}`, 'error');
-                    document.getElementById(timeId).textContent = 'Error';
+
+                disconnect() {
+                    if (this.eventSource) {
+                        this.eventSource.close();
+                        this.eventSource = null;
+                    }
                 }
-                document.getElementById(statusId).textContent = '❌';
+
+                scheduleReconnect() {
+                    if (this.reconnectTimer) return;
+                    this.reconnectTimer = setTimeout(() => {
+                        this.reconnectTimer = null;
+                        this.connect();
+                    }, this.reconnectTimeout);
+                }
             }
 
-            updateMetrics();
-        }
+            // --- Main Logic ---
 
-        function testLetta() {
-            testEndpoint('http://localhost:8283/health', 'Letta Server', 'letta-status', 'letta-time');
-        }
+            let testCount = 0;
+            let successCount = 0;
+            const API_BASE = 'http://localhost:3030'; // Dashboard Server URL
+            const sseManager = new SSEManager(API_BASE);
 
-        function testDashboard() {
-            testEndpoint('http://localhost:3000/api/servers', 'Dashboard API', 'dashboard-status', 'dashboard-time');
-        }
+            function log(msg, type = 'info') {
+                const time = new Date().toLocaleTimeString();
+                const icon = type === 'error' ? '❌' : type === 'success' ? '✅' : type === 'warn' ? '⚠️' : 'ℹ️';
+                const logs = document.getElementById('logs');
+                if (logs) {
+                    logs.textContent += `[${time}] ${icon} ${msg}\n`;
+                    logs.scrollTop = logs.scrollHeight;
+                }
+            }
 
-        function testOfficeAPI() {
-            testEndpoint('http://localhost:8080/api/health', 'Office API', 'office-status', 'office-time');
-        }
+            function clearLogs() {
+                document.getElementById('logs').textContent = '🔄 Logs cleared. Ready for testing...\n';
+                testCount = 0;
+                successCount = 0;
+                updateMetrics();
+            }
 
-        async function testAll() {
-            log('═══════════════════════════════════', 'info');
-            log('🚀 Running full diagnostic sweep...', 'info');
-            log('═══════════════════════════════════', 'info');
+            function updateMetrics() {
+                document.getElementById('total-tests').textContent = testCount;
+                const rate = testCount > 0 ? Math.round((successCount / testCount) * 100) : 0;
+                document.getElementById('success-rate').textContent = `${rate}%`;
+            }
 
-            testLetta();
-            await new Promise(r => setTimeout(r, 500));
-            testDashboard();
-            await new Promise(r => setTimeout(r, 500));
-            testOfficeAPI();
+            async function testEndpoint(url, name, statusId, timeId) {
+                const timeout = parseInt(document.getElementById('timeout').value) || 5000;
+                const startTime = Date.now();
 
+                log(`Testing ${name} at ${url}...`, 'info');
+                document.getElementById(statusId).textContent = '⏳';
+                document.getElementById(timeId).textContent = '...';
+
+                testCount++;
+
+                try {
+                    const controller = new AbortController();
+                    const timeoutHandle = setTimeout(() => controller.abort(), timeout);
+
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        signal: controller.signal,
+                        mode: 'cors'
+                    });
+
+                    clearTimeout(timeoutHandle);
+                    const elapsed = Date.now() - startTime;
+
+                    if (response.ok) {
+                        log(`✅ SUCCESS: ${name} responded in ${elapsed}ms (Status: ${response.status})`, 'success');
+                        document.getElementById(statusId).textContent = '✅';
+                        document.getElementById(timeId).textContent = `${elapsed}ms`;
+                        successCount++;
+                    } else {
+                        log(`⚠️ WARNING: ${name} returned status ${response.status} in ${elapsed}ms`, 'warn');
+                        document.getElementById(statusId).textContent = '⚠️';
+                        document.getElementById(timeId).textContent = `${elapsed}ms`;
+                    }
+                } catch (error) {
+                    const elapsed = Date.now() - startTime;
+                    if (error.name === 'AbortError') {
+                        log(`❌ TIMEOUT: ${name} exceeded ${timeout}ms`, 'error');
+                        document.getElementById(timeId).textContent = 'Timeout';
+                    } else {
+                        log(`❌ ERROR: ${name} - ${error.message}`, 'error');
+                        document.getElementById(timeId).textContent = 'Error';
+                    }
+                    document.getElementById(statusId).textContent = '❌';
+                }
+
+                updateMetrics();
+            }
+
+            // --- Server Management Functions ---
+
+            // Subscribe to Event Bus updates
+            eventBus.on('servers-updated', (servers) => {
+                renderServerRegistry(servers);
+            });
+
+            // Fallback fetch for initial load or manual refresh
+            async function fetchServers() {
+                try {
+                    const response = await fetch(`${API_BASE}/api/servers`);
+                    const data = await response.json();
+                    if (data.success) {
+                        renderServerRegistry(data.servers);
+                    }
+                } catch (error) {
+                    console.error('Error fetching servers:', error);
+                }
+            }
+
+            function renderServerRegistry(servers) {
+                const container = document.getElementById('server-registry-list');
+                if (!container) return;
+
+                container.innerHTML = servers.map(server => {
+                    const statusColor = server.running ? '#10b981' : '#ef4444';
+                    const statusText = server.running ? 'Running' : 'Stopped';
+                    const btnClass = server.running ? 'btn-danger' : 'btn'; 
+                    const btnText = server.running ? 'Stop Server' : 'Start Server';
+                    const action = server.running ? 'stop' : 'start';
+                    
+                    // Extra info
+                    let pidInfo = server.running ? `<span style="font-family: monospace; background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">PID: ${server.orphanedPid || 'Managed'}</span>` : '';
+                    let portInfo = server.ports && server.ports.length > 0 ? `<span style="font-family: monospace; background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 0.8em; margin-left: 5px;">Port: ${server.ports.join(', ')}</span>` : '';
+                    
+                    let orphanedBadge = server.orphaned ? ` <span style="color: #f59e0b; font-weight: bold; font-size: 0.8em;">(Orphaned)</span>` : '';
+
+                    return `
+                        <div class="server-info" style="border-left-color: ${server.color || '#667eea'}; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="color: ${server.color || '#667eea'}; margin-bottom: 0.25rem;">${server.name}</h3>
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <div style="display: flex; align-items: center;">
+                                        <span class="status-dot" style="background: ${statusColor}; box-shadow: 0 0 8px ${statusColor};"></span>
+                                        <span style="font-weight: 500; color: #374151;">${statusText}</span>
+                                    </div>
+                                    ${pidInfo}
+                                    ${portInfo}
+                                    ${orphanedBadge}
+                                </div>
+                                <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.25rem;">ID: ${server.id}</p>
+                            </div>
+                            <div>
+                                <button class="btn ${server.running ? 'btn-danger' : ''}" 
+                                        style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem; margin-bottom: 0;"
+                                        onclick="toggleServer('${server.id}', '${action}')">
+                                    ${btnText}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async function toggleServer(id, action) {
+                log(`Attempting to ${action} server ${id}...`, 'info');
+                try {
+                    const response = await fetch(`${API_BASE}/api/servers/${id}?action=${action}`, {
+                        method: 'POST'
+                    });
+                    const result = await response.json();
+
+                    if (result.success) {
+                        log(`✅ ${result.message}`, 'success');
+                        // No need to manually fetch, SSE will handle update
+                    } else {
+                        log(`❌ Failed to ${action} server: ${result.message}`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Error connecting to backend: ${error.message}`, 'error');
+                }
+            }
+
+            function testDashboard() {
+                testEndpoint(`${API_BASE}/api/servers`, 'Dashboard API', 'dashboard-status', 'dashboard-time');
+            }
+
+            function testOfficeWSL() {
+                testEndpoint('http://172.26.163.131:8081/api', 'Office API (WSL proxy)', 'office-status', 'office-time');
+            }
+
+            function testOfficeWindows() {
+                testEndpoint('http://127.0.0.1:8080/api', 'Office API (Windows)', 'office-native-status', 'office-native-time');
+            }
+
+            async function testAll() {
+                log('═══════════════════════════════════', 'info');
+                log('🚀 Running full diagnostic sweep...', 'info');
+                log('═══════════════════════════════════', 'info');
+
+                testLetta();
+                await new Promise(r => setTimeout(r, 500));
+                testDashboard();
+                await new Promise(r => setTimeout(r, 500));
+                testOfficeWSL();
+                await new Promise(r => setTimeout(r, 500));
+                testOfficeWindows();
+
+                setTimeout(() => {
+                    log('═══════════════════════════════════', 'info');
+                    log('✨ Full diagnostic complete!', 'info');
+                    log('═══════════════════════════════════', 'info');
+                }, 2000);
+            }
+
+            function testCustom() {
+                const url = document.getElementById('custom-url').value;
+                if (!url) {
+                    log('❌ Please enter a URL to test', 'error');
+                    return;
+                }
+                testEndpoint(url, 'Custom Endpoint', 'letta-status', 'letta-time');
+            }
+
+            // Auto-run diagnostics on load
             setTimeout(() => {
-                log('═══════════════════════════════════', 'info');
-                log('✨ Full diagnostic complete!', 'info');
-                log('═══════════════════════════════════', 'info');
-            }, 2000);
-        }
+                log('🎯 Auto-running diagnostics on page load...', 'info');
+                testAll();
+                fetchServers(); // Initial fetch
+                sseManager.connect(); // Start Real-time updates
+            }, 500);
 
-        function testCustom() {
-            const url = document.getElementById('custom-url').value;
-            if (!url) {
-                log('❌ Please enter a URL to test', 'error');
-                return;
-            }
-            testEndpoint(url, 'Custom Endpoint', 'letta-status', 'letta-time');
-        }
-
-        // Auto-run diagnostics on load
-        setTimeout(() => {
-            log('🎯 Auto-running diagnostics on page load...', 'info');
-            testAll();
-        }, 500);
-    </script>
+            // Removed setInterval(fetchServers, 3000) in favor of SSE
+        </script>
 </body>
-
 </html>

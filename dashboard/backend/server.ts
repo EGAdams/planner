@@ -24,6 +24,7 @@ const IS_WINDOWS = process.platform === 'win32';
 const DASHBOARD_ROOT = path.resolve(__dirname, '../..');
 const PLANNER_ROOT = path.resolve(DASHBOARD_ROOT, '..');
 const LETTA_COMMAND = buildLettaCommand();
+const PYTHON_EXECUTABLE = resolvePythonExecutable();
 
 interface ProcessInfo {
   pid: string;
@@ -102,6 +103,41 @@ function buildLettaCommand(): string {
   return 'letta server';
 }
 
+function resolvePythonExecutable(): string {
+  const override = (process.env.PLANNER_PYTHON || process.env.PYTHON_FOR_PLANNER || '').trim();
+  const pythonNames = IS_WINDOWS ? ['python.exe', 'python'] : ['python3', 'python'];
+  const venvDirs = ['.venv', 'venv'];
+  const candidates: Array<string | null | undefined> = [
+    override || null,
+  ];
+
+  for (const dir of venvDirs) {
+    for (const name of pythonNames) {
+      candidates.push(path.join(PLANNER_ROOT, dir, IS_WINDOWS ? 'Scripts' : 'bin', name));
+    }
+  }
+
+  candidates.push(findExecutableOnPath('python3'));
+  candidates.push(findExecutableOnPath('python'));
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    if (!path.isAbsolute(candidate) || fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return IS_WINDOWS ? 'python' : 'python3';
+}
+
+function buildPythonScriptCommand(relativeScriptPath: string, extraArgs: string[] = []): string {
+  const scriptPath = path.join(PLANNER_ROOT, relativeScriptPath);
+  const quotedPython = quoteIfNeeded(PYTHON_EXECUTABLE);
+  const quotedScript = quoteIfNeeded(scriptPath);
+  const args = extraArgs.map(arg => quoteIfNeeded(arg));
+  return [quotedPython, quotedScript, ...args].filter(Boolean).join(' ');
+}
+
 // Server registry - define all servers that can be managed
 const SERVER_REGISTRY: Record<string, ServerConfig> = {
   // Note: livekit-server binary not installed - uncomment and update path when available
@@ -135,8 +171,8 @@ const SERVER_REGISTRY: Record<string, ServerConfig> = {
   },
   'api-server': {
     name: 'Office Assistant API',
-    command: '/home/adamsl/planner/venv/bin/python nonprofit_finance_db/api_server.py',
-    cwd: '/home/adamsl/planner/',
+    command: buildPythonScriptCommand(path.join('nonprofit_finance_db', 'api_server.py')),
+    cwd: PLANNER_ROOT,
     color: '#D1FAE5',
     ports: [8080],
   },
@@ -413,7 +449,7 @@ const server = http.createServer(async (req, res) => {
     const ports = await getListeningPorts();
     const servers = await orchestrator.getServerStatus(ports);
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(servers));
+    res.end(JSON.stringify({ success: true, servers }));
     return;
   }
 

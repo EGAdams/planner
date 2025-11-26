@@ -17,3 +17,31 @@ Letta.letta.server.rest_api.app - INFO - [Worker 17092] Scheduler initialization
 Letta.letta.server.rest_api.app - INFO - [Worker 17092] Lifespan startup completed
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://localhost:8283 (Press CTRL+C to quit)
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:61992 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /health
+INFO:     ::1:63387 - "GET /health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     ::1:61360 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health
+INFO:     ::1:64856 - "GET /v1/health HTTP/1.1" 307 Temporary Redirect
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /api/health
+INFO:     ::1:54655 - "GET /api/health HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /docs
+INFO:     ::1:51741 - "GET /docs HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1
+INFO:     ::1:58207 - "GET /v1 HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /api
+INFO:     ::1:60604 - "GET /api HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /openapi.json
+INFO:     ::1:62145 - "GET /openapi.json HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /openapi.json
+INFO:     ::1:49788 - "GET /openapi.json HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /openapi.json
+INFO:     ::1:58381 - "GET /openapi.json HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: HEAD /
+INFO:     ::1:64143 - "HEAD / HTTP/1.1" 405 Method Not Allowed
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     ::1:59816 - "GET /v1/health/ HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /v1/health/
+INFO:     ::1:53332 - "GET /v1/health/ HTTP/1.1" 200 OK

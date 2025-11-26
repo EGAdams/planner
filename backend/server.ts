@@ -32,40 +32,68 @@ interface ProcessInfo {
 }
 
 // Server registry - define all servers that can be managed
+// Helper to resolve project root
+const PROJECT_ROOT = path.resolve(__dirname, '../../..');
+const VENV_PYTHON = process.platform === 'win32'
+  ? path.join(PROJECT_ROOT, '.venv', 'Scripts', 'python.exe')
+  : path.join(PROJECT_ROOT, '.venv', 'bin', 'python');
+
+// Fallback if .venv doesn't exist, try venv
+const ALT_VENV_PYTHON = process.platform === 'win32'
+  ? path.join(PROJECT_ROOT, 'venv', 'Scripts', 'python.exe')
+  : path.join(PROJECT_ROOT, 'venv', 'bin', 'python');
+
+const PYTHON_CMD = fs.existsSync(VENV_PYTHON) ? VENV_PYTHON : (fs.existsSync(ALT_VENV_PYTHON) ? ALT_VENV_PYTHON : 'python');
+
+// Server registry - define all servers that can be managed
+// Server registry - define all servers that can be managed
 const SERVER_REGISTRY: Record<string, ServerConfig> = {
-  // Note: livekit-server binary not installed - uncomment and update path when available
-  // 'livekit-server': {
-  //   name: 'LiveKit Server',
-  //   command: './livekit-server --dev --bind 0.0.0.0',
-  //   cwd: '/home/adamsl/ottomator-agents/livekit-agent',
-  //   color: '#DBEAFE',
-  //   ports: [7880, 7881], // Only track main TCP ports; UDP ports are dynamic
-  // },
   'letta-server': {
     name: 'Letta Server',
-    command: '/home/adamsl/planner/.venv/bin/letta server',
-    cwd: '/home/adamsl/planner',
+    command: `${PYTHON_CMD} -m letta server`,
+    cwd: PROJECT_ROOT,
     color: '#FED7AA',
     ports: [8283],
   },
+  'orchestrator-agent': {
+    name: 'Orchestrator Agent',
+    command: `${PYTHON_CMD} main.py`,
+    cwd: path.join(PROJECT_ROOT, 'orchestrator_agent'),
+    color: '#FCA5A5',
+    ports: [], // Agent process, might not expose port
+  },
+  'dashboard-ops-agent': {
+    name: 'Dashboard Ops Agent',
+    command: `${PYTHON_CMD} main.py`,
+    cwd: path.join(PROJECT_ROOT, 'dashboard_ops_agent'),
+    color: '#93C5FD',
+    ports: [],
+  },
+  'dashboard-frontend': {
+    name: 'Dashboard Frontend',
+    command: 'npm start',
+    cwd: path.join(PROJECT_ROOT, 'dashboard'),
+    color: '#60A5FA',
+    ports: [3000],
+  },
   'livekit-voice-agent': {
     name: 'LiveKit Voice Agent',
-    command: '/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev',
-    cwd: '/home/adamsl/ottomator-agents/livekit-agent',
+    command: `${PYTHON_CMD} livekit_mcp_agent.py dev`,
+    cwd: path.join(PROJECT_ROOT, 'a2a_communicating_agents', 'livekit-agent'),
     color: '#c5cd3eff',
     ports: [],
   },
   'pydantic-web-server': {
     name: 'Pydantic Web Server',
-    command: '/home/adamsl/planner/venv/bin/python pydantic_mcp_agent_endpoint.py',
-    cwd: '/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version',
+    command: `${PYTHON_CMD} pydantic_mcp_agent_endpoint.py`,
+    cwd: path.join(PROJECT_ROOT, 'a2a_communicating_agents', 'pydantic-ai-mcp-agent', 'studio-integration-version'),
     color: '#E9D5FF',
     ports: [8001],
   },
   'api-server': {
     name: 'Office Assistant API',
-    command: '/home/adamsl/planner/venv/bin/python nonprofit_finance_db/api_server.py',
-    cwd: '/home/adamsl/planner/',
+    command: `${PYTHON_CMD} nonprofit_finance_db/api_server.py`,
+    cwd: PROJECT_ROOT,
     color: '#D1FAE5',
     ports: [8080],
   },
