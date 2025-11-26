@@ -196,6 +196,7 @@ Return ONLY valid JSON.
                         rpc_payload = json.dumps(delegation["payload"])
                         target_topic = delegation["topic"]
 
+                        # Send the message to the target agent
                         post_message(
                             message=rpc_payload,
                             topic=target_topic,
