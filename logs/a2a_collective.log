@@ -1,0 +1,26 @@
+Scanning for agents in: /home/adamsl/planner/agent_messaging
+Discovered 2 agents
+- letta (v1.0.0)
+  Capabilities: ['memory_management', 'voice']
+  Memory Backend: mock_backend
+- orchestrator (v1.0.0)
+  Capabilities: ['orchestration', 'voice']
+  Memory Backend: mock_backend
+
+Simulating Delegation: Orchestrator -> Letta
+Delegation payload created successfully:
+{
+    'topic': 'memory',
+    'payload': {
+        'jsonrpc': '2.0',
+        'method': 'agent.execute_task',
+        'params': {
+            'task_id': 'dcba4462-0235-4502-8c78-bec677a2ed04',
+            'target_agent': 'letta',
+            'description': 'Store this important memory',
+            'context': {'priority': 'high'},
+            'artifacts': []
+        },
+        'id': 1
+    }
+}

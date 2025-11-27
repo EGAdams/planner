@@ -1,0 +1,6 @@
+{
+  "title": "{{MENU_TITLE}}",
+  "action": "{{COMMAND}}",
+  "working_directory": "/home/adamsl/planner/smart_menu",
+  "open_in_subprocess": false
+}

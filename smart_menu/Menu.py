@@ -1,4 +1,5 @@
 # import MenuItem
+import os
 from MenuItem import MenuItem
 
 class Menu:
@@ -9,13 +10,18 @@ class Menu:
         self.items.append(item)
 
     def display_and_select(self, menu_manager=None):
+        os.system('clear;echo;echo;echo;echo;echo')  # Clear the console for better readability
+        os.system( 'echo       "  ==================" ' )
+        os.system( 'echo "  === Smart Menu ===";' )
+        os.system( 'echo "  =================="; echo;' )
+
         while True:
             for index, item in enumerate(self.items, start=1):
-                print(f"{index}. {item.title}")
-            print(f"{len(self.items) + 1}. Exit this menu")
+                print(f"  {index}. {item.title}")
+            print(f"  {len(self.items) + 1}. Exit this menu")
             # print(f"{len(self.items) + 2}. Add a menu item")
 
-            choice = input("\nPlease select an option: ")
+            choice = input("\n  Please select an option: ")
             if choice.isdigit():
                 choice = int(choice)
                 if 1 <= choice <= len(self.items):   #
@@ -46,7 +52,7 @@ class Menu:
 def main():
     menu = Menu()
     # Example adding initial menu items
-    menu.add_item(MenuItem("List current directory", "ls"))
+    menu.add_item(MenuItem("List current directory", "ls", "", False, False))
     menu.display_and_select()
 
 if __name__ == "__main__":

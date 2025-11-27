@@ -27,3 +27,6 @@ server-monitor-app/node_modules/
 .codex-collective/tmp_mysql/
 .env
 .windows_python_bootstrap
+logs/dashboard_agent.log
+logs/dashboard_agent.log
+logs/orchestrator.log

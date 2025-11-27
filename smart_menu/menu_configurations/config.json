@@ -69,16 +69,33 @@
         "open_in_subprocess": false
     },
     {
-        "title": "Show vscode installations",
-        "action": "whereis code",
-        "working_directory": "",
-        "open_in_subprocess": false
-    },
-    {
-        "title": "Show Command History",
-        "action": "history",
-        "working_directory": "",
-        "open_in_subprocess": false
+        "title": "Agent Messaging",
+        "submenu": [
+            {
+                "title": "A2A Collective Test",
+                "action": "python3 ~/rpi-rgb-led-matrix/pickle_cpp/.a_smartmenu/smart_menu/adjust_pickle_match_win_flash_delay.py",
+                "working_directory": "",
+                "open_in_subprocess": false
+            },
+            {
+                "title": "Letta memory test",
+                "action": "echo running letta agent tests...",
+                "working_directory": "",
+                "open_in_subprocess": false
+            },
+            {
+                "title": "Chroma Memory Tests",
+                "action": "echo running chroma memory tests...",
+                "working_directory": "",
+                "open_in_subprocess": false
+            },
+            {
+                "title": "WebSocket Communication Test",
+                "action": "echo running websocket communication test...",
+                "working_directory": "",
+                "open_in_subprocess": false
+            }
+        ]
     },
     {
         "title": "Show the Plan",

@@ -1,18 +1,33 @@
-Traceback (most recent call last):
-  File "/home/adamsl/planner/.venv/bin/letta", line 3, in <module>
-    from letta.main import app
-  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/__init__.py", line 25, in <module>
-    from letta.schemas.agent import AgentState
-  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/schemas/agent.py", line 19, in <module>
-    from letta.schemas.memory import Memory
-  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/schemas/memory.py", line 15, in <module>
-    from letta.otel.tracing import trace_method
-  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/otel/tracing.py", line 15, in <module>
-    from opentelemetry.instrumentation.requests import RequestsInstrumentor
-  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/opentelemetry/instrumentation/requests/__init__.py", line 106, in <module>
-    from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
-  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/opentelemetry/instrumentation/instrumentor.py", line 29, in <module>
-    from opentelemetry.instrumentation.dependencies import (
-  File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/opentelemetry/instrumentation/dependencies.py", line 22, in <module>
-    from opentelemetry.util._importlib_metadata import (
-ImportError: cannot import name 'Distribution' from 'opentelemetry.util._importlib_metadata' (/home/adamsl/planner/.venv/lib/python3.12/site-packages/opentelemetry/util/_importlib_metadata.py)
+
+[[ Letta server // v0.14.0 ]]
+Letta.letta.server.global_exception_handler - INFO - Global exception handlers initialized
+/home/adamsl/planner/.venv/lib/python3.12/site-packages/fastapi/openapi/utils.py:225: UserWarning: Duplicate Operation ID create_chat_completion for function create_chat_completion at /home/adamsl/planner/.venv/lib/python3.12/site-packages/letta/server/rest_api/routers/v1/chat_completions.py
+  warnings.warn(message, stacklevel=1)
+▶ Server running at: http://localhost:8283
+▶ View using ADE at: https://app.letta.com/development-servers/local/dashboard
+
+INFO:     Started server process [199116]
+INFO:     Waiting for application startup.
+Letta.letta.server.rest_api.app - INFO - [Worker 199116] Disabled pinecone
+Letta.letta.server.rest_api.app - INFO - [Worker 199116] Starting scheduler with leader election
+Default user: id='user-00000000-0000-4000-8000-000000000000' organization_id='org-00000000-0000-4000-8000-000000000000' name='default_user' created_at=datetime.datetime(2025, 11, 24, 19, 38, 7, 547016, tzinfo=datetime.timezone.utc) updated_at=datetime.datetime(2025, 11, 24, 19, 38, 7, 547016, tzinfo=datetime.timezone.utc) is_deleted=False and org: id='org-00000000-0000-4000-8000-000000000000' name='default_org' created_at=datetime.datetime(2025, 11, 24, 19, 38, 7, 394205, tzinfo=datetime.timezone.utc) privileged_tools=False
+Letta.letta.data_sources.redis_client - INFO - Redis not configured, using noop client
+Letta.letta.jobs.scheduler - INFO - Batch job polling is disabled.
+Letta.letta.server.rest_api.app - INFO - [Worker 199116] Scheduler initialization completed
+Letta.letta.server.rest_api.app - INFO - [Worker 199116] Lifespan startup completed
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://localhost:8283 (Press CTRL+C to quit)
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:57226 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-048c9598.js
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-0e31b727.css
+INFO:     127.0.0.1:57226 - "GET /assets/index-048c9598.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57240 - "GET /assets/index-0e31b727.css HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /favicon.ico
+INFO:     127.0.0.1:57226 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /
+INFO:     127.0.0.1:35622 - "GET / HTTP/1.1" 200 OK
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-048c9598.js
+Letta.letta.server.rest_api.middleware.logging - INFO - Incoming request: GET /assets/index-0e31b727.css
+INFO:     127.0.0.1:35616 - "GET /assets/index-0e31b727.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35622 - "GET /assets/index-048c9598.js HTTP/1.1" 200 OK

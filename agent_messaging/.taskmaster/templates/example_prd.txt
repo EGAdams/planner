@@ -1,0 +1,30 @@
+# Example Product Requirements Document (PRD)
+
+## Project Overview
+Brief description of your project and its goals.
+
+## Features & Requirements
+
+### Feature 1: [Feature Name]
+Description of what this feature should accomplish and why it's needed.
+
+**Requirements:**
+- Requirement 1
+- Requirement 2
+- Requirement 3
+
+### Feature 2: [Feature Name]
+Description of another feature.
+
+**Requirements:**
+- Requirement 1
+- Requirement 2
+
+## Technical Considerations
+- Technology stack requirements
+- Performance considerations
+- Security requirements
+- Testing strategy
+
+## Success Criteria
+How will you know when this project is complete?
