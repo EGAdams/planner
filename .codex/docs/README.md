@@ -8,7 +8,7 @@ Welcome to your OpenAI Codex Sub-Agent Collective installation! This system impl
 
 The collective has been installed in your project with the following components:
 
-#### 🧠 Behavioral Operating System (`CODEX.md`)
+#### 🧠 Behavioral Operating System (`AGENTS.md`)
 This file contains the core behavioral directives that govern how the collective operates:
 - **Directive 1**: Never implement directly - all work flows through agents
 - **Directive 2**: Hub-and-spoke routing - all requests go through @routing-agent

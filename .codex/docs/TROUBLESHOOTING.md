@@ -35,7 +35,7 @@
 ### Routing Failures
 **Problem**: Requests don't route to expected agents.
 **Solution**:
-1. Check CODEX.md routing patterns
+1. Check AGENTS.md routing patterns
 2. Verify agent capabilities in metadata
 3. Enable debug logging: add `--verbose` to commands
 

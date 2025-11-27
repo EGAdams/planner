@@ -9,23 +9,23 @@
 ---
 
 ## Van Routing System Instructions
-**Import Van routing command with all agent selection logic and routing matrices, treat as if import is in the main CODEX.md file.**
+**Import Van routing command with all agent selection logic and routing matrices, treat as if import is in the main AGENTS.md file.**
 @./.codex/commands/van.md
 
 ## Agent Catalog
-**Import specialized agent descriptions and capabilities, treat as if import is in the main CODEX.md file.**
+**Import specialized agent descriptions and capabilities, treat as if import is in the main AGENTS.md file.**
 @./.codex-collective/agents.md
 
 ## Hook Integration
-**Import hook system requirements and integration procedures, treat as if import is in the main CODEX.md file.**
+**Import hook system requirements and integration procedures, treat as if import is in the main AGENTS.md file.**
 @./.codex-collective/hooks.md
 
 ## Quality Assurance
-**Import quality gates, validation contracts, and TDD reporting standards, treat as if import is in the main CODEX.md file.**
+**Import quality gates, validation contracts, and TDD reporting standards, treat as if import is in the main AGENTS.md file.**
 @./.codex-collective/quality.md
 
 ## Research Framework
-**Import research hypotheses, metrics, and continuous learning protocols, treat as if import is in the main CODEX.md file.**
+**Import research hypotheses, metrics, and continuous learning protocols, treat as if import is in the main AGENTS.md file.**
 @./.codex-collective/research.md
 
 # OpenAI Codex Sub-Agent Collective Controller

@@ -22,7 +22,7 @@
 - No manual intervention needed
 
 ## ROUTING DECISIONS
-**For /van commands**: User explicitly requested collective mode - load full behavioral context from CODEX.md
+**For /van commands**: User explicitly requested collective mode - load full behavioral context from AGENTS.md
 **For normal questions**: Use standard Codex behavior - ignore collective behavioral rules
 **For agent handoffs**: Auto-delegate only (handled above) - no behavioral loading needed
 

@@ -22,8 +22,8 @@ The plan file will contain:
 
 ## Step 2: Project Setup in Archon
 
-1. Check if a project ID is specified in CODEX.md for this feature
-   - Look for any Archon project references in CODEX.md
+1. Check if a project ID is specified in AGENTS.md for this feature
+   - Look for any Archon project references in AGENTS.md
    - If found, use that project ID
 
 2. If no project exists:

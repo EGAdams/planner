@@ -4,7 +4,7 @@
 **Theory**: On-demand resource allocation improves efficiency over pre-loading
 **Implementation**: Modular file imports - Codex only loads specific context when needed via @ imports
 **Validation**: 
-- **Before**: 270-line monolithic CODEX.md with all technical details loaded always
+- **Before**: 270-line monolithic AGENTS.md with all technical details loaded always
 - **After**: 97-line behavioral core + on-demand imports of technical details
 - **Result**: ~65% context reduction, focused behavioral processing
 

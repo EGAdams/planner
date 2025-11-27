@@ -1,6 +1,6 @@
 # Prime Context for the AI Coding Assistant (catch it up to speed on the project when starting a new conversation)
 
-Start with reading the CODEX.md file if it exists to get an understanding of the project.
+Start with reading the AGENTS.md file if it exists to get an understanding of the project.
 
 Read the README.md file to get an understanding of the project.
 

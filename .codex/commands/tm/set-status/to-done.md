@@ -28,7 +28,7 @@ task-master set-status --id=$ARGUMENTS --status=done
 
 2. **Documentation**
    - Generate completion summary
-   - Update CODEX.md with learnings
+   - Update AGENTS.md with learnings
    - Log implementation approach
 
 3. **Next Steps**
