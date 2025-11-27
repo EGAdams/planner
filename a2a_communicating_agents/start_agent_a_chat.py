@@ -7,7 +7,7 @@ import sys
 import time
 import threading
 from datetime import datetime
-from rag_tools import send, inbox
+from rag_system.rag_tools import send, inbox
 from rich.console import Console
 
 console = Console()

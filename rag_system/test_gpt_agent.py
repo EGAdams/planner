@@ -7,7 +7,7 @@ Copy this entire script and paste into GPT/ChatGPT/other AI
 import sys
 sys.path.insert(0, '/home/adamsl/planner')
 
-from rag_tools import send, inbox
+from rag_system.rag_tools import send, inbox
 from rich.console import Console
 
 console = Console()

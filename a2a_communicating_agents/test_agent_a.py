@@ -4,7 +4,7 @@ Test Script for Agent A
 Run this in Terminal 1
 """
 
-from rag_tools import send, inbox, status
+from rag_system.rag_tools import send, inbox, status
 from rich.console import Console
 
 console = Console()
