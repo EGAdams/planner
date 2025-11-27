@@ -234,7 +234,7 @@ def main():
 
         elif args.command == 'search':
             # Search local memory and display
-            from rag_tools import recall
+            from rag_system.rag_tools import recall
             results = recall(args.query or "", limit=10)
             console.print(f"Found {len(results)} results", style="cyan")
 

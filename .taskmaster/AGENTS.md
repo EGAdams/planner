@@ -47,7 +47,7 @@ task-master generate                                         # Update task markd
 
 ### OpenAI Codex Integration Files
 
-- `CODEX.md` - Auto-loaded context for OpenAI Codex (this file)
+- `AGENTS.md` - Auto-loaded context for OpenAI Codex (this file)
 - `.codex/settings.json` - OpenAI Codex tool allowlist and preferences
 - `.codex/commands/` - Custom slash commands for repeated workflows
 - `.mcp.json` - MCP server configuration (project-specific)
@@ -73,7 +73,7 @@ project/
 │   └── commands/         # Custom slash commands
 ├── .env                  # API keys
 ├── .mcp.json            # MCP configuration
-└── CODEX.md            # This file - auto-loaded by OpenAI Codex
+└── AGENTS.md            # This file - auto-loaded by OpenAI Codex
 ```
 
 ## MCP Integration
@@ -246,7 +246,7 @@ An API key is required for any provider used across any of the 3 roles defined i
 task-master models --setup
 
 # Set specific models
-task-master models --set-main codex-3-5-sonnet-20241022
+task-master models --set-main gpt-5.1-codex
 task-master models --set-research perplexity-llama-3.1-sonar-large-128k-online
 task-master models --set-fallback gpt-4o-mini
 ```
@@ -289,7 +289,7 @@ task-master models --set-fallback gpt-4o-mini
 ### Context Management
 
 - Use `/clear` between different tasks to maintain focus
-- This CODEX.md file is automatically loaded for context
+- This AGENTS.md file is automatically loaded for context
 - Use `task-master show <id>` to pull specific task context when needed
 
 ### Iterative Implementation

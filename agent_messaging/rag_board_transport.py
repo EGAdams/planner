@@ -8,8 +8,8 @@ Always available as fallback when WebSocket and Letta are offline.
 import asyncio
 from typing import Optional, Callable, Awaitable, Dict
 from datetime import datetime
-from .message_transport import MessageTransport
-from .message_models import AgentMessage
+from message_transport import MessageTransport
+from message_models import AgentMessage
 
 
 class RAGBoardTransport(MessageTransport):

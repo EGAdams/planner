@@ -1,0 +1,57 @@
+[
+    {
+        "title": "A2A Communicating Agents",
+        "action": "echo 'opening a2a agent communication project...'",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Dashboard",
+        "action": "echo 'opening dashboard project...'",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Event-Bus ",
+        "action": "echo 'opening event-bus project...'",
+        "working_directory": "",
+        "open_in_subprocess": false
+    }, 
+    {
+        "title": "Show this config.json",
+        "action": "cat /home/adamsl/linuxBash/python_menus/smart_menu/config.json",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Show vscode installations",
+        "action": "whereis code",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Show Command History",
+        "action": "history",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Show the Plan",
+        "action": "echo 'showing plan...'",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Open auto memgpt workspace",
+        "action": "code /home/adamsl/agent_99/",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Open Linux Bash Workspace",
+        "action": "code /home/adamsl/linuxBash",
+        "working_directory": "/home/adamsl/linuxBash",
+        "open_in_subprocess": false
+    }
+]
+

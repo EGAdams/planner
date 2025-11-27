@@ -1,0 +1,20 @@
+{
+  "name": "orchestrator",
+  "version": "1.0.0",
+  "description": "Central orchestrator for the agent collective, capable of voice interaction.",
+  "capabilities": [
+    {
+      "name": "orchestration",
+      "description": "Routes tasks to appropriate agents."
+    },
+    {
+      "name": "voice",
+      "description": "Handles voice input and output via LiveKit or Letta API."
+    }
+  ],
+  "topics": ["orchestration", "general"],
+  "voice_config": {
+    "provider": "letta",
+    "voice_id": "default"
+  }
+}

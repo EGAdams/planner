@@ -20,9 +20,9 @@ from rich.markdown import Markdown
 from rich.table import Table
 
 # Import new transport system
-from agent_messaging.transport_factory import TransportFactory
-from agent_messaging.message_models import AgentMessage, MessagePriority
-from agent_messaging.rag_board_transport import RAGBoardTransport
+from transport_factory import TransportFactory
+from message_models import AgentMessage, MessagePriority
+from rag_board_transport import RAGBoardTransport
 
 # Try to import Letta for backward compatibility methods
 try:

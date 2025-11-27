@@ -1,0 +1,8 @@
+[
+    {
+        "title": "Brightness",
+        "action": "python3 adjust_brightness.py",
+        "working_directory": "",
+        "open_in_subprocess": false
+    }
+]

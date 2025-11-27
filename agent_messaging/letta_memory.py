@@ -14,7 +14,7 @@ try:
 except ImportError:
     Letta = None  # Letta not installed
 
-from .memory_backend import MemoryBackend, MemoryEntry, MemoryQuery
+from memory_backend import MemoryBackend, MemoryEntry, MemoryQuery
 from pydantic import BaseModel
 
 

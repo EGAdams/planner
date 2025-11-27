@@ -1,0 +1,23 @@
+{
+    "name": "letta",
+    "version": "1.0.0",
+    "description": "Memory management specialist for the collective, capable of voice interaction.",
+    "capabilities": [
+        {
+            "name": "memory_management",
+            "description": "Stores and retrieves memories using the unified memory system."
+        },
+        {
+            "name": "voice",
+            "description": "Handles voice input and output via LiveKit or Letta API."
+        }
+    ],
+    "topics": [
+        "memory",
+        "general"
+    ],
+    "voice_config": {
+        "provider": "letta",
+        "voice_id": "default"
+    }
+}
