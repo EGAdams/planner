@@ -30,3 +30,4 @@ server-monitor-app/node_modules/
 logs/dashboard_agent.log
 logs/dashboard_agent.log
 logs/orchestrator.log
+agent_messaging/storage/

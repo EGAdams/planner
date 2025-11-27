@@ -24,7 +24,7 @@ class MenuItem:
                 subprocess.run(final_command, shell=True, check=True)
             
             print(f"Command executed: {self.action}")
-            os.system( "clear;")
+            # os.system( "clear;")
         except subprocess.CalledProcessError as e:
             print(f"Error executing command: {e}")
         finally:
