@@ -1,14 +1,9 @@
-import json
-import os
+# Example: Complete Hierarchical Menu Structure
 
-# Define paths
-current_dir = os.getcwd()
-config_path = os.path.abspath(os.path.join(current_dir, "..", "smart_menu", "menu_configurations", "config.json"))
+This is the actual A2A Agent Collective menu structure showing multiple levels of nesting and different menu item types.
 
-print(f"Updating config at: {config_path}")
-
-# New menu structure
-new_menu_item = {
+```json
+{
     "title": "A2A Agent Collective",
     "submenu": [
         {
@@ -23,7 +18,7 @@ new_menu_item = {
                             "working_directory": "/home/adamsl/planner/smart_menu"
                         },
                         {
-                            "title": "Run Delegation Test", 
+                            "title": "Run Delegation Test",
                             "action": "bash ../agent_messaging/tests/test_delegation.sh",
                             "working_directory": "/home/adamsl/planner/smart_menu"
                         }
@@ -59,31 +54,23 @@ new_menu_item = {
         }
     ]
 }
+```
 
-try:
-    with open(config_path, 'r') as f:
-        config_data = json.load(f)
-    
-    # Replace the first item (A2A Agent Collective)
-    # We assume it's the first item based on previous inspection
-    if config_data[0]['title'] == "A2A Agent Collective" or config_data[0]['title'] == "A2A Communicating Agents":
-        print("Found target menu item. Replacing...")
-        config_data[0] = new_menu_item
-        
-        with open(config_path, 'w') as f:
-            json.dump(config_data, f, indent=4)
-        print("Config updated successfully.")
-    else:
-        print("Could not find 'A2A Agent Collective' or 'A2A Communicating Agents' at index 0.")
-        # Fallback search
-        for i, item in enumerate(config_data):
-            if item.get('title') == "A2A Agent Collective" or item.get('title') == "A2A Communicating Agents":
-                print(f"Found target at index {i}. Replacing...")
-                config_data[i] = new_menu_item
-                with open(config_path, 'w') as f:
-                    json.dump(config_data, f, indent=4)
-                print("Config updated successfully.")
-                break
+## Key Observations
 
-except Exception as e:
-    print(f"Error updating config: {e}")
+1. **Three Levels of Nesting**: Main → Phase 1 → Components → Tests
+2. **Mixed Item Types**: Some have actions, some have submenus
+3. **Placeholder Items**: Use `echo` commands for future development
+4. **Consistent Paths**: All use `/home/adamsl/planner/smart_menu` as working directory
+5. **Relative Actions**: Scripts referenced via `../agent_messaging/tests/`
+
+## Pattern
+
+```
+Category (submenu)
+├── Subcategory (submenu)
+│   ├── Feature Area (submenu)
+│   │   ├── Test 1 (action)
+│   │   └── Test 2 (action)
+│   └── Feature Area (action - placeholder)
+```

@@ -51,12 +51,6 @@
         ]
     },
     {
-        "title": "Office Assistant",
-        "action": "echo 'opening office assistant project...'",
-        "working_directory": "",
-        "open_in_subprocess": false
-    },
-    {
         "title": "Dashboard",
         "action": "echo 'opening dashboard project...'",
         "working_directory": "",
