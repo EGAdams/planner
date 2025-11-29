@@ -26,8 +26,12 @@ server-monitor-app/node_modules/
 .codex-collective/.env
 .codex-collective/tmp_mysql/
 .env
+sk_snow
 .windows_python_bootstrap
 logs/dashboard_agent.log
 logs/dashboard_agent.log
 logs/orchestrator.log
 agent_messaging/storage/
+.claude-collective/metrics/collective-metrics.log
+logs/letta.log
+livekit-venv/*

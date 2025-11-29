@@ -150,44 +150,48 @@ def main() -> None:
     print(f"  - Name: {tester_tool.name if hasattr(tester_tool, 'name') else 'N/A'}")
 
     # 3) Create a Letta orchestrator agent that only coordinates + remembers
-    #    Use google_ai/gemini-2.5-flash as default (fast and capable)
-    model = os.getenv("LETTA_ORCHESTRATOR_MODEL", "google_ai/gemini-2.5-flash")
-    embedding = os.getenv("LETTA_EMBEDDING_MODEL", "text-embedding-ada-002")
+    #    Use openai/gpt-4o-mini as default (fast and capable)
+    model = os.getenv("LETTA_ORCHESTRATOR_MODEL", "openai/gpt-4o-mini")
+    embedding = os.getenv("LETTA_EMBEDDING_MODEL", "openai/text-embedding-ada-002")
     
     print(f"Creating orchestrator with model: {model}")
-    
-    orchestrator = client.agents.create(
-        name="letta_orchestrator",
-        model=model,
-        embedding="openai/text-embedding-ada-002",
-        memory_blocks=[
-            {
-                "label": "persona",
-                "value": (
-                    "You are an orchestration agent that coordinates a Claude-based "
-                    "Coder and Tester. You never hand-write code or tests. "
-                    "Instead, you:\n"
-                    "1) Use the 'run_claude_coder' tool to generate code.\n"
-                    "2) Use the 'run_claude_tester' tool to generate tests.\n"
-                    "3) Summarize important code + test artifacts into your memory "
-                    "blocks for future reuse."
-                ),
-                "limit": 4000,
-            },
-            {
-                "label": "project_log",
-                "value": "High-level log of tasks, design decisions, code, and tests.",
-                "limit": 16000,
-            },
-        ],
-        tools=[
-            coder_tool.name,
-            tester_tool.name,
-            # Optional: Letta's own memory-management tools so it can self-update.
-            "archival_memory_insert",
-            "memory_replace",
-        ],
-    )
+
+    try:
+        orchestrator = client.agents.create(
+            name="letta_orchestrator",
+            model=model,
+            embedding=embedding,
+            memory_blocks=[
+                {
+                    "label": "persona",
+                    "value": (
+                        "You are an orchestration agent that coordinates a Claude-based "
+                        "Coder and Tester. You never hand-write code or tests. "
+                        "Instead, you:\n"
+                        "1) Use the 'run_claude_coder' tool to generate code.\n"
+                        "2) Use the 'run_claude_tester' tool to generate tests.\n"
+                        "3) Summarize important code + test artifacts into your memory "
+                        "blocks for future reuse."
+                    ),
+                },
+                {
+                    "label": "project_log",
+                    "value": "High-level log of tasks, design decisions, code, and tests.",
+                },
+            ],
+            tools=[
+                coder_tool.name,
+                tester_tool.name,
+            ],
+        )
+    except Exception as e:
+        print(f"Error creating agent: {e}")
+        print(f"Trying simplified agent creation...")
+        orchestrator = client.agents.create(
+            name="  hestrator",
+            model=model,
+            embedding=embedding,
+        )
 
     print(f"Created orchestrator agent: {orchestrator.id}")
 
@@ -214,8 +218,25 @@ def main() -> None:
         ],
     )
 
+    def extract_assistant_text(messages: List) -> str:
+        chunks: List[str] = []
+        for msg in messages:
+            if getattr(msg, "message_type", None) != "assistant_message":
+                continue
+
+            content = getattr(msg, "content", None)
+            if isinstance(content, list):
+                for block in content:
+                    text = getattr(block, "text", None)
+                    if text:
+                        chunks.append(text)
+            elif isinstance(content, str):
+                chunks.append(content)
+
+        return "\n\n".join(chunks)
+
     print("\n=== Orchestrator response ===\n")
-    print(response.output_text)
+    print(extract_assistant_text(response.messages))
 
 
 if __name__ == "__main__":
