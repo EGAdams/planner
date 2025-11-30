@@ -1,69 +1,69 @@
+#!/usr/bin/env python3
 """
-Minimal example: Letta as an orchestrator with Claude-based Coder & Tester agents.
+hybrid_letta_claude_example.py
 
-- Letta orchestrator = stateful agent with memory + tools
-- Tools = Python functions that call Claude Agent SDK:
-    - run_claude_coder()  → generates code
-    - run_claude_tester() → generates tests for that code
+Letta Orchestrator + Claude Agent SDK Coder & Tester tools.
 
-Letta "sees" all tool calls and responses, so code, tests, and outputs
-end up in the orchestrator’s transcript + memory blocks.
+- Letta runs as the stateful orchestrator (sees all traffic, has memory).
+- Coder & Tester are implemented as Letta custom tools that call the
+  Claude Agent SDK from inside the tool execution environment.
+
+Requirements (in the *Letta server tool environment*):
+    pip install letta-client claude-agent-sdk anyio
+
+Also make sure the Claude CLI is installed and working for claude-agent-sdk.
 """
 
 import os
-from dotenv import load_dotenv
-load_dotenv()
-from typing import List
-
-import anyio
-import httpx
-from letta_client import APITimeoutError, Letta
-from claude_agent_sdk import (
-    query,
-    ClaudeAgentOptions,
-    AssistantMessage,
-    TextBlock,
-)
+from letta_client import Letta
 
 
-# ---------- Claude helper layer (Coder & Tester "agents") ----------
-
-async def _run_claude_once(prompt: str, system_prompt: str) -> str:
-    """
-    Low-level helper: run a single Claude Agent SDK query and return text.
-    """
-    options = ClaudeAgentOptions(
-        system_prompt=system_prompt,
-        max_turns=1,  # keep it single-turn for simplicity
-    )
-
-    chunks: List[str] = []
-
-    async for message in query(prompt=prompt, options=options):
-        if isinstance(message, AssistantMessage):
-            for block in message.content:
-                if isinstance(block, TextBlock):
-                    chunks.append(block.text)
-
-    return "".join(chunks)
-
+# ---------------------------------------------------------------------------
+# Claude-backed tools (Coder & Tester)
+# NOTE: All imports and helper functions live *inside* the tool functions,
+#       because Letta executes them in an isolated environment.
+# ---------------------------------------------------------------------------
 
 def run_claude_coder(spec: str, language: str = "python") -> str:
     """
     Claude Coder Agent.
 
     Args:
-        spec: Natural-language spec for the feature to implement.
-        language: Target programming language (e.g. 'python', 'typescript').
+        spec (str): Natural-language spec for the feature to implement.
+        language (str): Target programming language (e.g. "python", "typescript").
 
     Returns:
-        Generated source code as a string.
+        str: Generated source code as a single file (string).
     """
+    import anyio
+    from claude_agent_sdk import (
+        query,
+        ClaudeAgentOptions,
+        AssistantMessage,
+        TextBlock,
+    )
+
+    async def _run_claude_once(prompt: str, system_prompt: str) -> str:
+        options = ClaudeAgentOptions(
+            system_prompt=system_prompt,
+            max_turns=1,
+        )
+
+        chunks = []
+
+        async for message in query(prompt=prompt, options=options):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        chunks.append(block.text)
+
+        return "".join(chunks)
+
     system_prompt = (
         "You are a senior software engineer (Coder Agent). "
         "Given a spec and target language, generate clean, "
         "production-quality code in a single file. "
-        "Respond primarily with code blocks."
+        "Respond primarily with code blocks and minimal explanation."
     )
 
     user_prompt = (
@@ -86,13 +86,37 @@ def run_claude_tester(
     Claude Tester Agent.
 
     Args:
-        code: Code under test.
-        language: Programming language of the code.
-        test_framework: e.g. 'pytest', 'unittest', 'jest'.
+        code (str): Code under test.
+        language (str): Programming language of the code.
+        test_framework (str): Test framework to use (e.g. "pytest", "unittest", "jest").
 
     Returns:
-        Generated test file as a string.
+        str: Generated test file as a string.
     """
+    import anyio
+    from claude_agent_sdk import (
+        query,
+        ClaudeAgentOptions,
+        AssistantMessage,
+        TextBlock,
+    )
+
+    async def _run_claude_once(prompt: str, system_prompt: str) -> str:
+        options = ClaudeAgentOptions(
+            system_prompt=system_prompt,
+            max_turns=1,
+        )
+
+        chunks = []
+
+        async for message in query(prompt=prompt, options=options):
+            if isinstance(message, AssistantMessage):
+                for block in message.content:
+                    if isinstance(block, TextBlock):
+                        chunks.append(block.text)
+
+        return "".join(chunks)
+
     system_prompt = (
         "You are a senior test engineer (Tester Agent). "
         "Given some code, generate high-value automated tests. "
@@ -113,164 +137,120 @@ def run_claude_tester(
     return anyio.run(_run_claude_once, user_prompt, system_prompt)
 
 
-# ---------- Letta orchestrator setup ----------
-
-def ensure_local_letta_ready(base_url: str, timeout: float = 5.0) -> None:
-    """
-    Fail fast with a helpful message if the local Letta server is not running.
-    """
-    health_url = f"{base_url.rstrip('/')}/v1/health/"
-    try:
-        response = httpx.get(health_url, timeout=timeout)
-        response.raise_for_status()
-    except Exception as exc:
-        raise SystemExit(
-            "Could not reach the Letta server. "
-            f"Health check failed at {health_url}. "
-            "Start it with `letta server` (or `python debug_letta_server.py`) "
-            "and ensure LETTA_BASE_URL points at the running instance."
-        ) from exc
-
+# ---------------------------------------------------------------------------
+# Letta client + Orchestrator Agent
+# ---------------------------------------------------------------------------
 
 def create_letta_client() -> Letta:
     """
-    Create a Letta client for either Cloud or self-hosted.
-
-    Env vars:
-      - LETTA_API_KEY  → use Letta Cloud
-      - LETTA_BASE_URL → use self-hosted (default http://localhost:8283)
-      - LETTA_CLIENT_TIMEOUT → seconds (client-level timeout, default 30)
+    Create a Letta client for Cloud or self-hosted, with a bit of logging.
     """
     api_key = os.getenv("LETTA_API_KEY")
-    base_url = os.getenv("LETTA_BASE_URL", "http://localhost:8283")
-    client_timeout = float(os.getenv("LETTA_CLIENT_TIMEOUT", "30"))
+    base_url = os.getenv("LETTA_BASE_URL")
 
     if api_key:
-        # Letta Cloud
-        print("Using Letta Cloud via LETTA_API_KEY.")
-        return Letta(api_key=api_key, timeout=client_timeout)
-    else:
-        # Self-hosted Letta
-        print(f"Using self-hosted Letta at {base_url} (set LETTA_BASE_URL to override).")
-        ensure_local_letta_ready(base_url)
-        return Letta(base_url=base_url, timeout=client_timeout)
+        print("Using Letta Cloud (https://api.letta.com).")
+        return Letta(api_key=api_key)
+
+    # Self-hosted
+    if not base_url:
+        base_url = "http://localhost:8283"
+    print(f"Using self-hosted Letta at {base_url} (set LETTA_BASE_URL to override).")
+    return Letta(base_url=base_url)
 
 
 def main() -> None:
-    # 1) Connect to Letta server
+    # 1) Connect to Letta
     client = create_letta_client()
 
-    # 2) Register Claude-based tools so the orchestrator can call them
-    #    Letta inspects the function docstrings to build the JSON schema.
+    # 2) Register Claude-backed tools (Coder & Tester)
     coder_tool = client.tools.create_from_function(func=run_claude_coder)
-    print(f"Created coder_tool: {coder_tool}")
-    print(f"  - ID: {coder_tool.id if hasattr(coder_tool, 'id') else 'N/A'}")
-    print(f"  - Name: {coder_tool.name if hasattr(coder_tool, 'name') else 'N/A'}")
-    
-    tester_tool = client.tools.create_from_function(func=run_claude_tester)
-    print(f"Created tester_tool: {tester_tool}")
-    print(f"  - ID: {tester_tool.id if hasattr(tester_tool, 'id') else 'N/A'}")
-    print(f"  - Name: {tester_tool.name if hasattr(tester_tool, 'name') else 'N/A'}")
+    print("Created coder_tool:")
+    print(f"  - ID:   {coder_tool.id}")
+    print(f"  - Name: {coder_tool.name}")
 
-    # 3) Create a Letta orchestrator agent that only coordinates + remembers
-    #    Use openai/gpt-4o-mini as default (fast and capable)
+    tester_tool = client.tools.create_from_function(func=run_claude_tester)
+    print("Created tester_tool:")
+    print(f"  - ID:   {tester_tool.id}")
+    print(f"  - Name: {tester_tool.name}")
+
+    # 3) Create Letta orchestrator agent
     model = os.getenv("LETTA_ORCHESTRATOR_MODEL", "openai/gpt-4o-mini")
-    embedding = os.getenv("LETTA_EMBEDDING_MODEL", "openai/text-embedding-ada-002")
-    
+    embedding = os.getenv("LETTA_EMBEDDING_MODEL", "openai/text-embedding-3-small")
+
     print(f"Creating orchestrator with model: {model}")
 
-    try:
-        orchestrator = client.agents.create(
-            name="letta_orchestrator",
-            model=model,
-            embedding=embedding,
-            memory_blocks=[
-                {
-                    "label": "persona",
-                    "value": (
-                        "You are an orchestration agent that coordinates a Claude-based "
-                        "Coder and Tester. You never hand-write code or tests. "
-                        "Instead, you:\n"
-                        "1) Use the 'run_claude_coder' tool to generate code.\n"
-                        "2) Use the 'run_claude_tester' tool to generate tests.\n"
-                        "3) Summarize important code + test artifacts into your memory "
-                        "blocks for future reuse."
-                    ),
-                },
-                {
-                    "label": "project_log",
-                    "value": "High-level log of tasks, design decisions, code, and tests.",
-                },
-            ],
-            tools=[
-                coder_tool.name,
-                tester_tool.name,
-            ],
-        )
-    except Exception as e:
-        print(f"Error creating agent: {e}")
-        print(f"Trying simplified agent creation...")
-        orchestrator = client.agents.create(
-            name="  hestrator",
-            model=model,
-            embedding=embedding,
-        )
+    orchestrator = client.agents.create(
+        name="hybrid_letta_claude_orchestrator",
+        model=model,
+        embedding=embedding,
+        memory_blocks=[
+            {
+                "label": "persona",
+                "value": (
+                    "You are an orchestration agent that coordinates a Claude-based "
+                    "Coder and Tester. You never hand-write code or tests yourself. "
+                    "Instead, you:\n"
+                    "1) Use the 'run_claude_coder' tool to generate code.\n"
+                    "2) Use the 'run_claude_tester' tool to generate tests.\n"
+                    "3) Store important code and tests in your memory blocks "
+                    "for future reuse."
+                ),
+                "limit": 4000,
+            },
+            {
+                "label": "project_log",
+                "value": (
+                    "High-level log of tasks, design decisions, generated code, and tests."
+                ),
+                "limit": 16000,
+            },
+        ],
+        # Attach tools by *name* (recommended)
+        tools=[
+            coder_tool.name,
+            tester_tool.name,
+            # Optional core tools for memory management / messaging etc.
+            "send_message",
+            "archival_memory_insert",
+            "memory_replace",
+        ],
+    )
 
     print(f"Created orchestrator agent: {orchestrator.id}")
 
-    # 4) Send a task to the orchestrator.
-    #    It will decide when to call the coder/tester tools, and all traffic
-    #    (tool inputs + outputs) will be stored in its stateful memory.
-    message_timeout = float(os.getenv("LETTA_REQUEST_TIMEOUT", "60"))
-    try:
-        response = client.agents.messages.create(
-            agent_id=orchestrator.id,
-            messages=[
-                {
-                    "role": "user",
-                    "content": (
-                        "We are building a tiny library.\n\n"
-                        "Task: Implement a Python function "
-                        "`add(a: int, b: int) -> int` and then generate pytest "
-                        "tests for it.\n\n"
-                        "Workflow:\n"
-                        "- Call the Coder tool to write the implementation.\n"
-                        "- Call the Tester tool to write tests.\n"
-                        "- Store code + tests in your project_log memory.\n"
-                        "- Return a short human summary plus the final code and tests."
-                    ),
-                }
-            ],
-            timeout=message_timeout,
-        )
-    except APITimeoutError as exc:
-        raise SystemExit(
-            "Letta agent message timed out. "
-            f"Increase LETTA_REQUEST_TIMEOUT (current {message_timeout}s) or "
-            "check the Letta server logs for a hung model call. "
-            "If using cloud/self-hosted with OpenAI models, ensure the server "
-            "has network access and API keys configured."
-        ) from exc
+    # 4) Send a test request to the orchestrator.
+    #    It should call the coder & tester tools and then summarize.
+    user_task = (
+        "We are building a tiny library.\n\n"
+        "Task: Implement a Python function "
+        "`add(a: int, b: int) -> int` and then generate pytest tests for it.\n\n"
+        "Workflow:\n"
+        "- Call the Coder tool to write the implementation.\n"
+        "- Call the Tester tool to write tests.\n"
+        "- Store code + tests in your project_log memory.\n"
+        "- Return a short human summary plus the final code and tests."
+    )
 
-    def extract_assistant_text(messages: List) -> str:
-        chunks: List[str] = []
-        for msg in messages:
-            if getattr(msg, "message_type", None) != "assistant_message":
-                continue
-
-            content = getattr(msg, "content", None)
-            if isinstance(content, list):
-                for block in content:
-                    text = getattr(block, "text", None)
-                    if text:
-                        chunks.append(text)
-            elif isinstance(content, str):
-                chunks.append(content)
-
-        return "\n\n".join(chunks)
+    response = client.agents.messages.create(
+        agent_id=orchestrator.id,
+        messages=[
+            {
+                "role": "user",
+                "content": user_task,
+            }
+        ],
+    )
 
     print("\n=== Orchestrator response ===\n")
-    print(extract_assistant_text(response.messages))
+
+    # Prefer output_text if available, otherwise dump messages
+    output_text = getattr(response, "output_text", None)
+    if isinstance(output_text, str):
+        print(output_text)
+    else:
+        for msg in response.messages:
+            print(msg)
 
 
 if __name__ == "__main__":
