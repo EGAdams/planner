@@ -16,7 +16,8 @@ load_dotenv()
 from typing import List
 
 import anyio
-from letta_client import Letta
+import httpx
+from letta_client import APITimeoutError, Letta
 from claude_agent_sdk import (
     query,
     ClaudeAgentOptions,
@@ -114,6 +115,23 @@ def run_claude_tester(
 
 # ---------- Letta orchestrator setup ----------
 
+def ensure_local_letta_ready(base_url: str, timeout: float = 5.0) -> None:
+    """
+    Fail fast with a helpful message if the local Letta server is not running.
+    """
+    health_url = f"{base_url.rstrip('/')}/v1/health/"
+    try:
+        response = httpx.get(health_url, timeout=timeout)
+        response.raise_for_status()
+    except Exception as exc:
+        raise SystemExit(
+            "Could not reach the Letta server. "
+            f"Health check failed at {health_url}. "
+            "Start it with `letta server` (or `python debug_letta_server.py`) "
+            "and ensure LETTA_BASE_URL points at the running instance."
+        ) from exc
+
+
 def create_letta_client() -> Letta:
     """
     Create a Letta client for either Cloud or self-hosted.
@@ -121,16 +139,21 @@ def create_letta_client() -> Letta:
     Env vars:
       - LETTA_API_KEY  → use Letta Cloud
       - LETTA_BASE_URL → use self-hosted (default http://localhost:8283)
+      - LETTA_CLIENT_TIMEOUT → seconds (client-level timeout, default 30)
     """
     api_key = os.getenv("LETTA_API_KEY")
     base_url = os.getenv("LETTA_BASE_URL", "http://localhost:8283")
+    client_timeout = float(os.getenv("LETTA_CLIENT_TIMEOUT", "30"))
 
     if api_key:
         # Letta Cloud
-        return Letta(api_key=api_key)  # project="default-project" optional
+        print("Using Letta Cloud via LETTA_API_KEY.")
+        return Letta(api_key=api_key, timeout=client_timeout)
     else:
         # Self-hosted Letta
-        return Letta(base_url=base_url)
+        print(f"Using self-hosted Letta at {base_url} (set LETTA_BASE_URL to override).")
+        ensure_local_letta_ready(base_url)
+        return Letta(base_url=base_url, timeout=client_timeout)
 
 
 def main() -> None:
@@ -198,25 +221,36 @@ def main() -> None:
     # 4) Send a task to the orchestrator.
     #    It will decide when to call the coder/tester tools, and all traffic
     #    (tool inputs + outputs) will be stored in its stateful memory.
-    response = client.agents.messages.create(
-        agent_id=orchestrator.id,
-        messages=[
-            {
-                "role": "user",
-                "content": (
-                    "We are building a tiny library.\n\n"
-                    "Task: Implement a Python function "
-                    "`add(a: int, b: int) -> int` and then generate pytest "
-                    "tests for it.\n\n"
-                    "Workflow:\n"
-                    "- Call the Coder tool to write the implementation.\n"
-                    "- Call the Tester tool to write tests.\n"
-                    "- Store code + tests in your project_log memory.\n"
-                    "- Return a short human summary plus the final code and tests."
-                ),
-            }
-        ],
-    )
+    message_timeout = float(os.getenv("LETTA_REQUEST_TIMEOUT", "60"))
+    try:
+        response = client.agents.messages.create(
+            agent_id=orchestrator.id,
+            messages=[
+                {
+                    "role": "user",
+                    "content": (
+                        "We are building a tiny library.\n\n"
+                        "Task: Implement a Python function "
+                        "`add(a: int, b: int) -> int` and then generate pytest "
+                        "tests for it.\n\n"
+                        "Workflow:\n"
+                        "- Call the Coder tool to write the implementation.\n"
+                        "- Call the Tester tool to write tests.\n"
+                        "- Store code + tests in your project_log memory.\n"
+                        "- Return a short human summary plus the final code and tests."
+                    ),
+                }
+            ],
+            timeout=message_timeout,
+        )
+    except APITimeoutError as exc:
+        raise SystemExit(
+            "Letta agent message timed out. "
+            f"Increase LETTA_REQUEST_TIMEOUT (current {message_timeout}s) or "
+            "check the Letta server logs for a hung model call. "
+            "If using cloud/self-hosted with OpenAI models, ensure the server "
+            "has network access and API keys configured."
+        ) from exc
 
     def extract_assistant_text(messages: List) -> str:
         chunks: List[str] = []
