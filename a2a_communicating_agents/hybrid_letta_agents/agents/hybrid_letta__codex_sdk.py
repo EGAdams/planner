@@ -1,37 +1,36 @@
 #!/usr/bin/env python3
 """
-hybrid_letta__claude_sdk.py
+hybrid_letta__codex_sdk.py
 
-Letta Orchestrator agent + Claude-based Coder & Tester tools.
+Letta Orchestrator agent + Codex CLI-backed Coder & Tester tools.
 
 - Letta runs as the orchestrator with long-term memory.
-- The Coder & Tester are implemented as custom tools that call the Anthropic/Claude SDK.
+- The Coder & Tester are implemented as custom tools that call the Codex CLI SDK so
+  the entire agent team runs on the same OpenAI model as the orchestrator.
 - The orchestrator "sees" all messages, tool calls, and tool returns and can store
   specs, code, and tests in its memory blocks.
 
 Requirements (host + Letta tool sandbox):
 
-  pip install letta-client anthropic
+  pip install letta-client
+  npm install -g @openai/codex   # provides the Codex CLI + SDK
 
 Environment:
 
   LETTA_BASE_URL      # e.g. http://localhost:8283  (optional, defaults to that)
-  OPENAI_API_KEY      # used by the Letta server for openai/gpt-4o-mini
-
-Authentication:
-
-  This script uses the OAuth token from Claude Code CLI (~/.claude/.credentials.json)
-  for authenticating with the Anthropic API. Make sure you're logged into Claude Code
-  before running this script.
+  OPENAI_API_KEY      # used by Letta server for openai/gpt-4o-mini
+  CODEX_MODEL         # optional override for Codex CLI model (defaults to gpt-5.1-codex if ORCH_MODEL unsupported)
 """
 
 from __future__ import annotations
 
-import os
 import json
+import os
+import shutil
+import subprocess
 from pathlib import Path
 import textwrap
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 import letta_client
 from letta_client import Letta
@@ -42,40 +41,61 @@ from letta_client import Letta
 # Where generated code / tests will be written on the host
 WORKSPACE_DIR = Path(__file__).resolve().parent
 
-# Claude model for the coder & tester tools
-CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-3-5-sonnet-latest")
-
 # Orchestrator model inside Letta (Letta only supports: letta, openai, google_ai)
 ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini")
 
 # Initial task given to the orchestrator
-USER_TASK = textwrap.dedent(
+FEATURE_SPEC = textwrap.dedent(
     """
-    You are the Orchestrator Agent in a small team:
-
-    - You have a *Coder Tool* that can generate code using Claude.
-    - You have a *Tester Tool* that can generate tests for that code using Claude.
-    - Your job is to:
-      1. Call the Coder Tool to implement a small Python function.
-      2. Call the Tester Tool to generate tests for that function.
-      3. Confirm to the human where you saved the code and tests.
-
-    Implement a Python function called `add(a: int, b: int) -> int` that returns a + b
-    and generate a small pytest test file that covers typical and edge cases.
+    Build a Python helper called `add(a: int, b: int) -> int` that returns the sum of two integers.
+    Validate type handling (raise `TypeError` for non-ints) and cover positive, negative, zero,
+    and large-number scenarios.
     """
 ).strip()
 
+USER_TASK = textwrap.dedent(
+    f"""
+    You are the Orchestrator Agent for a Codex-based TDD trio (Coder + Tester + Pytest runner).
 
+    **Specification**
+    {FEATURE_SPEC}
+
+    **Strict workflow (no skipping steps):**
+    1. Use the Tester Tool *first* to generate pytest tests from the specification. Pass the spec via the
+       `spec` argument and leave `implementation` empty until code exists. Write tests to
+       `test_add.py` inside the provided workspace directory.
+    2. Immediately run the Pytest Runner Tool with `target` pointing to the new test file and set
+       `expect_failure=True`. Capture the failure reason in your notes.
+    3. After seeing the red test, call the Coder Tool to implement the function in `add.py`. Keep the
+       implementation minimal but correct.
+    4. Run the Pytest Runner Tool again with `expect_failure=False` to ensure the tests now pass.
+    5. Summarize the cycle: mention file paths, how the first test run failed, and how the second passed.
+
+    **Tool usage reminders**
+    - Always pass the literal spec text above into both the Tester and Coder so they have context.
+    - When calling the Tester Tool after code exists, pass both the spec and the latest implementation.
+    - The workspace directory path is surfaced via the `workspace_dir` argument; use it consistently so
+      all files land inside the shared location.
+    - Each tool returns a JSON contract describing its work—inspect these contracts to keep the team
+      honest and reference them in your summary.
+    - Use the generalized Test Runner Tool to execute pytest, node-based suites, or any command the
+      project requires. Always set `framework` and `expect_failure` appropriately so the contracts are
+      accurate.
+
+    Follow this red-green-refactor loop every time; do not mark the task complete unless the green run
+    succeeds.
+    """
+).strip()
 # ---------- Tool implementations (executed inside Letta) ----------
 
-def run_claude_coder(
+def run_codex_coder(
     spec: str,
     language: str = "python",
     file_name: str = "generated_code.py",
     workspace_dir: Optional[str] = None,
 ) -> str:
     """
-    Claude Coder Agent.
+    Codex Coder Agent.
 
     Args:
         spec: Natural-language spec for the feature to implement.
@@ -87,49 +107,113 @@ def run_claude_coder(
     Returns:
         A short status string including the file path where code was written.
     """
+    import json
+    import hashlib
     import os
+    import shutil
+    import subprocess
+    import sys
+    import textwrap
     from pathlib import Path
-    from anthropic import Anthropic
 
-    # Use Claude Pro subscription via CLI login (no explicit API key needed)
-    # The SDK will automatically use stored credentials from 'claude login'
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    client = Anthropic(api_key=api_key) if api_key else Anthropic()
+    prompt = textwrap.dedent(
+        f"""
+        You are an elite software engineer (Coder Agent).
+        Implement the requested feature as a single {language} file.
+        Return ONLY the raw file contents without fences or commentary.
 
-    system_prompt = (
-        "You are a senior software engineer (Coder Agent). "
-        "Given a spec and target language, generate clean, "
-        "production-quality code in a single file. "
-        "Respond ONLY with the code for that file, no explanation."
+        Specification:
+        ---------------- SPEC START ----------------
+        {spec}
+        ----------------- SPEC END -----------------
+        """
     )
 
-    user_prompt = (
-        f"Target language: {language}\n\n"
-        "Write the implementation for this spec as a single file:\n"
-        "---------------- SPEC START ----------------\n"
-        f"{spec}\n"
-        "----------------- SPEC END -----------------\n"
+    auth_path = Path.home() / ".codex" / "auth.json"
+    if not auth_path.exists():
+        raise RuntimeError(
+            f"Codex credentials not found at {auth_path}. "
+            "Run `codex login` or `codex auth --with-api-key` first."
+        )
+
+    codex_bin = shutil.which("codex")
+    if not codex_bin:
+        raise RuntimeError("Codex CLI binary not found on PATH. Install via `npm install -g @openai/codex`.")
+
+    model_name = os.environ.get("CODEX_MODEL")
+    print( "CODEX_MODEL:", model_name )
+    if not model_name:
+        orch_model = os.environ.get("ORCH_MODEL", "")
+        candidate = orch_model.split("/", 1)[-1] if "/" in orch_model else orch_model
+        print( "ORCH_MODEL:", orch_model, "candidate:", candidate )
+        if candidate and not candidate.startswith("gpt-4o"):
+            print( "setting model_name to candidate:", candidate )
+            model_name = candidate
+        else:
+            print( "setting model_name to gpt-5.1-codex because candidate was:", candidate )
+            model_name = "gpt-5.1-codex"
+
+    base_dir = Path(workspace_dir or os.getcwd())
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    cmd = [
+        codex_bin,
+        "exec",
+        "--experimental-json",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+    ]
+    if model_name:
+        cmd.extend(["--model", model_name])
+
+    completed = subprocess.run(
+        cmd,
+        input=prompt,
+        text=True,
+        capture_output=True,
+        cwd=str(base_dir),
+        check=False,
     )
 
-    resp = client.messages.create(
-        model=os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-latest"),
-        max_tokens=4000,
-        temperature=0.0,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}],
-    )
+    final_text: Optional[str] = None
+    failure_reason: Optional[str] = None
 
-    # Extract text content
-    parts = getattr(resp, "content", []) or []
-    code_text = ""
-    for p in parts:
-        if getattr(p, "type", None) == "text":
-            code_text += p.text
+    for raw_line in completed.stdout.splitlines():
+        raw_line = raw_line.strip()
+        if not raw_line:
+            continue
+        try:
+            event = json.loads(raw_line)
+        except json.JSONDecodeError:
+            continue
+
+        etype = event.get("type")
+        if etype == "item.completed":
+            item = event.get("item", {})
+            if item.get("type") == "agent_message":
+                final_text = item.get("text", "")
+        elif etype == "turn.failed":
+            error = event.get("error", {}) or {}
+            failure_reason = error.get("message") or str(error)
+
+    if completed.returncode != 0:
+        raise RuntimeError(
+            f"Codex CLI failed with exit code {completed.returncode}: {completed.stderr.strip()}"
+        )
+
+    if failure_reason:
+        raise RuntimeError(f"Codex CLI reported failure: {failure_reason}")
+
+    if final_text is None or not final_text.strip():
+        raise RuntimeError("Codex CLI returned empty response.")
+
+    code_text = final_text.strip()
 
     if not code_text.strip():
-        raise RuntimeError("Claude Coder returned empty content.")
+        raise RuntimeError("Coder tool returned empty content.")
 
-    # Best-effort strip surrounding fences if Claude included ``` blocks
+    # Best-effort strip surrounding fences if the model returned ``` blocks
     if "```" in code_text:
         segments = code_text.split("```")
         if len(segments) >= 3:
@@ -137,7 +221,7 @@ def run_claude_coder(
             code_text = segments[1]
             # strip possible "python" language tag on the first line
             lines = code_text.splitlines()
-            if lines and lines[0].strip().startswith(("python", "py")):
+            if lines and lines[0].strip().startswith(("python", "py")): # TODO: extend for other languages # use language param?
                 lines = lines[1:]
             code_text = "\n".join(lines)
 
@@ -147,21 +231,33 @@ def run_claude_coder(
     out_path = base_dir / file_name
     out_path.write_text(code_text, encoding="utf-8")
 
-    return f"Code written to {out_path}"
+    contract = {
+        "contract_type": "code_generation",
+        "status": "success",
+        "file_path": str(out_path),
+        "language": language,
+        "bytes": len(code_text.encode("utf-8")),
+        "lines": len(code_text.splitlines()),
+        "spec_hash": hashlib.sha256(spec.encode("utf-8")).hexdigest(),
+    }
+    return json.dumps(contract, indent=2)
 
 
-def run_claude_tester(
-    code: str,
+def run_codex_tester(
+    spec: str,
+    implementation: str = "",
     language: str = "python",
     test_framework: str = "pytest",
     file_name: str = "test_generated_code.py",
     workspace_dir: Optional[str] = None,
 ) -> str:
     """
-    Claude Tester Agent.
+    Codex Tester Agent.
 
     Args:
-        code: Code under test.
+        spec: Natural-language feature specification that tests should target.
+        implementation: Optional current implementation snippet to give the tester
+            concrete references once code exists.
         language: Programming language of the code.
         test_framework: e.g. "pytest", "unittest", "jest".
         file_name: File name to write the generated tests into.
@@ -171,48 +267,112 @@ def run_claude_tester(
     Returns:
         A short status string including the file path where tests were written.
     """
+    import json
+    import hashlib
     import os
+    import shutil
+    import subprocess
+    import textwrap
     from pathlib import Path
-    from anthropic import Anthropic
 
-    # Use Claude Pro subscription via CLI login (no explicit API key needed)
-    # The SDK will automatically use stored credentials from 'claude login'
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    client = Anthropic(api_key=api_key) if api_key else Anthropic()
+    prompt = textwrap.dedent(
+        f"""
+        You are an elite software test engineer (Tester Agent).
+        Given the feature specification (and optional current implementation), produce a comprehensive
+        {test_framework} test suite in {language}. Cover happy paths, edge cases, and failure handling.
+        Return ONLY the raw test file contents without fences or commentary.
 
-    system_prompt = (
-        "You are a senior test engineer (Tester Agent). "
-        "Given some code, generate high-value automated tests. "
-        "Cover edge cases and typical usage. "
-        "Return a complete test file using the requested framework."
+        Feature spec:
+        --------------- SPEC START ---------------
+        {spec}
+        ---------------- SPEC END ----------------
+
+        Current implementation (may be empty when tests are written first):
+        --------- IMPLEMENTATION START ---------
+        {implementation}
+        ---------- IMPLEMENTATION END ----------
+        """
     )
 
-    user_prompt = (
-        f"Language: {language}\n"
-        f"Test framework: {test_framework}\n\n"
-        "Here is the code under test:\n"
-        "---------------- CODE START ----------------\n"
-        f"{code}\n"
-        "----------------- CODE END -----------------\n\n"
-        "Now write the full test file."
+    auth_path = Path.home() / ".codex" / "auth.json"
+    if not auth_path.exists():
+        raise RuntimeError(
+            f"Codex credentials not found at {auth_path}. "
+            "Run `codex login` or `codex auth --with-api-key` first."
+        )
+
+    codex_bin = shutil.which("codex")
+    if not codex_bin:
+        raise RuntimeError("Codex CLI binary not found on PATH. Install via `npm install -g @openai/codex`.")
+
+    model_name = os.environ.get("CODEX_MODEL")
+    if not model_name:
+        orch_model = os.environ.get("ORCH_MODEL", "")
+        candidate = orch_model.split("/", 1)[-1] if "/" in orch_model else orch_model
+        if candidate and not candidate.startswith("gpt-4o"):
+            model_name = candidate
+        else:
+            model_name = "gpt-5.1-codex"
+
+    base_dir = Path(workspace_dir or os.getcwd())
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    cmd = [
+        codex_bin,
+        "exec",
+        "--experimental-json",
+        "--sandbox",
+        "read-only",
+        "--skip-git-repo-check",
+    ]
+    if model_name:
+        cmd.extend(["--model", model_name])
+
+    completed = subprocess.run(
+        cmd,
+        input=prompt,
+        text=True,
+        capture_output=True,
+        cwd=str(base_dir),
+        check=False,
     )
 
-    resp = client.messages.create(
-        model=os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-latest"),
-        max_tokens=4000,
-        temperature=0.0,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}],
-    )
+    final_text: Optional[str] = None
+    failure_reason: Optional[str] = None
 
-    parts = getattr(resp, "content", []) or []
-    test_text = ""
-    for p in parts:
-        if getattr(p, "type", None) == "text":
-            test_text += p.text
+    for raw_line in completed.stdout.splitlines():
+        raw_line = raw_line.strip()
+        if not raw_line:
+            continue
+        try:
+            event = json.loads(raw_line)
+        except json.JSONDecodeError:
+            continue
+
+        etype = event.get("type")
+        if etype == "item.completed":
+            item = event.get("item", {})
+            if item.get("type") == "agent_message":
+                final_text = item.get("text", "")
+        elif etype == "turn.failed":
+            error = event.get("error", {}) or {}
+            failure_reason = error.get("message") or str(error)
+
+    if completed.returncode != 0:
+        raise RuntimeError(
+            f"Codex CLI failed with exit code {completed.returncode}: {completed.stderr.strip()}"
+        )
+
+    if failure_reason:
+        raise RuntimeError(f"Codex CLI reported failure: {failure_reason}")
+
+    if final_text is None or not final_text.strip():
+        raise RuntimeError("Codex CLI returned empty response.")
+
+    test_text = final_text.strip()
 
     if not test_text.strip():
-        raise RuntimeError("Claude Tester returned empty content.")
+        raise RuntimeError("Tester tool returned empty content.")
 
     # Best-effort strip ``` fences
     if "```" in test_text:
@@ -229,41 +389,100 @@ def run_claude_tester(
     out_path = base_dir / file_name
     out_path.write_text(test_text, encoding="utf-8")
 
-    return f"Tests written to {out_path}"
+    contract = {
+        "contract_type": "test_generation",
+        "status": "success",
+        "file_path": str(out_path),
+        "test_framework": test_framework,
+        "language": language,
+        "spec_hash": hashlib.sha256(spec.encode("utf-8")).hexdigest(),
+        "implementation_hash": hashlib.sha256((implementation or "").encode("utf-8")).hexdigest(),
+    }
+    return json.dumps(contract, indent=2)
 
 
-# ---------- Helpers ----------
-
-def get_claude_oauth_token() -> str:
+def run_test_suite(
+    framework: str = "pytest",
+    target: str = "tests",
+    workspace_dir: Optional[str] = None,
+    expect_failure: bool = False,
+    extra_args: str = "",
+    command_override: Optional[str] = None,
+) -> str:
     """
-    Read the Claude OAuth token from ~/.claude/.credentials.json
-    This allows us to use the same authentication as Claude Code.
+    Execute a test command (pytest, node, custom) and enforce TDD expectations.
+
+    Args:
+        framework: Logical framework name ("pytest", "vitest", "custom", etc.).
+        target: Path or pattern passed to the runner (file, directory, glob).
+        workspace_dir: Optional workspace directory override; defaults to tool cwd.
+        expect_failure: Whether this run is meant to fail (red phase) or pass (green phase).
+        extra_args: Additional CLI args, space-delimited.
+        command_override: Optional full command string to execute instead of the default
+            framework-specific command.
     """
-    credentials_path = Path.home() / ".claude" / ".credentials.json"
-    if not credentials_path.exists():
-        raise FileNotFoundError(
-            f"Claude credentials not found at {credentials_path}. "
-            "Please run 'claude login' or ensure you're logged into Claude Code."
+    import json
+    import shlex
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    base_dir = Path(workspace_dir or Path.cwd())
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    if command_override:
+        cmd = shlex.split(command_override)
+    elif framework.lower() == "pytest":
+        cmd = [sys.executable, "-m", "pytest", target]
+    elif framework.lower() == "vitest":
+        cmd = ["npx", "vitest", "run", target]
+    else:
+        raise RuntimeError(
+            f"Framework '{framework}' requires command_override to be set for execution."
         )
 
-    with open(credentials_path) as f:
-        creds = json.load(f)
+    if extra_args.strip():
+        cmd.extend(shlex.split(extra_args))
 
-    oauth_data = creds.get("claudeAiOauth")
-    if not oauth_data:
-        raise ValueError("No claudeAiOauth found in credentials file")
+    proc = subprocess.run(
+        cmd,
+        cwd=str(base_dir),
+        text=True,
+        capture_output=True,
+    )
 
-    access_token = oauth_data.get("accessToken")
-    if not access_token:
-        raise ValueError("No accessToken found in OAuth credentials")
+    output = proc.stdout + "\n" + proc.stderr
+    passed = proc.returncode == 0
 
-    return access_token
+    if expect_failure and passed:
+        raise RuntimeError(
+            f"{framework} tests unexpectedly passed while expect_failure=True. Output:\n" + output
+        )
+    if not expect_failure and not passed:
+        raise RuntimeError(
+            f"{framework} tests failed but expect_failure=False. Output:\n" + output
+        )
+
+    contract = {
+        "contract_type": "test_run",
+        "status": "success",
+        "framework": framework,
+        "target": target,
+        "command": " ".join(cmd),
+        "expect_failure": expect_failure,
+        "passed": passed,
+        "exit_code": proc.returncode,
+        "outcome": "failed_as_expected" if expect_failure else "passed",
+        "output": output.strip(),
+    }
+    return json.dumps(contract, indent=2)
 
 
 def create_letta_client() -> Letta:
     base_url = os.environ.get("LETTA_BASE_URL", "http://localhost:8283")
     print(f"Using self-hosted Letta at {base_url} (override with LETTA_BASE_URL).")
     client = Letta(base_url=base_url)
+    print(f"Letta client created with base URL: {client.base_url}")
     return client
 
 
@@ -272,34 +491,124 @@ def ensure_workspace_dir() -> None:
     WORKSPACE_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def _extract_tool_return_text(tool_return: Any) -> str:
+    if tool_return is None:
+        return ""
+    if isinstance(tool_return, str):
+        return tool_return
+    content = getattr(tool_return, "content", None)
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts: List[str] = []
+        for item in content:
+            if isinstance(item, str):
+                parts.append(item)
+            elif isinstance(item, dict):
+                parts.append(str(item.get("text", "")))
+            else:
+                parts.append(str(item))
+        if parts:
+            return "\n".join(parts)
+    text = getattr(tool_return, "text", None)
+    if isinstance(text, str):
+        return text
+    return str(tool_return)
+
+
+def validate_tdd_contracts(messages: List[Any]) -> None:
+    contracts: List[Dict[str, Any]] = []
+    for msg in messages:
+        if getattr(msg, "message_type", "") != "tool_return_message":
+            continue
+        payload_text = _extract_tool_return_text(getattr(msg, "tool_return", None))
+        if not payload_text:
+            continue
+        try:
+            data = json.loads(payload_text)
+        except json.JSONDecodeError:
+            continue
+        data["_order"] = len(contracts)
+        contracts.append(data)
+
+    errors: List[str] = []
+
+    def find_contract(contract_type: str, predicate=lambda _: True):
+        for entry in contracts:
+            if entry.get("contract_type") == contract_type and predicate(entry):
+                return entry
+        return None
+
+    test_gen = find_contract("test_generation")
+    if not test_gen:
+        errors.append("Missing test_generation contract.")
+
+    red_run = find_contract("test_run", lambda c: c.get("expect_failure"))
+    if not red_run:
+        errors.append("Missing red-phase pytest run (expect_failure=True).")
+    elif red_run.get("passed"):
+        errors.append("Red-phase pytest run unexpectedly passed.")
+
+    code_gen = find_contract("code_generation")
+    if not code_gen:
+        errors.append("Missing code_generation contract after red phase.")
+
+    green_run = find_contract("test_run", lambda c: not c.get("expect_failure"))
+    if not green_run:
+        errors.append("Missing green-phase pytest run (expect_failure=False).")
+    elif not green_run.get("passed"):
+        errors.append("Green-phase pytest run failed.")
+
+    # Order validation if all present
+    if all([test_gen, red_run, code_gen, green_run]):
+        if not (test_gen["_order"] < red_run["_order"] < code_gen["_order"] < green_run["_order"]):
+            errors.append("Tool execution order does not follow test->red->code->green sequence.")
+
+        for label, entry in ("tests", test_gen), ("code", code_gen):
+            path = entry.get("file_path")
+            if not path or not Path(path).exists():
+                errors.append(f"{label.title()} file missing on disk: {path}")
+
+    if errors:
+        raise RuntimeError("\n".join(["TDD contract validation failed:"] + [f"- {e}" for e in errors]))
+
+    print("\n✅ Inline TDD contract validation passed.")
+    print(f"  - Tests file: {test_gen.get('file_path') if test_gen else 'N/A'}")
+    print(
+        "  - Pytest red run target:",
+        red_run.get("target") if red_run else "N/A",
+    )
+    print(f"  - Code file: {code_gen.get('file_path') if code_gen else 'N/A'}")
+    print(
+        "  - Pytest green run target:",
+        green_run.get("target") if green_run else "N/A",
+    )
+
+
 # ---------- Main orchestration ----------
 
 def main() -> None:
-    print("Starting hybrid_letta__claude_sdk.py...")
+    print("Starting hybrid_letta__codex_sdk.py...")
     ensure_workspace_dir()
-
-    # Get Claude OAuth token from ~/.claude/.credentials.json
-    try:
-        oauth_token = get_claude_oauth_token()
-        print("✓ Successfully loaded Claude OAuth token from ~/.claude/.credentials.json")
-    except (FileNotFoundError, ValueError) as e:
-        print(f"✗ Error loading Claude OAuth token: {e}")
-        print("\nPlease ensure you're logged into Claude Code.")
-        return
 
     client = create_letta_client()
 
     # 1) Register tools (once). If they already exist with the same signature,
     #    create_from_function will upsert them.
-    coder_tool = client.tools.create_from_function(func=run_claude_coder)
+    coder_tool = client.tools.create_from_function(func=run_codex_coder)
     print("Created coder_tool:")
     print(f"  - ID:   {coder_tool.id}")
     print(f"  - Name: {coder_tool.name}")
 
-    tester_tool = client.tools.create_from_function(func=run_claude_tester)
+    tester_tool = client.tools.create_from_function(func=run_codex_tester)
     print("Created tester_tool:")
     print(f"  - ID:   {tester_tool.id}")
     print(f"  - Name: {tester_tool.name}")
+
+    test_runner_tool = client.tools.create_from_function(func=run_test_suite)
+    print("Created test_runner_tool:")
+    print(f"  - ID:   {test_runner_tool.id}")
+    print(f"  - Name: {test_runner_tool.name}")
 
     # 2) Create an orchestrator agent which can call those tools
     print(f"Creating orchestrator with model: {ORCH_MODEL}")
@@ -309,7 +618,7 @@ def main() -> None:
         memory_blocks=[
             {
                 "label": "role",
-                "value": "You are an orchestrator who manages a Claude Coder and Claude Tester.",
+                "value": "You are an orchestrator who manages a Codex-based Coder and Tester.",
                 "limit": 2000,
             },
             {
@@ -318,13 +627,12 @@ def main() -> None:
                 "limit": 2000,
             },
         ],
-        tools=[coder_tool.name, tester_tool.name],
+        tools=[coder_tool.name, tester_tool.name, test_runner_tool.name],
         # tool_exec_environment_variables are available as os.getenv(...) inside tools
-        # Pass the OAuth token from Claude Code CLI to the tools
         tool_exec_environment_variables={
-            "CLAUDE_MODEL": CLAUDE_MODEL,
+            "ORCH_MODEL": ORCH_MODEL,
             "WORKSPACE_DIR": str(WORKSPACE_DIR),
-            "ANTHROPIC_API_KEY": oauth_token,  # Use OAuth token from ~/.claude/.credentials.json
+            "CODEX_MODEL": os.environ.get("CODEX_MODEL", ""),
         },
     )
 
@@ -336,6 +644,7 @@ def main() -> None:
         response = client.agents.messages.create(
             agent_id=orchestrator_agent.id,
             messages=[{"role": "user", "content": USER_TASK}],
+            timeout=180,
         )
     except letta_client.APIConnectionError as e:
         print("❌ Letta connection / timeout error while sending message.")
@@ -344,7 +653,7 @@ def main() -> None:
             "\nHints:\n"
             "- Make sure your Letta server is running and reachable at LETTA_BASE_URL.\n"
             "- Confirm the server has OPENAI_API_KEY set so it can call openai/gpt-4o-mini.\n"
-            "- Confirm ANTHROPIC_API_KEY is set on the host so the tools can call Claude.\n"
+            "- Confirm the Codex CLI is installed + authenticated via `codex login` so the tools can call Codex.\n"
             "- If the operation is legitimately long-running, you can increase "
             "timeout_in_seconds further."
         )
@@ -367,6 +676,8 @@ def main() -> None:
         else:
             # Fallback for older SDK versions
             print(msg)
+
+    validate_tdd_contracts(response.messages)
 
     print("\nDone. Check the workspace directory for generated files:")
     print(f"  {WORKSPACE_DIR}")

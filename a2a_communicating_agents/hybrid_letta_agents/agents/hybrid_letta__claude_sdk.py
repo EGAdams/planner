@@ -91,13 +91,10 @@ def run_claude_coder(
     from pathlib import Path
     from anthropic import Anthropic
 
-    # Use OAuth token from Claude Code CLI (passed via ANTHROPIC_API_KEY env var)
-    # OAuth tokens must be passed as auth_token, not api_key
-    oauth_token = os.getenv("ANTHROPIC_API_KEY")
-    if not oauth_token:
-        raise RuntimeError("ANTHROPIC_API_KEY (OAuth token) is not set in the tool environment.")
-
-    client = Anthropic(auth_token=oauth_token)
+    # Use Claude Pro subscription via CLI login (no explicit API key needed)
+    # The SDK will automatically use stored credentials from 'claude login'
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    client = Anthropic(api_key=api_key) if api_key else Anthropic()
 
     system_prompt = (
         "You are a senior software engineer (Coder Agent). "
@@ -178,13 +175,10 @@ def run_claude_tester(
     from pathlib import Path
     from anthropic import Anthropic
 
-    # Use OAuth token from Claude Code CLI (passed via ANTHROPIC_API_KEY env var)
-    # OAuth tokens must be passed as auth_token, not api_key
-    oauth_token = os.getenv("ANTHROPIC_API_KEY")
-    if not oauth_token:
-        raise RuntimeError("ANTHROPIC_API_KEY (OAuth token) is not set in the tool environment.")
-
-    client = Anthropic(auth_token=oauth_token)
+    # Use Claude Pro subscription via CLI login (no explicit API key needed)
+    # The SDK will automatically use stored credentials from 'claude login'
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    client = Anthropic(api_key=api_key) if api_key else Anthropic()
 
     system_prompt = (
         "You are a senior test engineer (Tester Agent). "

@@ -652,6 +652,10 @@ psql -U letta -d postgres -c "CREATE DATABASE letta;"
    - Takes 5 minutes
    - Guaranteed to work
    - Low cost ($5)
+   - uh.. are u trying to sell me shit man?, this repo let's us use the whole claude cli which **should be*** included in the subscription.
+   
+
+
 
 2. **If you want to avoid costs**: Option 3 (mock tools)
    - Proves architecture works
