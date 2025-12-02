@@ -28,7 +28,7 @@ Create a hybrid multi-agent system where:
 
 **Environment Variables Required**:
 ```bash
-OPENAI_API_KEY='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'
+OPENAI_API_KEY='sk-proj-...' # Actual key stored in ~/.bashrc
 ```
 
 ### 2. **Tool Registration** ✓
@@ -76,7 +76,7 @@ The **Claude SDK tools cannot authenticate** with the Anthropic API. Here's what
 - **Error**: `Could not resolve authentication method`
 
 ### Attempt 2: API Key with No Credits (Failed)
-- **Approach**: Used existing API key `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`
+- **Approach**: Used existing API key (see ~/.bashrc for actual value)
 - **Result**: ❌ API key valid but has $0 credits
 - **Error**: `Your credit balance is too low to access the Anthropic API`
 
@@ -222,10 +222,7 @@ python agents/hybrid_letta__claude_sdk.py
 
 1. **Add Credits**:
    - Visit: https://console.anthropic.com/settings/billing
-   - Add $5-10 in credits to the account associated with:
-     ```
-     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
-     ```
+   - Add $5-10 in credits to the Anthropic account (see ~/.bashrc for ANTHROPIC_API_KEY)
 
 2. **Revert OAuth Changes**:
    - Edit `agents/hybrid_letta__claude_sdk.py` lines 94-99 and 176-181:
@@ -254,8 +251,7 @@ python agents/hybrid_letta__claude_sdk.py
 
 5. **Uncomment API Key in ~/.bashrc** (line 135-136):
    ```bash
-   # Remove comment:
-   export ANTHROPIC_API_KEY="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"
+   # Remove comment from the ANTHROPIC_API_KEY line in ~/.bashrc
    ```
 
 6. **Restart Letta Server**:
@@ -421,7 +417,7 @@ Created orchestrator agent: agent-5c5f61d0-5676-4489-b0d5-42aa4e9ead44
 curl -s https://api.openai.com/v1/models \
   -H "Authorization: Bearer ${OPENAI_API_KEY}" | head -c 200
 
-# Result: ✅ Returns model list successfully
+# Result: ✅ Returns model list successfully (when API key is set)
 ```
 
 ### Test 2: Letta Server Health ✅
@@ -433,9 +429,7 @@ curl http://localhost:8283/
 
 ### Test 3: Old Anthropic API Key (No Credits) ❌
 ```bash
-curl -s https://api.openai.com/v1/models \
-  -H "Authorization: Bearer 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"
-
+# Tested with old API key from ~/.bashrc
 # Result: ❌ 401 - "Your credit balance is too low"
 ```
 
@@ -502,7 +496,7 @@ tail -f ~/planner/logs/letta.log  # Letta server logs
 
 ### Check Environment Variables
 ```bash
-echo $OPENAI_API_KEY | head -c 20      # Should show: sk-proj-izaZEgp...
+echo $OPENAI_API_KEY | head -c 20      # Should show: sk-proj-...
 echo $ANTHROPIC_API_KEY | head -c 20   # Currently: OAuth token (invalid)
 echo $LETTA_BASE_URL                    # Should show: http://localhost:8283
 ```
