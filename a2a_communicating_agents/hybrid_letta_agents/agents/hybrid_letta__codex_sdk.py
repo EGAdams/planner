@@ -30,7 +30,7 @@ import shutil
 import subprocess
 from pathlib import Path
 import textwrap
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import letta_client
 from letta_client import Letta
@@ -40,6 +40,7 @@ from letta_client import Letta
 
 # Where generated code / tests will be written on the host
 WORKSPACE_DIR = Path(__file__).resolve().parent
+CONTRACT_LOG_NAME = "tdd_contracts.jsonl"
 
 # Orchestrator model inside Letta (Letta only supports: letta, openai, google_ai)
 ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini")
@@ -69,7 +70,11 @@ USER_TASK = textwrap.dedent(
     3. After seeing the red test, call the Coder Tool to implement the function in `add.py`. Keep the
        implementation minimal but correct.
     4. Run the Pytest Runner Tool again with `expect_failure=False` to ensure the tests now pass.
-    5. Summarize the cycle: mention file paths, how the first test run failed, and how the second passed.
+    5. Accumulate the JSON contracts returned by each tool call (test generation, red test run, code
+       generation, green test run) and pass them to the Validator Tool as a JSON array string via the
+       `contracts_json` argument. Do not skip this step.
+    6. Summarize the cycle: mention file paths, how the first test run failed, how the second passed,
+       and the validator result.
 
     **Tool usage reminders**
     - Always pass the literal spec text above into both the Tester and Coder so they have context.
@@ -81,12 +86,74 @@ USER_TASK = textwrap.dedent(
     - Use the generalized Test Runner Tool to execute pytest, node-based suites, or any command the
       project requires. Always set `framework` and `expect_failure` appropriately so the contracts are
       accurate.
+    - When calling the Validator Tool, either pass a JSON array string of prior contracts, concatenate
+      the raw JSON contracts with whitespace, or simply reference the shared `tdd_contracts.jsonl`
+      file in the workspace—the validator can parse any of these formats.
 
     Follow this red-green-refactor loop every time; do not mark the task complete unless the green run
     succeeds.
     """
 ).strip()
 # ---------- Tool implementations (executed inside Letta) ----------
+def _evaluate_contracts(contracts: List[Dict[str, Any]]) -> Tuple[List[str], Dict[str, Any]]:
+    errors: List[str] = []
+
+    test_gen = next(
+        (c for c in contracts if c.get("contract_type") == "test_generation"),
+        None,
+    )
+    if not test_gen:
+        errors.append("Missing test_generation contract.")
+
+    red_run = next(
+        (
+            c
+            for c in contracts
+            if c.get("contract_type") == "test_run" and c.get("expect_failure")
+        ),
+        None,
+    )
+    if not red_run:
+        errors.append("Missing red-phase test run (expect_failure=True).")
+    elif red_run.get("passed"):
+        errors.append("Red-phase test run unexpectedly passed.")
+
+    code_gen = next(
+        (c for c in contracts if c.get("contract_type") == "code_generation"),
+        None,
+    )
+    if not code_gen:
+        errors.append("Missing code_generation contract after red phase.")
+
+    green_run = next(
+        (
+            c
+            for c in contracts
+            if c.get("contract_type") == "test_run" and not c.get("expect_failure")
+        ),
+        None,
+    )
+    if not green_run:
+        errors.append("Missing green-phase test run (expect_failure=False).")
+    elif not green_run.get("passed"):
+        errors.append("Green-phase test run failed.")
+
+    if all([test_gen, red_run, code_gen, green_run]):
+        if not (test_gen["_order"] < red_run["_order"] < code_gen["_order"] < green_run["_order"]):
+            errors.append("Tool execution order does not follow test->red->code->green sequence.")
+
+        for label, entry in ("tests", test_gen), ("code", code_gen):
+            path = entry.get("file_path")
+            if path and not Path(path).exists():
+                errors.append(f"{label.title()} file missing on disk: {path}")
+
+    summary = {
+        "tests_file": test_gen.get("file_path") if test_gen else None,
+        "code_file": code_gen.get("file_path") if code_gen else None,
+        "red_target": red_run.get("target") if red_run else None,
+        "green_target": green_run.get("target") if green_run else None,
+    }
+    return errors, summary
 
 def run_codex_coder(
     spec: str,
@@ -240,6 +307,17 @@ def run_codex_coder(
         "lines": len(code_text.splitlines()),
         "spec_hash": hashlib.sha256(spec.encode("utf-8")).hexdigest(),
     }
+    try:
+        default_log_name = CONTRACT_LOG_NAME
+    except NameError:
+        default_log_name = "tdd_contracts.jsonl"
+    log_name = os.environ.get("CONTRACT_LOG_NAME", default_log_name)
+    log_path = base_dir / log_name
+    try:
+        with log_path.open("a", encoding="utf-8") as log_file:
+            log_file.write(json.dumps(contract) + "\n")
+    except OSError:
+        pass
     return json.dumps(contract, indent=2)
 
 
@@ -398,6 +476,17 @@ def run_codex_tester(
         "spec_hash": hashlib.sha256(spec.encode("utf-8")).hexdigest(),
         "implementation_hash": hashlib.sha256((implementation or "").encode("utf-8")).hexdigest(),
     }
+    try:
+        default_log_name = CONTRACT_LOG_NAME
+    except NameError:
+        default_log_name = "tdd_contracts.jsonl"
+    log_name = os.environ.get("CONTRACT_LOG_NAME", default_log_name)
+    log_path = base_dir / log_name
+    try:
+        with log_path.open("a", encoding="utf-8") as log_file:
+            log_file.write(json.dumps(contract) + "\n")
+    except OSError:
+        pass
     return json.dumps(contract, indent=2)
 
 
@@ -426,6 +515,7 @@ def run_test_suite(
     import subprocess
     import sys
     from pathlib import Path
+    import os
 
     base_dir = Path(workspace_dir or Path.cwd())
     base_dir.mkdir(parents=True, exist_ok=True)
@@ -444,12 +534,15 @@ def run_test_suite(
     if extra_args.strip():
         cmd.extend(shlex.split(extra_args))
 
-    proc = subprocess.run(
-        cmd,
-        cwd=str(base_dir),
-        text=True,
-        capture_output=True,
-    )
+    try:
+        proc = subprocess.run(
+            cmd,
+            cwd=str(base_dir),
+            text=True,
+            capture_output=True,
+        )
+    except FileNotFoundError as exc:
+        raise RuntimeError(f"Failed to execute test command {cmd}: {exc}")
 
     output = proc.stdout + "\n" + proc.stderr
     passed = proc.returncode == 0
@@ -475,7 +568,153 @@ def run_test_suite(
         "outcome": "failed_as_expected" if expect_failure else "passed",
         "output": output.strip(),
     }
+    try:
+        default_log_name = CONTRACT_LOG_NAME
+    except NameError:
+        default_log_name = "tdd_contracts.jsonl"
+    log_name = os.environ.get("CONTRACT_LOG_NAME", default_log_name)
+    log_path = base_dir / log_name
+    try:
+        with log_path.open("a", encoding="utf-8") as log_file:
+            log_file.write(json.dumps(contract) + "\n")
+    except OSError:
+        pass
     return json.dumps(contract, indent=2)
+
+
+def run_tdd_validator(
+    contracts_json: str,
+    workspace_dir: Optional[str] = None,
+) -> str:
+    """
+    Validate the RED→GREEN workflow by inspecting prior tool contracts.
+
+    Args:
+        contracts_json: JSON array string of previously returned tool contracts in chronological order.
+        workspace_dir: Optional workspace directory reference for reporting.
+    """
+    import json
+    from pathlib import Path
+
+    raw = contracts_json.strip()
+    if not raw:
+        raise RuntimeError("contracts_json cannot be empty")
+
+    decoder = json.JSONDecoder()
+    try:
+        data = json.loads(raw)
+        if not isinstance(data, list):
+            raise ValueError("not a list")
+    except Exception:
+        data = []
+        idx = 0
+        length = len(raw)
+        try:
+            while idx < length:
+                while idx < length and raw[idx].isspace():
+                    idx += 1
+                if idx >= length:
+                    break
+                obj, next_idx = decoder.raw_decode(raw, idx)
+                data.append(obj)
+                idx = next_idx
+        except json.JSONDecodeError:
+            data = []
+
+    if not data and workspace_dir:
+        try:
+            default_log_name = CONTRACT_LOG_NAME
+        except NameError:
+            default_log_name = "tdd_contracts.jsonl"
+        log_path = Path(workspace_dir) / default_log_name
+        if log_path.exists():
+            for line in log_path.read_text(encoding="utf-8").splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    data.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+
+    if not data:
+        raise RuntimeError("No contract entries provided to validator")
+
+    contracts: List[Dict[str, Any]] = []
+    for idx, entry in enumerate(data):
+        if not isinstance(entry, dict):
+            raise RuntimeError("Each contract entry must be a JSON object")
+        entry = dict(entry)
+        entry.setdefault("_order", idx)
+        contracts.append(entry)
+
+    errors: List[str] = []
+
+    test_gen = next(
+        (c for c in contracts if c.get("contract_type") == "test_generation"),
+        None,
+    )
+    if not test_gen:
+        errors.append("Missing test_generation contract.")
+
+    red_run = next(
+        (
+            c
+            for c in contracts
+            if c.get("contract_type") == "test_run" and c.get("expect_failure")
+        ),
+        None,
+    )
+    if not red_run:
+        errors.append("Missing red-phase test run (expect_failure=True).")
+    elif red_run.get("passed"):
+        errors.append("Red-phase test run unexpectedly passed.")
+
+    code_gen = next(
+        (c for c in contracts if c.get("contract_type") == "code_generation"),
+        None,
+    )
+    if not code_gen:
+        errors.append("Missing code_generation contract after red phase.")
+
+    green_run = next(
+        (
+            c
+            for c in contracts
+            if c.get("contract_type") == "test_run" and not c.get("expect_failure")
+        ),
+        None,
+    )
+    if not green_run:
+        errors.append("Missing green-phase test run (expect_failure=False).")
+    elif not green_run.get("passed"):
+        errors.append("Green-phase test run failed.")
+
+    if all([test_gen, red_run, code_gen, green_run]):
+        if not (test_gen["_order"] < red_run["_order"] < code_gen["_order"] < green_run["_order"]):
+            errors.append("Tool execution order does not follow test->red->code->green sequence.")
+
+        for label, entry in ("tests", test_gen), ("code", code_gen):
+            path = entry.get("file_path")
+            if path and not Path(path).exists():
+                errors.append(f"{label.title()} file missing on disk: {path}")
+
+    summary = {
+        "tests_file": test_gen.get("file_path") if test_gen else None,
+        "code_file": code_gen.get("file_path") if code_gen else None,
+        "red_target": red_run.get("target") if red_run else None,
+        "green_target": green_run.get("target") if green_run else None,
+    }
+    if errors:
+        raise RuntimeError("; ".join(errors))
+
+    summary_contract = {
+        "contract_type": "tdd_validation",
+        "status": "success",
+        "workspace_dir": workspace_dir,
+        **summary,
+    }
+    return json.dumps(summary_contract, indent=2)
 
 
 def create_letta_client() -> Letta:
@@ -489,6 +728,12 @@ def create_letta_client() -> Letta:
 def ensure_workspace_dir() -> None:
     print(f"WORKSPACE_DIR = {WORKSPACE_DIR}")
     WORKSPACE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def reset_contract_log() -> None:
+    log_path = WORKSPACE_DIR / CONTRACT_LOG_NAME
+    if log_path.exists():
+        log_path.unlink()
 
 
 def _extract_tool_return_text(tool_return: Any) -> str:
@@ -531,58 +776,15 @@ def validate_tdd_contracts(messages: List[Any]) -> None:
         data["_order"] = len(contracts)
         contracts.append(data)
 
-    errors: List[str] = []
-
-    def find_contract(contract_type: str, predicate=lambda _: True):
-        for entry in contracts:
-            if entry.get("contract_type") == contract_type and predicate(entry):
-                return entry
-        return None
-
-    test_gen = find_contract("test_generation")
-    if not test_gen:
-        errors.append("Missing test_generation contract.")
-
-    red_run = find_contract("test_run", lambda c: c.get("expect_failure"))
-    if not red_run:
-        errors.append("Missing red-phase pytest run (expect_failure=True).")
-    elif red_run.get("passed"):
-        errors.append("Red-phase pytest run unexpectedly passed.")
-
-    code_gen = find_contract("code_generation")
-    if not code_gen:
-        errors.append("Missing code_generation contract after red phase.")
-
-    green_run = find_contract("test_run", lambda c: not c.get("expect_failure"))
-    if not green_run:
-        errors.append("Missing green-phase pytest run (expect_failure=False).")
-    elif not green_run.get("passed"):
-        errors.append("Green-phase pytest run failed.")
-
-    # Order validation if all present
-    if all([test_gen, red_run, code_gen, green_run]):
-        if not (test_gen["_order"] < red_run["_order"] < code_gen["_order"] < green_run["_order"]):
-            errors.append("Tool execution order does not follow test->red->code->green sequence.")
-
-        for label, entry in ("tests", test_gen), ("code", code_gen):
-            path = entry.get("file_path")
-            if not path or not Path(path).exists():
-                errors.append(f"{label.title()} file missing on disk: {path}")
-
+    errors, summary = _evaluate_contracts(contracts)
     if errors:
         raise RuntimeError("\n".join(["TDD contract validation failed:"] + [f"- {e}" for e in errors]))
 
     print("\n✅ Inline TDD contract validation passed.")
-    print(f"  - Tests file: {test_gen.get('file_path') if test_gen else 'N/A'}")
-    print(
-        "  - Pytest red run target:",
-        red_run.get("target") if red_run else "N/A",
-    )
-    print(f"  - Code file: {code_gen.get('file_path') if code_gen else 'N/A'}")
-    print(
-        "  - Pytest green run target:",
-        green_run.get("target") if green_run else "N/A",
-    )
+    print(f"  - Tests file: {summary.get('tests_file')}")
+    print(f"  - Pytest red run target: {summary.get('red_target')}")
+    print(f"  - Code file: {summary.get('code_file')}")
+    print(f"  - Pytest green run target: {summary.get('green_target')}")
 
 
 # ---------- Main orchestration ----------
@@ -590,6 +792,7 @@ def validate_tdd_contracts(messages: List[Any]) -> None:
 def main() -> None:
     print("Starting hybrid_letta__codex_sdk.py...")
     ensure_workspace_dir()
+    reset_contract_log()
 
     client = create_letta_client()
 
@@ -610,6 +813,11 @@ def main() -> None:
     print(f"  - ID:   {test_runner_tool.id}")
     print(f"  - Name: {test_runner_tool.name}")
 
+    validator_tool = client.tools.create_from_function(func=run_tdd_validator)
+    print("Created validator_tool:")
+    print(f"  - ID:   {validator_tool.id}")
+    print(f"  - Name: {validator_tool.name}")
+
     # 2) Create an orchestrator agent which can call those tools
     print(f"Creating orchestrator with model: {ORCH_MODEL}")
     orchestrator_agent = client.agents.create(
@@ -627,7 +835,12 @@ def main() -> None:
                 "limit": 2000,
             },
         ],
-        tools=[coder_tool.name, tester_tool.name, test_runner_tool.name],
+        tools=[
+            coder_tool.name,
+            tester_tool.name,
+            test_runner_tool.name,
+            validator_tool.name,
+        ],
         # tool_exec_environment_variables are available as os.getenv(...) inside tools
         tool_exec_environment_variables={
             "ORCH_MODEL": ORCH_MODEL,

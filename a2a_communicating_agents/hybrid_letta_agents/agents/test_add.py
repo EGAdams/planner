@@ -1,17 +1,15 @@
-import pytest
-
 from add import add
+import pytest
 
 
 @pytest.mark.parametrize(
-    ("a", "b", "expected"),
+    "a,b,expected",
     [
         (2, 3, 5),
+        (-4, -6, -10),
         (0, 0, 0),
-        (-5, -7, -12),
-        (-10, 5, -5),
-        (5, -10, -5),
-        (1_000_000_000_000, 2_000_000_000_000, 3_000_000_000_000),
+        (-7, 7, 0),
+        (10**12, 10**12, 2 * 10**12),
     ],
 )
 def test_add_valid_inputs(a, b, expected):
@@ -19,15 +17,16 @@ def test_add_valid_inputs(a, b, expected):
 
 
 @pytest.mark.parametrize(
-    ("a", "b"),
+    "a,b",
     [
+        (1.5, 2),
         ("1", 2),
-        (1.0, 3),
-        (None, 0),
+        (None, 5),
         ([1], 2),
-        (3, {"value": 4}),
+        (3, "4"),
+        (3, None),
     ],
 )
-def test_add_invalid_types(a, b):
+def test_add_rejects_non_ints(a, b):
     with pytest.raises(TypeError):
         add(a, b)

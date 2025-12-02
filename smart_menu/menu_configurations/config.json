@@ -47,6 +47,222 @@
                         "action": "echo 'Tests coming soon...'"
                     }
                 ]
+            },
+            {
+                "title": "Fix Components",
+                "submenu": [
+                    {
+                        "title": "Letta Server Admin",
+                        "submenu": [
+                            {
+                                "title": "Initialize Letta Database",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Start Letta Server",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Check Letta Server Status",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Stop Letta Server",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "PostgreSQL Setup",
+                        "submenu": [
+                            {
+                                "title": "Initialize PostgreSQL Database",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Check PostgreSQL Connection",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Reset Database",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Database Schema",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Basic Agent Communication Tests",
+                        "submenu": [
+                            {
+                                "title": "Test Agent Discovery",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Message Transport",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Agent Delegation",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Memory Backend",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "LiveKit Integration",
+                        "submenu": [
+                            {
+                                "title": "Initialize LiveKit Server",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Voice Communication",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Start Voice Agent",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Check LiveKit Status",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Orchestrator Agent Setup",
+                        "submenu": [
+                            {
+                                "title": "Start Orchestrator Agent",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Load Agent Card",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Routing Logic",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Check Agent Registry",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Dashboard & UI Setup",
+                        "submenu": [
+                            {
+                                "title": "Start Dashboard Server",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Build Dashboard Assets",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Dashboard Connectivity",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Open Dashboard in Browser",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Service Management",
+                        "submenu": [
+                            {
+                                "title": "Start All Services",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Stop All Services",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Service Status",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Service Logs",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Memory Systems",
+                        "submenu": [
+                            {
+                                "title": "Test ChromaDB Memory",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Letta Memory Backend",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Reset Memory Storage",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Memory Stats",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "WebSocket & Transport",
+                        "submenu": [
+                            {
+                                "title": "Test WebSocket Connection",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Transport Factory",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Fallback Mechanisms",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Verify Message Routing",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Finance Report",
+        "submenu": [
+            {
+                "title": "Process Bank Statements",
+                "submenu": [
+                    {
+                        "title": "Parse and Validate PDF",
+                        "submenu": []
+                    },
+                    {
+                        "title": "Parse Receipts",
+                        "submenu": []
+                    },
+                    {
+                        "title": "Put parsed data into database",
+                        "submenu": []
+                    }
+                ]
             }
         ]
     },

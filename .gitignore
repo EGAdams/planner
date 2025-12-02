@@ -35,3 +35,4 @@ agent_messaging/storage/
 .claude-collective/metrics/collective-metrics.log
 logs/letta.log
 livekit-venv/*
+a2a_communicating_agents/hybrid_letta_agents/venv/*

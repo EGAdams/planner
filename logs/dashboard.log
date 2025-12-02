@@ -2,17 +2,15 @@
 > admin-dashboard@1.0.0 start
 > node backend/dist/server.js
 
-2025-11-26T18:19:54.127Z ADMIN_HOST from env: undefined
-2025-11-26T18:19:54.139Z Admin dashboard server running on http://127.0.0.1:3000
-2025-11-26T18:19:54.139Z Process management enabled with persistent state
-2025-11-26T18:19:54.146Z Server orchestrator initialized
-2025-11-26T18:19:54.148Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
-2025-11-26T18:19:54.155Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
-2025-11-26T18:19:54.160Z Discovered agent: planner-agent in /home/adamsl/planner
-2025-11-26T18:19:54.270Z Discovered 3 agents
-2025-11-26T18:19:54.270Z Agent discovery complete. Registered agents:
-2025-11-26T18:20:18.562Z Server letta-server started with PID 25108
-2025-11-26T18:20:25.482Z Process letta-server died unexpectedly
-2025-11-26T19:12:33.866Z 
-Shutting down gracefully...
-2025-11-26T19:12:33.895Z Server closed
+2025-12-02T00:39:00.266Z ADMIN_HOST from env: undefined
+2025-12-02T00:39:00.279Z Admin dashboard server running on http://127.0.0.1:3000
+2025-12-02T00:39:00.279Z Process management enabled with persistent state
+2025-12-02T00:39:00.286Z Server orchestrator initialized
+2025-12-02T00:39:00.289Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
+2025-12-02T00:39:00.294Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
+2025-12-02T00:39:00.296Z Discovered agent: planner-agent in /home/adamsl/planner
+Could not infer run command for agent in /home/adamsl/planner/agent_messaging/agents/letta
+Could not infer run command for agent in /home/adamsl/planner/agent_messaging/agents/orchestrator
+2025-12-02T00:39:00.367Z Discovered 3 agents
+2025-12-02T00:39:00.367Z Agent discovery complete. Registered agents:
+2025-12-02T00:39:54.501Z Server api-server started with PID 129187

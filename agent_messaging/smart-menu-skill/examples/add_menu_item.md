@@ -31,7 +31,7 @@ else
 fi
 ```
 
-### 2. Copy to WSL and Set Permissions
+### 2. If we are in a Windows environment, copy to WSL and Set Permissions
 
 ```bash
 wsl cp /mnt/c/Users/NewUser/Desktop/blue_time/planner/agent_messaging/tests/test_agent_discovery.sh /home/adamsl/planner/agent_messaging/tests/
@@ -67,8 +67,14 @@ Update `smart_menu/menu_configurations/config.json`:
 
 ### 4. Test via Menu
 
+#### Powershell
 ```bash
 wsl bash -c "python3 /home/adamsl/planner/smart_menu/run_smart_menu_system.py /home/adamsl/planner/smart_menu/menu_configurations/config.json"
+```
+
+#### wsl
+```bash
+python3 /home/adamsl/planner/smart_menu/run_smart_menu_system.py /home/adamsl/planner/smart_menu/menu_configurations/config.json
 ```
 
 Navigate: 5 → 1 → 1 → 1
