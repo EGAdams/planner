@@ -29,8 +29,13 @@ def test_letta_connection():
     print("\n2. Attempting to list existing agents...")
     try:
         agents_page = client.agents.list()
-        # Handle pagination - convert to list
-        agents = list(agents_page)
+        # Avoid implicit pagination that currently 500s on follow-up requests.
+        if hasattr(agents_page, "items"):
+            agents = list(agents_page.items)
+        elif hasattr(agents_page, "agents"):
+            agents = list(agents_page.agents)
+        else:
+            agents = list(agents_page)
         print(f"   ✅ Found {len(agents)} existing agents")
         if agents:
             for agent in agents[:3]:  # Show first 3
@@ -56,6 +61,11 @@ def test_letta_connection():
     try:
         agent = client.agents.create(
             name="test_minimal_agent",
+            model="letta/letta-free",
+            embedding="letta/letta-free",
+            memory_blocks=[
+                {"label": "persona", "value": "I am a diagnostic agent used for connectivity tests."}
+            ]
         )
         print(f"   ✅ Successfully created agent: {agent.id}")
         

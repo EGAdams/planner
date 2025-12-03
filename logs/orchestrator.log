@@ -1,8 +1,150 @@
-Traceback (most recent call last):
-  File "/home/adamsl/planner/a2a_communicating_agents/orchestrator_agent/main.py", line 24, in <module>
-    from agent_messaging import inbox, post_message, create_jsonrpc_response
-  File "/home/adamsl/planner/agent_messaging/__init__.py", line 8, in <module>
-    from .message_transport import MessageTransport
-  File "/home/adamsl/planner/agent_messaging/message_transport.py", line 9, in <module>
-    from message_models import AgentMessage
-ModuleNotFoundError: No module named 'message_models'
+chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+[orchestrator-agent] Started. Listening on topic 'orchestrator'...
+[orchestrator-agent] Scanning for agents...
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+    Letta unavailable, using ChromaDB memory (fallback)
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+    Letta unavailable, using ChromaDB memory (fallback)
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+    Letta unavailable, using ChromaDB memory (fallback)
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+    Letta unavailable, using ChromaDB memory (fallback)
+[orchestrator-agent] letta memory backend: chromadb -> connected
+[orchestrator-agent] dashboard-agent memory backend: chromadb -> connected
+[orchestrator-agent] Discovered 2 agents: ['letta', 'dashboard-agent']
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+    Letta unavailable, using RAG message board (fallback)
+  Messenger initialized using: rag
+[RAGBoardTransport] Found 25 results (metadata scan)
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator
+[orchestrator-agent] [orchestrator-agent] Processing request: **From:** orchestrator-agent **To:** board **Topic...
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[orchestrator-agent] [orchestrator-agent] Router returned no target; responding directly.
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+  Posted to message board: orchestrator

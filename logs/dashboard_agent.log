@@ -1,9 +1,263 @@
-Traceback (most recent call last):
-  File "/home/adamsl/planner/a2a_communicating_agents/dashboard_agent/main.py", line 27, in <module>
-    from agent_messaging import inbox, post_message, create_jsonrpc_response  # noqa: E402
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/adamsl/planner/agent_messaging/__init__.py", line 8, in <module>
-    from .message_transport import MessageTransport
-  File "/home/adamsl/planner/agent_messaging/message_transport.py", line 9, in <module>
-    from message_models import AgentMessage
-ModuleNotFoundError: No module named 'message_models'
+[dashboard-agent] Agent started. Listening on topic 'ops'...
+[dashboard-agent] Server is already running.
+chromadb.telemetry.product.posthog - INFO - Anonymized telemetry enabled. See                     https://docs.trychroma.com/telemetry for more information.
+sentence_transformers.SentenceTransformer - INFO - Use pytorch device_name: cpu
+sentence_transformers.SentenceTransformer - INFO - Load pretrained SentenceTransformer: all-MiniLM-L6-v2
+    Letta unavailable, using RAG message board (fallback)
+  Messenger initialized using: rag
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty
+[RAGBoardTransport] Polling with query fallback: to:board topic:ops
+[RAGEngine] Error executing plan: Internal error: Error finding id -> returning 0 results
+[RAGBoardTransport] Fallback found 0 results
+  Message board is empty

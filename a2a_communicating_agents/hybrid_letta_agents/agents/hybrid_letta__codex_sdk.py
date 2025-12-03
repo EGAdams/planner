@@ -185,14 +185,19 @@ def run_codex_coder(
 
     prompt = textwrap.dedent(
         f"""
+        <instructions>
+        Instructions:
         You are an elite software engineer (Coder Agent).
         Implement the requested feature as a single {language} file.
         Return ONLY the raw file contents without fences or commentary.
+        </instructions>
 
+        <spec>
         Specification:
         ---------------- SPEC START ----------------
         {spec}
         ----------------- SPEC END -----------------
+        </spec>
         """
     )
 

@@ -4,15 +4,18 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+VENV_PYTHON="$REPO_ROOT/.venv/bin/python"
 
 cd "$REPO_ROOT"
 
-if command -v python3 >/dev/null 2>&1; then
+if [ -x "$VENV_PYTHON" ]; then
+    PYTHON_BIN="$VENV_PYTHON"
+elif command -v python3 >/dev/null 2>&1; then
     PYTHON_BIN="python3"
 elif command -v python >/dev/null 2>&1; then
     PYTHON_BIN="python"
 else
-    echo "python3 is required to start the chat." >&2
+    echo "A Python interpreter is required to start the chat." >&2
     exit 1
 fi
 

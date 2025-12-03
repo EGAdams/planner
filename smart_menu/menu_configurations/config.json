@@ -1,79 +1,152 @@
 [
     {
-        "title": "A2A Agent Collective",
+        "title": "A2A Communicating Agents",
         "submenu": [
             {
-                "title": "Phase 1: Infrastructure",
+                "title": "Stack Operations & Verification",
                 "submenu": [
                     {
-                        "title": "A2A collective Hub",
+                        "title": "Start A2A Service Stack",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ./start_a2a_system.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "Stop A2A Service Stack",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ./stop_a2a_system.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Show Latest Stack Status Summary",
+                        "action": "cat /home/adamsl/planner/documents/agent_communication/A2A_SYSTEM_STATUS.md",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Verify Letta Health Endpoint",
+                        "action": "bash -lc 'cd /home/adamsl/planner && python a2a_communicating_agents/hybrid_letta_agents/tests/test_letta_server.py'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Run Letta Client Integration Test",
+                        "action": "bash -lc 'cd /home/adamsl/planner && python a2a_communicating_agents/hybrid_letta_agents/test_letta_client_direct.py'",
+                        "working_directory": "/home/adamsl/planner"
+                    }
+                ]
+            },
+            {
+                "title": "Agent Diagnostics & Tests",
+                "submenu": [
+                    {
+                        "title": "Messaging Smoke Tests",
                         "submenu": [
                             {
-                                "title": "Run Agent Discovery Test",
+                                "title": "Agent Discovery Smoke Test",
                                 "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_agent_discovery.sh",
                                 "working_directory": "/home/adamsl/planner/smart_menu"
                             },
                             {
-                                "title": "Run Delegation Test",
+                                "title": "Delegation Workflow Test",
                                 "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_delegation.sh",
                                 "working_directory": "/home/adamsl/planner/smart_menu"
                             }
                         ]
                     },
                     {
-                        "title": "Agent discovery system",
-                        "action": "echo 'Tests coming soon...'"
-                    },
-                    {
-                        "title": "Unified memory with Fallback",
+                        "title": "Memory & Transport Tests",
                         "submenu": [
                             {
-                                "title": "Run Memory System Test",
+                                "title": "Run Memory Fallback Test",
                                 "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_memory_system.sh",
                                 "working_directory": "/home/adamsl/planner/smart_menu"
+                            },
+                            {
+                                "title": "Transport Fallback Validation (TODO)",
+                                "action": "echo 'Transport fallback validation not implemented yet.'"
                             }
                         ]
                     },
                     {
-                        "title": "Transport factory with fallback",
-                        "action": "echo 'Tests coming soon...'"
-                    },
-                    {
-                        "title": "Voice capability scaffolding",
-                        "action": "echo 'Tests coming soon...'"
-                    },
-                    {
-                        "title": "Service management scripts",
-                        "action": "echo 'Tests coming soon...'"
+                        "title": "Voice & LiveKit Prep",
+                        "submenu": [
+                            {
+                                "title": "Voice Capability Checklist (TODO)",
+                                "action": "echo 'Voice capability scaffolding not implemented yet.'"
+                            },
+                            {
+                                "title": "LiveKit Service Tasks (TODO)",
+                                "action": "echo 'LiveKit integration commands not implemented yet.'"
+                            }
+                        ]
                     }
                 ]
             },
             {
-                "title": "Fix Components",
+                "title": "Orchestrator Ops & Chat",
                 "submenu": [
                     {
-                        "title": "Letta Server Admin",
+                        "title": "List Registered Letta Agents",
+                        "action": "bash -lc 'cd /home/adamsl/planner && /home/adamsl/planner/livekit-venv/bin/python a2a_communicating_agents/hybrid_letta_agents/agents/test_letta_minimal.py'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Launch Orchestrator Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent && /home/adamsl/planner/.venv/bin/python main.py'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "Open Orchestrator Chat Session",
+                        "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_chat.sh",
+                        "working_directory": "/home/adamsl/planner/smart_menu",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "Show Orchestrator Logs",
+                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 200 logs/orchestrator.log'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Inspect Orchestrator Agent Card",
+                        "action": "cat /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent/agent.json",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Run Orchestrator Routing Test",
+                        "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_routing_test.sh",
+                        "working_directory": "/home/adamsl/planner/smart_menu"
+                    },
+                    {
+                        "title": "Check Agent Registry Snapshot",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/agent_messaging && python3 run_collective.py'",
+                        "working_directory": "/home/adamsl/planner"
+                    }
+                ]
+            },
+            {
+                "title": "Maintenance Backlog",
+                "submenu": [
+                    {
+                        "title": "Letta Server Admin Tasks",
                         "submenu": [
                             {
-                                "title": "Initialize Letta Database",
-                                "action": "echo 'Not implemented yet.'"
+                                "title": "Check Letta Health Endpoint",
+                                "action": "bash -lc 'cd /home/adamsl/planner && (curl -fsS http://localhost:8283/health || curl -fsS http://localhost:8283/v1/health || (echo \"Letta health endpoint is not responding\" && exit 1))'",
+                                "working_directory": "/home/adamsl/planner"
                             },
                             {
-                                "title": "Start Letta Server",
-                                "action": "echo 'Not implemented yet.'"
+                                "title": "Tail Letta Server Logs",
+                                "action": "bash -lc 'cd /home/adamsl/planner && tail -n 200 logs/letta.log'",
+                                "working_directory": "/home/adamsl/planner"
                             },
                             {
-                                "title": "Check Letta Server Status",
-                                "action": "echo 'Not implemented yet.'"
-                            },
-                            {
-                                "title": "Stop Letta Server",
-                                "action": "echo 'Not implemented yet.'"
+                                "title": "Restart Letta Server",
+                                "action": "bash -lc 'cd /home/adamsl/planner && ./scripts/restart_letta_server.sh'",
+                                "working_directory": "/home/adamsl/planner"
                             }
                         ]
                     },
                     {
-                        "title": "PostgreSQL Setup",
+                        "title": "PostgreSQL Setup Tasks (TODO)",
                         "submenu": [
                             {
                                 "title": "Initialize PostgreSQL Database",
@@ -94,82 +167,7 @@
                         ]
                     },
                     {
-                        "title": "Basic Agent Communication Tests",
-                        "submenu": [
-                            {
-                                "title": "Test Agent Discovery",
-                                "action": "echo 'Not implemented yet.'"
-                            },
-                            {
-                                "title": "Test Message Transport",
-                                "action": "echo 'Not implemented yet.'"
-                            },
-                            {
-                                "title": "Test Agent Delegation",
-                                "action": "echo 'Not implemented yet.'"
-                            },
-                            {
-                                "title": "Test Memory Backend",
-                                "action": "echo 'Not implemented yet.'"
-                            }
-                        ]
-                    },
-                    {
-                        "title": "LiveKit Integration",
-                        "submenu": [
-                            {
-                                "title": "Initialize LiveKit Server",
-                                "action": "echo 'Not implemented yet.'"
-                            },
-                            {
-                                "title": "Test Voice Communication",
-                                "action": "echo 'Not implemented yet.'"
-                            },
-                            {
-                                "title": "Start Voice Agent",
-                                "action": "echo 'Not implemented yet.'"
-                            },
-                            {
-                                "title": "Check LiveKit Status",
-                                "action": "echo 'Not implemented yet.'"
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Orchestrator Agent Setup",
-                        "submenu": [
-                            {
-                                "title": "Start Orchestrator Agent",
-                                "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent && python3 main.py'",
-                                "working_directory": "/home/adamsl/planner",
-                                "open_in_subprocess": true
-                            },
-                            {
-                                "title": "Load Agent Card",
-                                "action": "cat /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent/agent.json",
-                                "working_directory": "/home/adamsl/planner"
-                            },
-                            {
-                                "title": "Test Routing Logic",
-                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_routing_test.sh",
-                                "working_directory": "/home/adamsl/planner/smart_menu"
-                            },
-                            {
-                                "title": "Check Agent Registry",
-                                "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/agent_messaging && python3 run_collective.py'",
-                                "working_directory": "/home/adamsl/planner",
-                                "open_in_subprocess": false
-                            },
-                            {
-                                "title": "Chat with Orchestrator",
-                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_chat.sh",
-                                "working_directory": "/home/adamsl/planner/smart_menu",
-                                "open_in_subprocess": true
-                            }
-                        ]
-                    },
-                    {
-                        "title": "Dashboard & UI Setup",
+                        "title": "Dashboard & UI Tasks (TODO)",
                         "submenu": [
                             {
                                 "title": "Start Dashboard Server",
@@ -190,7 +188,7 @@
                         ]
                     },
                     {
-                        "title": "Service Management",
+                        "title": "Service Management Tasks (TODO)",
                         "submenu": [
                             {
                                 "title": "Start All Services",
@@ -211,7 +209,7 @@
                         ]
                     },
                     {
-                        "title": "Memory Systems",
+                        "title": "Memory & Messaging Tasks (TODO)",
                         "submenu": [
                             {
                                 "title": "Test ChromaDB Memory",
@@ -232,7 +230,7 @@
                         ]
                     },
                     {
-                        "title": "WebSocket & Transport",
+                        "title": "WebSocket & Transport Tasks (TODO)",
                         "submenu": [
                             {
                                 "title": "Test WebSocket Connection",
@@ -326,35 +324,6 @@
         "action": "cat /home/adamsl/linuxBash/python_menus/smart_menu/config.json",
         "working_directory": "",
         "open_in_subprocess": false
-    },
-    {
-        "title": "Agent Messaging",
-        "submenu": [
-            {
-                "title": "A2A Collective Test",
-                "action": "python3 ~/rpi-rgb-led-matrix/pickle_cpp/.a_smartmenu/smart_menu/adjust_pickle_match_win_flash_delay.py",
-                "working_directory": "",
-                "open_in_subprocess": false
-            },
-            {
-                "title": "Letta memory test",
-                "action": "echo running letta agent tests...",
-                "working_directory": "",
-                "open_in_subprocess": false
-            },
-            {
-                "title": "Chroma Memory Tests",
-                "action": "echo running chroma memory tests...",
-                "working_directory": "",
-                "open_in_subprocess": false
-            },
-            {
-                "title": "WebSocket Communication Test",
-                "action": "echo running websocket communication test...",
-                "working_directory": "",
-                "open_in_subprocess": false
-            }
-        ]
     },
     {
         "title": "Show the Plan",

@@ -12,6 +12,10 @@ from a2a_communicating_agents.agent_messaging import AgentMessenger
 from a2a_communicating_agents.agent_messaging.transport_factory import TransportFactory
 from a2a_communicating_agents.agent_messaging.message_models import AgentMessage
 
+TRANSPORT_FACTORY_IMPORT = (
+    "a2a_communicating_agents.agent_messaging.transport_factory.TransportFactory"
+)
+
 @pytest.mark.integration
 class TestAgentMessengerIntegration:
     """Integration tests for AgentMessenger"""
@@ -19,13 +23,13 @@ class TestAgentMessengerIntegration:
     @pytest.fixture
     def mock_transport_factory(self):
         """Mock TransportFactory to control transport selection"""
-        with patch('agent_messaging.transport_factory.TransportFactory') as mock_factory:
+        with patch(TRANSPORT_FACTORY_IMPORT) as mock_factory:
             yield mock_factory
 
     def test_initialization_defaults(self):
         """Should initialize with default transport (WebSocket)"""
         # We need to mock the factory's create_transport method
-        with patch('agent_messaging.transport_factory.TransportFactory.create_transport') as mock_create:
+        with patch(f"{TRANSPORT_FACTORY_IMPORT}.create_transport") as mock_create:
             mock_transport = AsyncMock()
             mock_create.return_value = ("websocket", mock_transport)
             
@@ -37,7 +41,7 @@ class TestAgentMessengerIntegration:
 
     def test_send_message_delegates_to_transport(self):
         """send_message should use the active transport"""
-        with patch('agent_messaging.transport_factory.TransportFactory.create_transport') as mock_create:
+        with patch(f"{TRANSPORT_FACTORY_IMPORT}.create_transport") as mock_create:
             mock_transport = AsyncMock()
             mock_transport.send.return_value = True
             mock_create.return_value = ("websocket", mock_transport)
@@ -59,7 +63,7 @@ class TestAgentMessengerIntegration:
 
     def test_send_message_failure(self):
         """Should handle transport failure gracefully"""
-        with patch('agent_messaging.transport_factory.TransportFactory.create_transport') as mock_create:
+        with patch(f"{TRANSPORT_FACTORY_IMPORT}.create_transport") as mock_create:
             mock_transport = AsyncMock()
             mock_transport.send.return_value = False
             mock_create.return_value = ("websocket", mock_transport)
@@ -73,7 +77,7 @@ class TestAgentMessengerIntegration:
 
     def test_post_to_board_with_rag_transport(self):
         """post_to_board should work when messenger already has RAG transport"""
-        with patch('agent_messaging.transport_factory.TransportFactory.create_transport') as mock_create:
+        with patch(f"{TRANSPORT_FACTORY_IMPORT}.create_transport") as mock_create:
             # Initialize messenger with RAG transport
             from a2a_communicating_agents.agent_messaging.rag_board_transport import RAGBoardTransport
             mock_transport = AsyncMock(spec=RAGBoardTransport)
@@ -91,7 +95,7 @@ class TestAgentMessengerIntegration:
 
     def test_read_messages_rag_fallback(self):
         """read_messages should poll RAG if transport is RAG"""
-        with patch('agent_messaging.transport_factory.TransportFactory.create_transport') as mock_create:
+        with patch(f"{TRANSPORT_FACTORY_IMPORT}.create_transport") as mock_create:
             mock_transport = AsyncMock()
             mock_transport.poll_messages.return_value = [
                 AgentMessage(to_agent="me", from_agent="other", content="Hi")

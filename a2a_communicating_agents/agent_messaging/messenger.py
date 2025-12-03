@@ -298,7 +298,7 @@ class AgentMessenger:
             console.print(f"  Error posting to board: {e}", style="red")
             return None
 
-    def read_board(self, topic: Optional[str] = None, limit: int = 10):
+    def read_board(self, topic: Optional[str] = None, limit: int = 10, *, render: bool = True):
         """Read messages from shared memory board"""
         try:
             if isinstance(self.transport, RAGBoardTransport):
@@ -311,21 +311,23 @@ class AgentMessenger:
             messages = asyncio.run(transport.poll_messages("board", topic=topic))
             
             if messages:
-                console.print(f"\n  Message Board ({len(messages)} messages):", style="cyan")
-                for i, msg in enumerate(messages[:limit], 1):
-                    # Handle both dict results and AgentMessage objects
-                    content = msg.content if hasattr(msg, 'content') else str(msg)
-                    source = msg.from_agent if hasattr(msg, 'from_agent') else "unknown"
-                    
-                    panel = Panel(
-                        content[:300] + ("..." if len(content) > 300 else ""),
-                        title=f"[{i}] From: {source}",
-                        border_style="blue"
-                    )
-                    console.print(panel)
+                if render:
+                    console.print(f"\n  Message Board ({len(messages)} messages):", style="cyan")
+                    for i, msg in enumerate(messages[:limit], 1):
+                        # Handle both dict results and AgentMessage objects
+                        content = msg.content if hasattr(msg, 'content') else str(msg)
+                        source = msg.from_agent if hasattr(msg, 'from_agent') else "unknown"
+                        
+                        panel = Panel(
+                            content[:300] + ("..." if len(content) > 300 else ""),
+                            title=f"[{i}] From: {source}",
+                            border_style="blue"
+                        )
+                        console.print(panel)
                 return messages
             else:
-                console.print("  Message board is empty", style="yellow")
+                if render:
+                    console.print("  Message board is empty", style="yellow")
                 return []
 
         except Exception as e:
@@ -361,10 +363,10 @@ def post_message(message: str, topic: str = "general", from_agent: str = "claude
     messenger = _get_messenger()
     return messenger.post_to_board(message, topic=topic, from_agent=from_agent)
 
-def read_messages(topic: Optional[str] = None, limit: int = 10):
+def read_messages(topic: Optional[str] = None, limit: int = 10, *, render: bool = True):
     """Read from message board"""
     messenger = _get_messenger()
-    return messenger.read_board(topic=topic, limit=limit)
+    return messenger.read_board(topic=topic, limit=limit, render=render)
 
 def list_agents():
     """List all agents"""

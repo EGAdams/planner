@@ -4,6 +4,7 @@ Core RAG engine using ChromaDB and sentence-transformers
 
 import chromadb
 from chromadb.config import Settings
+from chromadb.errors import ChromaError, InternalError
 from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any, Optional
 import uuid
@@ -207,11 +208,23 @@ class RAGEngine:
         # Query ChromaDB - get more results for re-ranking
         fetch_count = n_results * 2 if apply_artifact_boosting else n_results
 
-        results = self.collection.query(
-            query_texts=[query_text],
-            n_results=fetch_count,
-            where=filter_dict
-        )
+        try:
+            results = self.collection.query(
+                query_texts=[query_text],
+                n_results=fetch_count,
+                where=filter_dict
+            )
+        except InternalError as exc:
+            message = str(exc)
+            # Some Chroma builds surface transient "Nothing found on disk" or
+            # "Error finding id" errors when the collection is empty or midway
+            # through maintenance. Treat these the same as an empty result set
+            # so downstream callers do not crash the entire messaging loop.
+            benign_errors = ("Nothing found on disk", "Error finding id")
+            if any(token in message for token in benign_errors):
+                print(f"[RAGEngine] {message.strip()} -> returning 0 results")
+                return []
+            raise
 
         # Convert to QueryResult objects
         query_results = []

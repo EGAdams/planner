@@ -11,35 +11,43 @@ conversation topic to reduce duplicate implementations across directories.
 from __future__ import annotations
 
 import argparse
+import asyncio
 import os
+import re
 import signal
 import subprocess
 import sys
-from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, List, Optional, Sequence, Set
+from typing import List, Optional, Sequence, Set, Tuple
 
 from rich.console import Console
 from rich.prompt import Prompt
 
+CURRENT_FILE = Path(__file__).resolve()
+REPO_ROOT = CURRENT_FILE.parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+PACKAGE_ROOT = REPO_ROOT / "a2a_communicating_agents"
+
 from a2a_communicating_agents.agent_messaging.agent_messaging_interface import (
     AgentMessage,
 )
-from rag_system.rag_tools import read_agent_messages, send_agent_message
+from a2a_communicating_agents.agent_messaging.message_models import (
+    AgentMessage as TransportAgentMessage,
+    MessagePriority as TransportMessagePriority,
+)
+from a2a_communicating_agents.agent_messaging.message_transport import MessageTransport
+from a2a_communicating_agents.agent_messaging.transport_factory import TransportFactory
+from rag_system.core.document_manager import DocumentManager
 
 console = Console()
 
 
 def _default_orchestrator_path() -> Path:
     """Return the absolute path to the orchestrator agent directory."""
-    return (
-        Path(__file__)
-        .resolve()
-        .parents[1]
-        / "a2a_communicating_agents"
-        / "orchestrator_agent"
-    )
+    return PACKAGE_ROOT / "orchestrator_agent"
 
 
 class OrchestratorProcessManager:
@@ -83,21 +91,55 @@ class OrchestratorProcessManager:
 class OrchestratorChatSession:
     """Stateful helper that polls the orchestrator topic and sends messages."""
 
+    _HEADER_PATTERN = re.compile(r"^\*\*(?P<label>[^*]+)\*\*\s*(?P<value>.*)$")
+
     def __init__(
         self,
         *,
         agent_name: str,
         topic: str,
         poll_limit: int = 20,
-        send_fn: Callable[..., AgentMessage] = send_agent_message,
-        inbox_fn: Callable[..., Sequence[AgentMessage]] = read_agent_messages,
+        transport_name: Optional[str] = None,
+        transport: Optional[MessageTransport] = None,
+        doc_manager: Optional[DocumentManager] = None,
+        transport_factory=TransportFactory,
     ):
         self.agent_name = agent_name
         self.topic = topic
         self.poll_limit = poll_limit
-        self.send_fn = send_fn
-        self.inbox_fn = inbox_fn
         self._seen_ids: Set[str] = set()
+        self._doc_manager = doc_manager or DocumentManager()
+        self._transport_factory = transport_factory
+        self.transport_name, self.transport = self._initialize_transport(
+            transport_name=transport_name,
+            transport=transport,
+        )
+        console.print(
+            f"  Using '{self.transport_name}' transport for orchestrator chat",
+            style="dim",
+        )
+
+    def _initialize_transport(
+        self,
+        *,
+        transport_name: Optional[str],
+        transport: Optional[MessageTransport],
+    ) -> Tuple[str, MessageTransport]:
+        """Set up the backing transport via the shared factory."""
+        if transport_name and transport:
+            return transport_name, transport
+
+        try:
+            name, transport_instance = self._transport_factory.create_transport(
+                agent_id=self.agent_name,
+                doc_manager=self._doc_manager,
+            )
+            return name, transport_instance
+        except Exception as exc:  # pragma: no cover - defensive logging
+            console.print(
+                f"❌ Failed to initialize transport: {exc}", style="red"
+            )
+            raise
 
     def _message_key(self, message: AgentMessage) -> str:
         """Generate a stable key for deduplication."""
@@ -113,32 +155,23 @@ class OrchestratorChatSession:
 
     def fetch_new_messages(self) -> List[AgentMessage]:
         """Fetch new messages for this topic, skipping ones we've already shown."""
-        try:
-            messages = self.inbox_fn(
-                topic=self.topic, limit=self.poll_limit, render=False
-            )
-        except TypeError:
-            # Some callers might not support keyword arguments (mainly tests)
-            messages = self.inbox_fn(self.topic)  # type: ignore[arg-type]
-        except Exception as exc:
-            console.print(f"❌ Failed to read messages: {exc}", style="red")
+        raw_messages = self._poll_transport_messages()
+        if not raw_messages:
             return []
 
-        if not messages:
-            return []
-
-        new_messages: List[AgentMessage] = []
-        sorted_messages = sorted(
-            messages,
-            key=lambda msg: getattr(msg, "timestamp", datetime.utcnow()),
-        )
-        for message in sorted_messages:
+        normalized: List[AgentMessage] = []
+        for raw in raw_messages[: self.poll_limit]:
+            message = self._convert_raw_message(raw)
+            if not message:
+                continue
             key = self._message_key(message)
             if key in self._seen_ids:
                 continue
             self._seen_ids.add(key)
-            new_messages.append(message)
-        return new_messages
+            normalized.append(message)
+
+        normalized.sort(key=lambda msg: getattr(msg, "timestamp", datetime.utcnow()))
+        return normalized
 
     def render_messages(self, messages: Sequence[AgentMessage]) -> None:
         """Render a collection of messages with simple color coding."""
@@ -162,13 +195,184 @@ class OrchestratorChatSession:
         payload = message.strip()
         if not payload:
             return None
-        agent_message = self.send_fn(
-            payload,
-            topic=self.topic,
+        transport_message = TransportAgentMessage(
+            to_agent="board",
             from_agent=self.agent_name,
+            content=payload,
+            topic=self.topic,
+            priority=TransportMessagePriority.NORMAL,
         )
-        self._seen_ids.add(self._message_key(agent_message))
-        return agent_message
+        try:
+            success = asyncio.run(self.transport.send(transport_message))
+        except Exception as exc:
+            console.print(f"❌ Failed to send message: {exc}", style="red")
+            return None
+
+        if not success:
+            console.print("❌ Transport rejected the message.", style="red")
+            return None
+
+        local_msg = self._build_local_agent_message(
+            payload=payload,
+            timestamp=self._normalize_timestamp(transport_message.timestamp),
+        )
+        self._seen_ids.add(self._message_key(local_msg))
+        return local_msg
+
+    def _poll_transport_messages(self) -> Sequence:
+        """Poll the backing transport for orchestrator messages."""
+        poller = getattr(self.transport, "poll_messages", None)
+        if not callable(poller):
+            console.print(
+                "⚠️ Active transport does not support polling yet.",
+                style="yellow",
+            )
+            return []
+        try:
+            return asyncio.run(poller("board", topic=self.topic))
+        except Exception as exc:
+            console.print(f"❌ Failed to read messages: {exc}", style="red")
+            return []
+
+    def _convert_raw_message(self, raw) -> Optional[AgentMessage]:
+        """Normalize transport-specific results into AgentMessage objects."""
+        if isinstance(raw, AgentMessage):
+            return raw
+
+        content = getattr(raw, "content", None)
+        metadata = dict(getattr(raw, "metadata", {}) or {})
+        if content is None:
+            return None
+
+        text = str(content).strip()
+        header, body = self._split_header_and_body(text)
+        header_fields = self._parse_header_lines(header)
+
+        sender = (
+            header_fields.get("from")
+            or metadata.get("sender")
+            or metadata.get("source")
+            or "unknown"
+        )
+        sender = sender.replace("agent:", "", 1) if sender.startswith("agent:") else sender
+
+        topic = (
+            header_fields.get("topic")
+            or metadata.get("topic")
+            or metadata.get("project_name")
+            or self.topic
+        )
+        priority = (
+            header_fields.get("priority")
+            or metadata.get("priority")
+            or TransportMessagePriority.NORMAL.value
+        )
+        timestamp_value = (
+            header_fields.get("time")
+            or metadata.get("timestamp")
+            or metadata.get("created_at")
+        )
+        timestamp = self._parse_timestamp(timestamp_value)
+
+        document_id = (
+            metadata.get("document_id")
+            or getattr(raw, "document_id", None)
+            or getattr(raw, "id", None)
+        )
+        if document_id is None:
+            document_id = f"{sender}:{timestamp.isoformat()}:{hash(body or text)}"
+
+        normalized_metadata = {
+            **metadata,
+            "document_id": document_id,
+            "topic": topic,
+            "priority": priority,
+        }
+        normalized_metadata.setdefault("transport_source", self.transport_name)
+
+        final_content = body.strip() if body.strip() else text
+
+        return AgentMessage(
+            id=document_id,
+            document_id=document_id,
+            content=final_content,
+            topic=topic,
+            sender=sender or "unknown",
+            priority=priority,
+            timestamp=timestamp,
+            metadata=normalized_metadata,
+            score=getattr(raw, "score", 1.0),
+            raw=raw,
+        )
+
+    def _split_header_and_body(self, text: str) -> Tuple[str, str]:
+        """Split stored transport payloads into header/body segments."""
+        normalized = text.strip()
+        if not normalized:
+            return "", ""
+        parts = normalized.split("\n\n", 1)
+        if len(parts) == 2:
+            return parts[0], parts[1]
+        return normalized, ""
+
+    def _parse_header_lines(self, header_block: str) -> dict:
+        """Extract structured fields from the serialized header."""
+        fields = {}
+        for raw_line in header_block.splitlines():
+            line = raw_line.strip()
+            if not line:
+                continue
+            match = self._HEADER_PATTERN.match(line)
+            if not match:
+                continue
+            label = match.group("label").strip().rstrip(":").lower()
+            value = match.group("value").strip()
+            fields[label] = value
+        return fields
+
+    @staticmethod
+    def _parse_timestamp(value: Optional[str]) -> datetime:
+        """Parse ISO timestamps coming from transport metadata."""
+        if not value:
+            return datetime.utcnow()
+        sanitized = value.strip().replace("Z", "+00:00")
+        try:
+            parsed = datetime.fromisoformat(sanitized)
+        except ValueError:
+            return datetime.utcnow()
+        return OrchestratorChatSession._normalize_timestamp(parsed)
+
+    @staticmethod
+    def _normalize_timestamp(timestamp: datetime) -> datetime:
+        """Convert timezone-aware timestamps to naive UTC for display."""
+        if timestamp.tzinfo:
+            return timestamp.astimezone(timezone.utc).replace(tzinfo=None)
+        return timestamp
+
+    def _build_local_agent_message(
+        self,
+        *,
+        payload: str,
+        timestamp: datetime,
+    ) -> AgentMessage:
+        """Create a lightweight AgentMessage for locally sent payloads."""
+        metadata = {
+            "transport_source": self.transport_name,
+            "local_echo": True,
+        }
+        message_id = f"local-{hash((timestamp.isoformat(), payload))}"
+        return AgentMessage(
+            id=message_id,
+            document_id=message_id,
+            content=payload,
+            topic=self.topic,
+            sender=self.agent_name,
+            priority=TransportMessagePriority.NORMAL.value,
+            timestamp=timestamp,
+            metadata=metadata,
+            score=1.0,
+            raw=None,
+        )
 
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:

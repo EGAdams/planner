@@ -14,7 +14,9 @@ Example:
 
 import sys
 import os
+import json
 import logging
+from datetime import datetime, date
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -22,6 +24,7 @@ from typing import Dict, List, Any, Optional
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from parsers import PDFParser
+from ingestion.processors import TransactionProcessor
 
 # Set up logging
 logging.basicConfig(
@@ -29,6 +32,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+DATABASE_CORRUPT_PATH = Path(__file__).resolve().parent.parent / "database_corrupt.md"
+TRANSACTION_PROCESSOR = TransactionProcessor()
 
 
 def classify_transaction(txn: Dict[str, Any]) -> str:
@@ -77,6 +83,287 @@ def close_enough(a: Optional[float], b: Optional[float], tol: float = 0.01) -> b
     if a is None or b is None:
         return False
     return abs(a - b) <= tol
+
+
+def _normalize_description(value: Optional[str]) -> str:
+    """Normalize descriptions for comparison and transaction keys."""
+    if not value:
+        return ''
+    return ' '.join(value.strip().split()).lower()
+
+
+def _build_transaction_key(org_id: int,
+                           transaction_date: Optional[str],
+                           amount: Optional[float],
+                           description: Optional[str]) -> str:
+    """Create a stable key for matching transactions."""
+    amount_part = "NONE" if amount is None else f"{float(amount):.2f}"
+    date_part = transaction_date or "NO_DATE"
+    desc_part = _normalize_description(description)[:160]
+    return f"{org_id}|{date_part}|{amount_part}|{desc_part}"
+
+
+def _resolve_transaction_type(transaction: Dict[str, Any]) -> str:
+    """Ensure we only write valid transaction types to the database."""
+    tx_type = (transaction.get('transaction_type') or '').upper()
+    if tx_type in ('DEBIT', 'CREDIT', 'TRANSFER'):
+        return tx_type
+
+    amount = transaction.get('amount')
+    if amount is None:
+        return 'TRANSFER'
+
+    try:
+        amount_value = float(amount)
+    except (ValueError, TypeError):
+        return 'TRANSFER'
+
+    if abs(amount_value) < 0.005:
+        return 'TRANSFER'
+    return 'DEBIT' if amount_value < 0 else 'CREDIT'
+
+
+def _default_json_serializer(obj: Any) -> str:
+    """Fallback serializer for datetime objects inside debug payloads."""
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+
+def _prepare_transactions_for_db(transactions: List[Dict[str, Any]],
+                                 org_id: int,
+                                 pdf_path: str) -> Dict[str, Any]:
+    """
+    Clean transactions for DB insertion and collect warnings about skipped rows.
+    """
+    prepared: List[Dict[str, Any]] = []
+    skipped: List[str] = []
+
+    for idx, txn in enumerate(transactions):
+        processed = TRANSACTION_PROCESSOR.process_transaction(txn)
+        processed['org_id'] = processed.get('org_id') or org_id
+        transaction_date = processed.get('transaction_date')
+        amount = processed.get('amount')
+
+        if transaction_date is None:
+            skipped.append(f"Transaction #{idx + 1} missing transaction_date")
+            continue
+        if amount is None:
+            skipped.append(f"Transaction #{idx + 1} missing amount")
+            continue
+
+        description = processed.get('description') or processed.get('raw_description') or ''
+        raw_payload = processed.get('raw_data')
+        if raw_payload:
+            try:
+                raw_json = json.loads(raw_payload)
+            except (json.JSONDecodeError, TypeError):
+                raw_json = {'raw_value': raw_payload}
+        else:
+            raw_json = processed.copy()
+
+        raw_json.setdefault('source_file', pdf_path)
+        prepared.append({
+            'org_id': processed['org_id'],
+            'transaction_date': transaction_date,
+            'amount': round(float(amount), 2),
+            'description': description[:255],
+            'transaction_type': _resolve_transaction_type(processed),
+            'account_number': processed.get('account_number'),
+            'bank_reference': processed.get('bank_reference'),
+            'balance_after': processed.get('balance_after'),
+            'category_id': processed.get('category_id'),
+            'import_batch_id': processed.get('import_batch_id'),
+            'raw_data': json.dumps(raw_json, default=_default_json_serializer)
+        })
+
+    return {'prepared': prepared, 'skipped': skipped}
+
+
+def _fetch_existing_transactions(connection,
+                                 org_id: int,
+                                 transactions: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Load existing transactions from the database keyed by our normalized signature."""
+    dates = [tx['transaction_date'] for tx in transactions if tx.get('transaction_date')]
+    query = (
+        "SELECT id, transaction_date, amount, description, transaction_type, "
+        "account_number, bank_reference, balance_after "
+        "FROM transactions WHERE org_id = %s"
+    )
+    params: List[Any] = [org_id]
+
+    if dates:
+        start_date = min(dates)
+        end_date = max(dates)
+        query += " AND transaction_date BETWEEN %s AND %s"
+        params.extend([start_date, end_date])
+
+    with connection.cursor(dictionary=True) as cursor:
+        cursor.execute(query, tuple(params))
+        rows = cursor.fetchall()
+
+    existing: Dict[str, List[Dict[str, Any]]] = {}
+    for row in rows:
+        tx_date = row.get('transaction_date')
+        if hasattr(tx_date, 'strftime'):
+            tx_date = tx_date.strftime('%Y-%m-%d')
+        amount = float(row.get('amount') or 0.0)
+        key = _build_transaction_key(org_id, tx_date, amount, row.get('description'))
+        existing.setdefault(key, []).append(row)
+
+    return existing
+
+
+def _compare_transactions(parsed_tx: Dict[str, Any],
+                          existing_tx: Dict[str, Any]) -> List[str]:
+    """Return a list of differences between parsed transaction and DB record."""
+    differences: List[str] = []
+
+    parsed_amount = parsed_tx.get('amount')
+    existing_amount = float(existing_tx.get('amount') or 0.0)
+    if not close_enough(parsed_amount, existing_amount):
+        differences.append(f"Amount mismatch (parsed {parsed_amount}, db {existing_amount})")
+
+    parsed_desc = _normalize_description(parsed_tx.get('description'))
+    existing_desc = _normalize_description(existing_tx.get('description'))
+    if parsed_desc != existing_desc:
+        differences.append("Description mismatch")
+
+    parsed_type = parsed_tx.get('transaction_type')
+    existing_type = existing_tx.get('transaction_type')
+    if parsed_type != existing_type:
+        differences.append(f"Transaction type mismatch (parsed {parsed_type}, db {existing_type})")
+
+    parsed_account = parsed_tx.get('account_number')
+    if parsed_account and existing_tx.get('account_number') != parsed_account:
+        differences.append("Account number mismatch")
+
+    parsed_reference = parsed_tx.get('bank_reference')
+    if parsed_reference and existing_tx.get('bank_reference') != parsed_reference:
+        differences.append("Bank reference mismatch")
+
+    return differences
+
+
+def _write_database_corrupt_report(pdf_path: str, mismatches: List[Dict[str, Any]]) -> None:
+    """Write mismatch details to database_corrupt.md for debugging."""
+    timestamp = datetime.utcnow().isoformat()
+    lines = [
+        "# Database Corruption Detected",
+        "",
+        f"- Timestamp: {timestamp} UTC",
+        f"- Source PDF: {pdf_path}",
+        f"- Total mismatches: {len(mismatches)}",
+        "",
+        "## Mismatch Details"
+    ]
+
+    for idx, mismatch in enumerate(mismatches, start=1):
+        parsed = mismatch['parsed']
+        existing = mismatch['existing']
+        differences = mismatch['differences']
+        lines.append(f"### Transaction {idx}")
+        lines.append(f"- Key: `{mismatch['key']}`")
+        lines.append(f"- Parsed Date: {parsed.get('transaction_date')}")
+        lines.append(f"- Parsed Amount: {parsed.get('amount')}")
+        lines.append(f"- Parsed Description: {parsed.get('description')}")
+        lines.append(f"- Existing Date: {existing.get('transaction_date')}")
+        lines.append(f"- Existing Amount: {existing.get('amount')}")
+        lines.append(f"- Existing Description: {existing.get('description')}")
+        lines.append(f"- Differences:")
+        for diff in differences:
+            lines.append(f"  - {diff}")
+        lines.append("")
+
+    DATABASE_CORRUPT_PATH.write_text('\n'.join(lines), encoding='utf-8')
+
+
+def _sync_transactions_with_database(transactions: List[Dict[str, Any]],
+                                     org_id: int,
+                                     pdf_path: str) -> bool:
+    """
+    Ensure parsed transactions exist in the DB and match stored values.
+    """
+    if not transactions:
+        print("⚠ No transactions available for database sync")
+        return True
+
+    prepared_summary = _prepare_transactions_for_db(transactions, org_id, pdf_path)
+    prepared = prepared_summary['prepared']
+    skipped = prepared_summary['skipped']
+
+    if skipped:
+        print("⚠ Some transactions were skipped during preparation:")
+        for reason in skipped:
+            print(f"  - {reason}")
+
+    if not prepared:
+        print("✗ Unable to sync transactions: nothing to write after preparation")
+        return False
+
+    if DATABASE_CORRUPT_PATH.exists():
+        DATABASE_CORRUPT_PATH.unlink()
+
+    try:
+        from app.db import get_connection
+    except ImportError as exc:
+        print(f"✗ Unable to import database connection utilities: {exc}")
+        return False
+
+    try:
+        with get_connection() as connection:
+            existing_map = _fetch_existing_transactions(connection, org_id, prepared)
+            mismatches: List[Dict[str, Any]] = []
+            to_insert: List[Dict[str, Any]] = []
+
+            for tx in prepared:
+                key = _build_transaction_key(org_id, tx['transaction_date'], tx['amount'], tx.get('description'))
+                existing_bucket = existing_map.get(key, [])
+
+                if existing_bucket:
+                    existing_record = existing_bucket.pop(0)
+                    differences = _compare_transactions(tx, existing_record)
+                    if differences:
+                        mismatches.append({
+                            'key': key,
+                            'parsed': tx,
+                            'existing': existing_record,
+                            'differences': differences
+                        })
+                else:
+                    to_insert.append(tx)
+
+            if mismatches:
+                _write_database_corrupt_report(pdf_path, mismatches)
+                print("✗ Database mismatch detected. See database_corrupt.md for details.")
+                return False
+
+            inserted_count = 0
+            if to_insert:
+                columns = (
+                    "org_id", "transaction_date", "amount", "description",
+                    "transaction_type", "account_number", "bank_reference",
+                    "balance_after", "category_id", "import_batch_id", "raw_data"
+                )
+                placeholders = ", ".join(["%s"] * len(columns))
+                sql = f"INSERT INTO transactions ({', '.join(columns)}) VALUES ({placeholders})"
+                values = [tuple(tx.get(col) for col in columns) for tx in to_insert]
+
+                with connection.cursor() as cursor:
+                    cursor.executemany(sql, values)
+                connection.commit()
+                inserted_count = len(to_insert)
+
+            if inserted_count:
+                print(f"✓ {inserted_count} transaction(s) inserted into database")
+            else:
+                print("✓ All transactions already present in database")
+
+            return True
+
+    except Exception as exc:
+        print(f"✗ Database synchronization failed: {exc}")
+        return False
 
 
 def parse_and_validate_pdf(pdf_path: str, org_id: int = 1) -> bool:
@@ -236,7 +523,13 @@ def parse_and_validate_pdf(pdf_path: str, org_id: int = 1) -> bool:
                 for i, tx in enumerate(transactions[-5:], start=len(transactions)-4):
                     print(f"  {i:3d}. {tx.get('transaction_date', 'N/A')} | ${tx.get('amount', 0):>10.2f} | {tx.get('description', 'N/A')[:40]}")
 
-        return passes and not errors
+        db_synced = True
+        if passes and not errors:
+            print(f"\n> Syncing parsed transactions with database...", flush=True)
+            sys.stdout.flush()
+            db_synced = _sync_transactions_with_database(transactions, org_id, pdf_path)
+
+        return (passes and not errors) and db_synced
 
     except Exception as e:
         logger.error(f"Error during PDF validation: {str(e)}", exc_info=True)
