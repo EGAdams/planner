@@ -7,7 +7,7 @@ Test validation and serialization behavior.
 import pytest
 from datetime import datetime
 from pydantic import ValidationError
-from agent_messaging.message_models import (
+from a2a_communicating_agents.agent_messaging.message_models import (
     AgentMessage, 
     MessagePriority, 
     ConnectionConfig

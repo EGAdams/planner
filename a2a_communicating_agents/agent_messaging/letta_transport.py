@@ -10,8 +10,8 @@ try:
     from letta import Letta
 except ImportError:
     Letta = None  # Letta not installed
-from message_transport import MessageTransport
-from message_models import AgentMessage
+from .message_transport import MessageTransport
+from .message_models import AgentMessage
 from pydantic import BaseModel
 
 

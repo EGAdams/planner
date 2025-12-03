@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Orchestrator Agent
-Routes user requests to the appropriate specialist agent using Gemini.
+Routes user requests to the appropriate specialist agent using OpenAI.
 """
 
 import sys
@@ -10,7 +10,12 @@ import time
 import json
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from google import genai
+from contextlib import suppress
+
+try:
+    from openai import OpenAI
+except ImportError:  # pragma: no cover - handled gracefully at runtime
+    OpenAI = None
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -21,27 +26,31 @@ PLANNER_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PLANNER_ROOT))
 os.chdir(PLANNER_ROOT)
 
-from agent_messaging import inbox, post_message, create_jsonrpc_response
+from a2a_communicating_agents.agent_messaging import inbox, post_message, create_jsonrpc_response
 from rag_system.core.document_manager import DocumentManager
 from a2a_communicating_agents.orchestrator_agent.a2a_dispatcher import A2ADispatcher
 
 AGENT_NAME = "orchestrator-agent"
 WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
-MODEL_ID = "gemini-2.0-flash"
 
 def log_update(message):
     print(f"[{AGENT_NAME}] {message}")
 
 class Orchestrator:
-    def __init__(self):
+    def __init__(self, *, llm_client=None, model_id: Optional[str] = None):
         self.known_agents = {}
         self.dispatcher = A2ADispatcher(workspace_root=WORKSPACE_ROOT)
-        api_key = os.environ.get("GOOGLE_API_KEY")
-        if api_key:
-            self.client: Optional[genai.Client] = genai.Client(api_key=api_key)
+        self.model_id = model_id or os.getenv("ORCHESTRATOR_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
+        if llm_client is not None:
+            self.client = llm_client
+        elif OpenAI is None:
+            self.client = None
+            log_update("openai package not available. Falling back to heuristic routing.")
+        elif os.environ.get("OPENAI_API_KEY"):
+            self.client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
         else:
             self.client = None
-            log_update("GOOGLE_API_KEY not set. Falling back to heuristic routing.")
+            log_update("OPENAI_API_KEY not set. Falling back to heuristic routing.")
         self.doc_manager = DocumentManager()
         
     def _format_memory_status(self, memory_info: Dict[str, Any]) -> str:
@@ -79,32 +88,34 @@ class Orchestrator:
         if not self.client:
             return self._fallback_route(user_request)
 
-        prompt = f"""
-You are the Orchestrator Agent. Your job is to route a user request to the best available specialist agent.
+        system_prompt = (
+            "You are the Orchestrator Agent. Route the user request to the best specialist "
+            "agent. Always reply with compact JSON containing keys: target_agent, reasoning, "
+            "method, params."
+        )
+        agent_snapshot = json.dumps(self.known_agents, indent=2)
+        user_prompt = (
+            f"Available Agents:\n{agent_snapshot}\n\n"
+            f'User Request: "{user_request}"\n\n'
+            "Return JSON with target_agent (or null), reasoning, method "
+            '(default "agent.execute_task"), and params (context, description, artifacts).'
+        )
 
-Available Agents:
-{json.dumps(self.known_agents, indent=2)}
-
-User Request: "{user_request}"
-
-Analyze the request and the available agents. Return a JSON object with:
-1. "target_agent": The name of the agent to handle the request.
-2. "reasoning": Why you chose this agent.
-3. "method": The method to call on the agent (e.g., "agent.execute_task").
-4. "params": The parameters for the method (e.g., {{ "description": "..." }}).
-
-If no agent is suitable, set "target_agent" to null.
-Return ONLY valid JSON.
-"""
         try:
-            response = self.client.models.generate_content(
-                model=MODEL_ID,
-                contents=prompt,
-                config={
-                    "response_mime_type": "application/json"
-                }
+            completion = self.client.chat.completions.create(
+                model=self.model_id,
+                temperature=0,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
             )
-            return json.loads(response.text)
+            content = (completion.choices[0].message.content or "").strip()
+            if content.startswith("```"):
+                fence = "```json" if content.startswith("```json") else "```"
+                with suppress(IndexError):
+                    content = content.split(fence, 1)[1].split("```", 1)[0].strip()
+            return json.loads(content)
         except Exception as e:
             print(f"[{AGENT_NAME}] Error in decision making: {e}")
             return None

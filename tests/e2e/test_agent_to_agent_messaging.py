@@ -6,8 +6,8 @@ Tests realistic scenarios with multiple agents communicating.
 
 import pytest
 import asyncio
-from agent_messaging.message_models import AgentMessage, ConnectionConfig, MessagePriority
-from agent_messaging.websocket_transport import WebSocketTransport
+from a2a_communicating_agents.agent_messaging.message_models import AgentMessage, ConnectionConfig, MessagePriority
+from a2a_communicating_agents.agent_messaging.websocket_transport import WebSocketTransport
 
 
 @pytest.mark.e2e

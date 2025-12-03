@@ -7,8 +7,9 @@ agent-to-agent communication.
 
 import asyncio
 from typing import Dict, Callable, Awaitable, Optional
-from message_transport import MessageTransport
-from message_models import AgentMessage, ConnectionConfig
+
+from .message_transport import MessageTransport
+from .message_models import AgentMessage, ConnectionConfig
 
 
 class WebSocketTransport(MessageTransport):

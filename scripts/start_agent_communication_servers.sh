@@ -125,7 +125,7 @@ fi
 # 3. Check for WebSocket server implementation
 echo -e "\n${YELLOW}[WEBSOCKET]${NC} Checking WebSocket transport server..."
 
-WS_SERVER_FILE="$PLANNER_ROOT/agent_messaging/websocket_server.py"
+WS_SERVER_FILE="$PLANNER_ROOT/a2a_communicating_agents/agent_messaging/websocket_server.py"
 
 if [ -f "$WS_SERVER_FILE" ]; then
     # WebSocket server exists - try to start it
@@ -136,7 +136,7 @@ if [ -f "$WS_SERVER_FILE" ]; then
     else
         start_service \
             "WebSocket Transport Server" \
-            "cd '$PLANNER_ROOT/agent_messaging' && python3 websocket_server.py" \
+            "cd '$PLANNER_ROOT/a2a_communicating_agents/agent_messaging' && python3 websocket_server.py" \
             "$LOG_DIR/websocket.log" \
             "WS_PID"
     fi
@@ -149,12 +149,12 @@ fi
 # 4. Start A2A Collective Hub (Python-based coordination)
 echo -e "\n${YELLOW}[A2A HUB]${NC} Starting A2A Collective Hub..."
 
-A2A_SCRIPT="$PLANNER_ROOT/agent_messaging/run_collective.py"
+A2A_SCRIPT="$PLANNER_ROOT/a2a_communicating_agents/agent_messaging/run_collective.py"
 
 if [ -f "$A2A_SCRIPT" ]; then
     start_service \
         "A2A Collective Hub" \
-        "cd '$PLANNER_ROOT/agent_messaging' && python3 run_collective.py" \
+        "cd '$PLANNER_ROOT/a2a_communicating_agents/agent_messaging' && python3 run_collective.py" \
         "$LOG_DIR/a2a_collective.log" \
         "A2A_PID"
 else
@@ -176,6 +176,6 @@ echo ""
 echo -e "${YELLOW}Next Steps:${NC}"
 echo "  1. Verify services: ./scripts/verify_agent_services.sh"
 echo "  2. View Letta logs: tail -f $LOG_DIR/letta.log"
-echo "  3. Test A2A communication: cd agent_messaging && python3 run_collective.py"
+echo "  3. Test A2A communication: cd a2a_communicating_agents/agent_messaging && python3 run_collective.py"
 echo ""
 echo -e "${GREEN}To stop all services: ./scripts/stop_agent_communication_servers.sh${NC}"

@@ -10,7 +10,7 @@ import os
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from agent_messaging import post_message, create_jsonrpc_request
+from a2a_communicating_agents.agent_messaging import post_message, create_jsonrpc_request
 
 def send_to_agent(agent_id: str, message: str):
     """Send a message to an agent"""

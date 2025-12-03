@@ -6,8 +6,8 @@ Tests Letta client wrapping and MessageTransport interface.
 
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
-from agent_messaging.letta_transport import LettaTransport, LettaConfig
-from agent_messaging.message_models import AgentMessage
+from a2a_communicating_agents.agent_messaging.letta_transport import LettaTransport, LettaConfig
+from a2a_communicating_agents.agent_messaging.message_models import AgentMessage
 
 
 @pytest.mark.unit

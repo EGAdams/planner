@@ -13,7 +13,7 @@ from typing import Dict, Any, Optional
 # Add parent directory to path to import shared modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from agent_messaging import inbox, send, post_message, create_jsonrpc_response
+from a2a_communicating_agents.agent_messaging import inbox, send, post_message, create_jsonrpc_response
 from rag_system.core.document_manager import DocumentManager
 
 AGENT_NAME = "planner-agent"

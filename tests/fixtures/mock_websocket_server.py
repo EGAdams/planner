@@ -7,7 +7,7 @@ Simulates a real WebSocket server without network overhead.
 import asyncio
 from typing import Dict, Set, Callable, Awaitable, List
 from dataclasses import dataclass, field
-from agent_messaging.message_models import AgentMessage
+from a2a_communicating_agents.agent_messaging.message_models import AgentMessage
 
 
 @dataclass

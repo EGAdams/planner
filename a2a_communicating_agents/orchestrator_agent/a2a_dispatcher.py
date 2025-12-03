@@ -8,7 +8,7 @@ import asyncio
 from pathlib import Path
 from typing import Dict, Optional
 
-from agent_messaging.a2a_collective import A2ACollectiveHub, AgentSpoke
+from a2a_communicating_agents.agent_messaging.a2a_collective import A2ACollectiveHub, AgentSpoke
 
 
 class A2ADispatcher:

@@ -9,7 +9,7 @@ import asyncio
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
-from memory_backend import MemoryBackend, MemoryEntry, MemoryQuery
+from .memory_backend import MemoryBackend, MemoryEntry, MemoryQuery
 
 
 class ChromaDBMemory(MemoryBackend):

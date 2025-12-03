@@ -6,8 +6,8 @@ Tests RAG-based message persistence and MessageTransport interface.
 
 import pytest
 from unittest.mock import Mock, AsyncMock
-from agent_messaging.rag_board_transport import RAGBoardTransport
-from agent_messaging.message_models import AgentMessage, MessagePriority
+from a2a_communicating_agents.agent_messaging.rag_board_transport import RAGBoardTransport
+from a2a_communicating_agents.agent_messaging.message_models import AgentMessage, MessagePriority
 
 
 @pytest.mark.unit

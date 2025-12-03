@@ -11,7 +11,7 @@ import time
 # Add parent directory to path to import shared modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from agent_messaging import post_message, inbox, create_jsonrpc_request
+from a2a_communicating_agents.agent_messaging import post_message, inbox, create_jsonrpc_request
 
 def test_browser_launch(url=None, headless=False):
     """Send a request to launch a test browser"""

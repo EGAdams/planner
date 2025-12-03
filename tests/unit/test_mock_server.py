@@ -6,7 +6,7 @@ testing the client against it.
 """
 
 import pytest
-from agent_messaging.message_models import AgentMessage, MessagePriority
+from a2a_communicating_agents.agent_messaging.message_models import AgentMessage, MessagePriority
 
 
 @pytest.mark.unit

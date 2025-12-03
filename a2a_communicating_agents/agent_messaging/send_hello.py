@@ -5,7 +5,7 @@ import time
 # Add parent directory to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from agent_messaging import send, post_message, create_jsonrpc_request
+from a2a_communicating_agents.agent_messaging import send, post_message, create_jsonrpc_request
 
 print("Sending 'hello' to planner-agent...")
 

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_messaging.a2a_collective import A2ACollectiveHub
+from a2a_communicating_agents.agent_messaging.a2a_collective import A2ACollectiveHub
 from .a2a_test_utils import DummyMemoryBackend, StubMemoryFactory, write_agent_card
 
 

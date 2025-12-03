@@ -10,12 +10,12 @@
                         "submenu": [
                             {
                                 "title": "Run Agent Discovery Test",
-                                "action": "bash ../agent_messaging/tests/test_agent_discovery.sh",
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_agent_discovery.sh",
                                 "working_directory": "/home/adamsl/planner/smart_menu"
                             },
                             {
                                 "title": "Run Delegation Test",
-                                "action": "bash ../agent_messaging/tests/test_delegation.sh",
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_delegation.sh",
                                 "working_directory": "/home/adamsl/planner/smart_menu"
                             }
                         ]
@@ -29,7 +29,7 @@
                         "submenu": [
                             {
                                 "title": "Run Memory System Test",
-                                "action": "bash ../agent_messaging/tests/test_memory_system.sh",
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_memory_system.sh",
                                 "working_directory": "/home/adamsl/planner/smart_menu"
                             }
                         ]
@@ -140,19 +140,31 @@
                         "submenu": [
                             {
                                 "title": "Start Orchestrator Agent",
-                                "action": "echo 'Not implemented yet.'"
+                                "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent && python3 main.py'",
+                                "working_directory": "/home/adamsl/planner",
+                                "open_in_subprocess": true
                             },
                             {
                                 "title": "Load Agent Card",
-                                "action": "echo 'Not implemented yet.'"
+                                "action": "cat /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent/agent.json",
+                                "working_directory": "/home/adamsl/planner"
                             },
                             {
                                 "title": "Test Routing Logic",
-                                "action": "echo 'Not implemented yet.'"
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_routing_test.sh",
+                                "working_directory": "/home/adamsl/planner/smart_menu"
                             },
                             {
                                 "title": "Check Agent Registry",
-                                "action": "echo 'Not implemented yet.'"
+                                "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/agent_messaging && python3 run_collective.py'",
+                                "working_directory": "/home/adamsl/planner",
+                                "open_in_subprocess": false
+                            },
+                            {
+                                "title": "Chat with Orchestrator",
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_chat.sh",
+                                "working_directory": "/home/adamsl/planner/smart_menu",
+                                "open_in_subprocess": true
                             }
                         ]
                     },

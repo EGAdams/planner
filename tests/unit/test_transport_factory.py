@@ -7,8 +7,8 @@ Tests smart fallback logic and transport selection.
 import pytest
 import os
 from unittest.mock import Mock, patch, AsyncMock
-from agent_messaging.transport_factory import TransportFactory
-from agent_messaging.message_models import ConnectionConfig
+from a2a_communicating_agents.agent_messaging.transport_factory import TransportFactory
+from a2a_communicating_agents.agent_messaging.message_models import ConnectionConfig
 
 
 @pytest.mark.unit

@@ -19,7 +19,7 @@ async def mock_server():
 @pytest.fixture
 def sample_message():
     """Provide a sample AgentMessage for testing"""
-    from agent_messaging.message_models import AgentMessage, MessagePriority
+    from a2a_communicating_agents.agent_messaging.message_models import AgentMessage, MessagePriority
     return AgentMessage(
         to_agent="agent-b",
         from_agent="agent-a",

@@ -1,4 +1,0 @@
-agent_server is running
-letta_server is stopped
-pydantic_server is running
-mysql_server has errored with "Bad Credentials"

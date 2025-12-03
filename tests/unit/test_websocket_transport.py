@@ -6,8 +6,8 @@ They will fail until we implement the class.
 """
 
 import pytest
-from agent_messaging.message_models import AgentMessage, MessagePriority, ConnectionConfig
-from agent_messaging.websocket_transport import WebSocketTransport
+from a2a_communicating_agents.agent_messaging.message_models import AgentMessage, MessagePriority, ConnectionConfig
+from a2a_communicating_agents.agent_messaging.websocket_transport import WebSocketTransport
 
 
 @pytest.mark.unit

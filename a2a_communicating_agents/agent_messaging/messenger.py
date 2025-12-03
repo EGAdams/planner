@@ -20,9 +20,9 @@ from rich.markdown import Markdown
 from rich.table import Table
 
 # Import new transport system
-from transport_factory import TransportFactory
-from message_models import AgentMessage, MessagePriority
-from rag_board_transport import RAGBoardTransport
+from .transport_factory import TransportFactory
+from .message_models import AgentMessage, MessagePriority
+from .rag_board_transport import RAGBoardTransport
 
 # Try to import Letta for backward compatibility methods
 try:
@@ -273,7 +273,7 @@ class AgentMessenger:
                 transport = self.transport
             else:
                 from rag_system.core.document_manager import DocumentManager
-                # from agent_messaging.rag_board_transport import RAGBoardTransport
+                # from a2a_communicating_agents.agent_messaging.rag_board_transport import RAGBoardTransport
                 transport= RAGBoardTransport(DocumentManager())
                 asyncio.run(transport.connect())
 

@@ -18,8 +18,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Protocol, Tuple
 from uuid import uuid4
 
-from memory_backend import MemoryBackend
-from memory_factory import MemoryFactory
+from .memory_backend import MemoryBackend
+from .memory_factory import MemoryFactory
 
 
 @dataclass

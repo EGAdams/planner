@@ -6,7 +6,7 @@ This tests ONLY the Letta backend to avoid ChromaDB crash.
 """
 
 import asyncio
-from agent_messaging import LettaMemory, LettaMemoryConfig
+from a2a_communicating_agents.agent_messaging import LettaMemory, LettaMemoryConfig
 
 
 async def test_letta_only():

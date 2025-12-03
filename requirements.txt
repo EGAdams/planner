@@ -1,6 +1,7 @@
 # ===== RAG System & Memory =====
 chromadb==1.3.0
 sentence-transformers==5.1.2
+openai>=1.0.0
 
 # ===== Core Utilities =====
 python-dotenv==1.0.0

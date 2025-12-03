@@ -24,7 +24,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 PLANNER_ROOT = Path(__file__).resolve().parents[2]
 os.chdir(PLANNER_ROOT)
 
-from agent_messaging import inbox, post_message, create_jsonrpc_response  # noqa: E402
+from a2a_communicating_agents.agent_messaging import inbox, post_message, create_jsonrpc_response  # noqa: E402
 from rag_system.core.document_manager import DocumentManager  # noqa: E402
 
 AGENT_NAME = "dashboard-agent"

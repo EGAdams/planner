@@ -8,9 +8,9 @@ transport based on availability.
 import pytest
 import asyncio
 from unittest.mock import Mock, patch, AsyncMock
-from agent_messaging import AgentMessenger
-from agent_messaging.transport_factory import TransportFactory
-from agent_messaging.message_models import AgentMessage
+from a2a_communicating_agents.agent_messaging import AgentMessenger
+from a2a_communicating_agents.agent_messaging.transport_factory import TransportFactory
+from a2a_communicating_agents.agent_messaging.message_models import AgentMessage
 
 @pytest.mark.integration
 class TestAgentMessengerIntegration:
@@ -75,7 +75,7 @@ class TestAgentMessengerIntegration:
         """post_to_board should work when messenger already has RAG transport"""
         with patch('agent_messaging.transport_factory.TransportFactory.create_transport') as mock_create:
             # Initialize messenger with RAG transport
-            from agent_messaging.rag_board_transport import RAGBoardTransport
+            from a2a_communicating_agents.agent_messaging.rag_board_transport import RAGBoardTransport
             mock_transport = AsyncMock(spec=RAGBoardTransport)
             mock_transport.send.return_value = True
             mock_create.return_value = ("rag", mock_transport)

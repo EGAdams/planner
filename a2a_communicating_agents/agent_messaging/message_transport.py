@@ -6,7 +6,8 @@ Defines the interface that all transport implementations must follow.
 
 from abc import ABC, abstractmethod
 from typing import Callable, Awaitable, Optional
-from message_models import AgentMessage
+
+from .message_models import AgentMessage
 
 
 class MessageTransport(ABC):

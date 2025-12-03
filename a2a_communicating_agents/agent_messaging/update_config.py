@@ -19,12 +19,12 @@ new_menu_item = {
                     "submenu": [
                         {
                             "title": "Run Agent Discovery Test",
-                            "action": "bash ../agent_messaging/tests/test_agent_discovery.sh",
+                            "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_agent_discovery.sh",
                             "working_directory": "/home/adamsl/planner/smart_menu"
                         },
                         {
                             "title": "Run Delegation Test", 
-                            "action": "bash ../agent_messaging/tests/test_delegation.sh",
+                            "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_delegation.sh",
                             "working_directory": "/home/adamsl/planner/smart_menu"
                         }
                     ]
@@ -38,7 +38,7 @@ new_menu_item = {
                     "submenu": [
                         {
                             "title": "Run Memory System Test",
-                            "action": "bash ../agent_messaging/tests/test_memory_system.sh",
+                            "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_memory_system.sh",
                             "working_directory": "/home/adamsl/planner/smart_menu"
                         }
                     ]

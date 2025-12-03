@@ -1,8 +1,8 @@
 import asyncio
 from pathlib import Path
 from rich.console import Console
-from a2a_collective import A2ACollectiveHub
-from memory_backend import MemoryBackend
+from .a2a_collective import A2ACollectiveHub
+from .memory_backend import MemoryBackend
 
 class MockMemoryBackend(MemoryBackend):
     def __init__(self):

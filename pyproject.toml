@@ -8,4 +8,5 @@ dependencies = [
     "chromadb>=1.0.20",
     "sentence-transformers>=5.1.0",
     "typer>=0.17.4",
+    "openai>=1.0.0",
 ]

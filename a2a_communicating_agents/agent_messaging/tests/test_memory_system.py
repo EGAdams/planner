@@ -6,7 +6,7 @@ Tests basic functionality with ChromaDB fallback (no Letta server needed).
 """
 
 import asyncio
-from agent_messaging import remember, recall, get_recent_memories, MemoryFactory
+from a2a_communicating_agents.agent_messaging import remember, recall, get_recent_memories, MemoryFactory
 
 
 async def test_memory_system():

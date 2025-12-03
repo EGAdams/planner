@@ -10,11 +10,12 @@ Automatically selects best available transport with priority:
 import os
 import asyncio
 from typing import Optional, Tuple
-from message_transport import MessageTransport
-from websocket_transport import WebSocketTransport
-from letta_transport import LettaTransport, LettaConfig
-from rag_board_transport import RAGBoardTransport
-from message_models import ConnectionConfig
+
+from .message_transport import MessageTransport
+from .websocket_transport import WebSocketTransport
+from .letta_transport import LettaTransport, LettaConfig
+from .rag_board_transport import RAGBoardTransport
+from .message_models import ConnectionConfig
 
 
 class TransportFactory:

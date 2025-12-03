@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-from agent_messaging.memory_backend import MemoryBackend, MemoryEntry
+from a2a_communicating_agents.agent_messaging.memory_backend import MemoryBackend, MemoryEntry
 
 
 class DummyMemoryBackend(MemoryBackend):

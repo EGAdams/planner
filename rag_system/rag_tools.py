@@ -10,7 +10,10 @@ from rag_system.core.document_manager import DocumentManager
 from rag_system.core.context_provider import ContextProvider
 from rich.console import Console
 
-from agent_messaging_interface import AgentMessage, get_agent_messenger
+from a2a_communicating_agents.agent_messaging.agent_messaging_interface import (
+    AgentMessage,
+    get_agent_messenger,
+)
 
 console = Console()
 

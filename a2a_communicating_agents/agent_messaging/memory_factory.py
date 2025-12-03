@@ -9,9 +9,10 @@ Automatically selects best available memory backend with priority:
 import os
 import asyncio
 from typing import Optional, Tuple
-from memory_backend import MemoryBackend
-from letta_memory import LettaMemory, LettaMemoryConfig
-from chromadb_memory import ChromaDBMemory
+
+from .memory_backend import MemoryBackend
+from .letta_memory import LettaMemory, LettaMemoryConfig
+from .chromadb_memory import ChromaDBMemory
 
 
 class MemoryFactory:

@@ -7,7 +7,9 @@ Stay logged in and chat with other agents in real-time
 import sys
 from typing import Optional, Sequence
 from rag_system.rag_tools import send, inbox
-from agent_messaging_interface import AgentMessage
+from a2a_communicating_agents.agent_messaging.agent_messaging_interface import (
+    AgentMessage,
+)
 from rich.console import Console
 from rich.prompt import Prompt
 
