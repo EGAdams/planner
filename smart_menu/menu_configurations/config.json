@@ -252,7 +252,8 @@
                 "submenu": [
                     {
                         "title": "Parse and Validate PDF",
-                        "submenu": []
+                        "action": "bash /home/adamsl/planner/nonprofit_finance_db/scripts/interactive_parse_validate.sh",
+                        "working_directory": "/home/adamsl/planner"
                     },
                     {
                         "title": "Parse Receipts",
@@ -261,6 +262,36 @@
                     {
                         "title": "Put parsed data into database",
                         "submenu": []
+                    },
+                    {
+                        "title": "Tests",
+                        "submenu": [
+                            {
+                                "title": "Test Parse Bank PDF Endpoint",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_parse_bank_pdf_endpoint.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Test Docling Account Summary",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_docling_account_summary.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Test Docling Sign Hints",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_docling_sign_hints.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Test PDF Parser Fallback",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_pdf_parser_fallback.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Run All Bank PDF Tests",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_parse_bank_pdf_endpoint.py nonprofit_finance_db/tests/test_docling_account_summary.py nonprofit_finance_db/tests/test_docling_sign_hints.py nonprofit_finance_db/tests/test_pdf_parser_fallback.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            }
+                        ]
                     }
                 ]
             }

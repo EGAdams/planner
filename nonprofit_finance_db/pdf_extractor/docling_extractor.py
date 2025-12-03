@@ -262,6 +262,25 @@ class DoclingPDFExtractor:
                         if len(currency_vals) >= 5 and len(counts) >= 3:
                             break
                         continue
+
+                    # For markdown tables, extract only the currency values (those with $ symbol)
+                    # This prevents combining count numbers with amounts (e.g., "4" + "439.99" = "4439.99")
+                    currency_matches = re.findall(r'\$\s*\(?\s*([\d,]+\.\d{2})\)?', stripped)
+                    if currency_matches:
+                        for curr_str in currency_matches:
+                            # Check if this is in parentheses (negative) by looking at context
+                            is_negative = '(' in stripped and ')' in stripped
+                            amt = self._parse_currency(curr_str, absolute=False)
+                            if amt is not None:
+                                amt = -abs(amt) if is_negative else amt
+                                currency_vals.append(amt)
+                                if len(currency_vals) >= 5:
+                                    break
+                        if len(currency_vals) >= 5 and len(counts) >= 3:
+                            break
+                        continue
+
+                    # Fallback to old behavior for non-table formats
                     amt = self._parse_currency(stripped, absolute=False)
                     if amt is not None and re.search(r'[\d$.,()]', stripped):
                         currency_vals.append(amt)
@@ -465,6 +484,7 @@ class DoclingPDFExtractor:
                                       end_date: Optional[date]) -> List[Dict[str, Any]]:
         """Parse transactions from extracted table data."""
         transactions = []
+        last_sign_hint = 0  # Track sign_hint from previous table for continuation tables
 
         # Tables now come as [page][tables] format
         for page_tables in tables:
@@ -505,6 +525,12 @@ class DoclingPDFExtractor:
                         'date' in header_text and
                         ('amount' in header_text or 'description' in header_text)
                     )
+
+                    # If this looks like a continuation table (generic Date/Amount/Description header),
+                    # inherit the sign hint from the previous transaction table
+                    if is_transaction_table and sign_hint == 0 and last_sign_hint != 0:
+                        sign_hint = last_sign_hint
+                        logger.debug(f"Continuation table detected, using sign_hint={sign_hint} from previous table")
 
                 if is_transaction_table:
                     logger.debug(f"Processing transaction table with {len(table)-1} rows")
@@ -549,6 +575,10 @@ class DoclingPDFExtractor:
                             transaction = self._extract_transaction_from_row(row, start_date, end_date, sign_hint, header_text)
                             if transaction:
                                 transactions.append(transaction)
+
+                    # Remember this sign_hint for potential continuation tables
+                    if sign_hint != 0:
+                        last_sign_hint = sign_hint
 
         return transactions
 
