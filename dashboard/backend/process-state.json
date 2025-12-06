@@ -1,10 +1,10 @@
 {
   "api-server": {
     "id": "api-server",
-    "pid": 3663,
+    "pid": 2415,
     "command": "/home/adamsl/planner/.venv/bin/python nonprofit_finance_db/api_server.py",
     "cwd": "/home/adamsl/planner/",
-    "startTime": "2025-12-03T22:40:55.659Z",
+    "startTime": "2025-12-03T23:37:50.639Z",
     "status": "running",
     "ports": [
       8080
@@ -14,18 +14,8 @@
     "id": "livekit-voice-agent",
     "command": "/home/adamsl/planner/venv/bin/python livekit_mcp_agent.py dev",
     "cwd": "/home/adamsl/ottomator-agents/livekit-agent",
-    "startTime": "2025-12-03T22:41:06.398Z",
+    "startTime": "2025-12-03T23:37:59.132Z",
     "status": "running",
     "ports": []
-  },
-  "pydantic-web-server": {
-    "id": "pydantic-web-server",
-    "command": "/home/adamsl/planner/venv/bin/python pydantic_mcp_agent_endpoint.py",
-    "cwd": "/home/adamsl/ottomator-agents/pydantic-ai-mcp-agent/studio-integration-version",
-    "startTime": "2025-12-03T22:41:10.801Z",
-    "status": "running",
-    "ports": [
-      8001
-    ]
   }
 }

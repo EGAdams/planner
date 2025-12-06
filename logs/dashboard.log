@@ -2,18 +2,19 @@
 > admin-dashboard@1.0.0 start
 > node backend/dist/server.js
 
-2025-12-03T22:40:37.027Z ADMIN_HOST from env: undefined
-2025-12-03T22:40:37.038Z Admin dashboard server running on http://127.0.0.1:3000
-2025-12-03T22:40:37.038Z Process management enabled with persistent state
-2025-12-03T22:40:37.043Z Server orchestrator initialized
+2025-12-03T23:37:29.740Z ADMIN_HOST from env: undefined
+2025-12-03T23:37:29.771Z Admin dashboard server running on http://127.0.0.1:3000
+2025-12-03T23:37:29.772Z Process management enabled with persistent state
 Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/letta
+2025-12-03T23:37:29.801Z Server orchestrator initialized
 Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/orchestrator
-2025-12-03T22:40:37.052Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
-2025-12-03T22:40:37.057Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
-2025-12-03T22:40:37.058Z Discovered agent: planner-agent in /home/adamsl/planner
-2025-12-03T22:40:37.136Z Discovered 3 agents
-2025-12-03T22:40:37.136Z Agent discovery complete. Registered agents:
-2025-12-03T22:40:55.665Z Server api-server started with PID 3663
-2025-12-03T22:41:03.684Z Server livekit-voice-agent started with PID undefined
-2025-12-03T22:41:06.400Z Server livekit-voice-agent started with PID undefined
-2025-12-03T22:41:10.803Z Server pydantic-web-server started with PID undefined
+2025-12-03T23:37:29.809Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
+2025-12-03T23:37:29.832Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
+2025-12-03T23:37:29.835Z Discovered agent: planner-agent in /home/adamsl/planner
+2025-12-03T23:37:30.019Z Discovered 3 agents
+2025-12-03T23:37:30.019Z Agent discovery complete. Registered agents:
+2025-12-03T23:37:50.648Z Server api-server started with PID 2415
+2025-12-03T23:37:54.188Z Server letta-server started with PID 2582
+2025-12-03T23:37:58.062Z Server livekit-voice-agent started with PID undefined
+2025-12-03T23:37:59.135Z Server livekit-voice-agent started with PID undefined
+2025-12-03T23:38:30.701Z Process letta-server died unexpectedly

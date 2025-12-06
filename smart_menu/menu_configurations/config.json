@@ -119,6 +119,11 @@
                         "title": "Check Agent Registry Snapshot",
                         "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/agent_messaging && python3 run_collective.py'",
                         "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Send Orchestrator Test Message",
+                        "action": "bash -lc 'cd /home/adamsl/planner && .venv/bin/python a2a_communicating_agents/agent_messaging/send_agent_message.py orchestrator-agent \"Smart Menu test ping from Orchestrator Ops\"'",
+                        "working_directory": "/home/adamsl/planner"
                     }
                 ]
             },

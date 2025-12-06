@@ -89,6 +89,16 @@ class Orchestrator:
             return True
         return "orchestrator" in value.lower()
 
+    def _resolve_known_agent(self, value: Optional[str]) -> Optional[str]:
+        """Return the canonical agent name if it's registered in known_agents."""
+        if not value:
+            return None
+        normalized = self._normalize_identifier(str(value))
+        for agent_name in self.known_agents.keys():
+            if self._normalize_identifier(agent_name) == normalized:
+                return agent_name
+        return None
+
     def _load_self_profile(self) -> Dict[str, Any]:
         agent_card = WORKSPACE_ROOT / "agent.json"
         if not agent_card.exists():
@@ -276,16 +286,27 @@ class Orchestrator:
                             reasoning="No matching agent available yet, so I'm responding directly.",
                         )
                         continue
-                    target_agent = decision.get("target_agent")
-                    
-                    if decision and not target_agent:
+                    raw_target = decision.get("target_agent")
+                    if decision and not raw_target:
                         log_update(f"[{AGENT_NAME}] Router returned no target; responding directly.")
                         self._respond_directly(
                             user_request=user_request,
                             reasoning=decision.get("reasoning"),
                         )
                         continue
-                    
+
+                    target_agent = self._resolve_known_agent(raw_target)
+                    if decision and raw_target and not target_agent:
+                        log_update(
+                            f"[{AGENT_NAME}] Router suggested unknown agent '{raw_target}'; responding directly."
+                        )
+                        reasoning = decision.get("reasoning") or "Suggested agent is not registered."
+                        self._respond_directly(
+                            user_request=user_request,
+                            reasoning=f"{reasoning} (Agent '{raw_target}' is not available.)",
+                        )
+                        continue
+
                     if decision and target_agent:
                         if self._is_self_reference(target_agent):
                             log_update(f"[{AGENT_NAME}] Direct chat requested; responding without delegation.")
@@ -294,7 +315,7 @@ class Orchestrator:
                                 reasoning=decision.get("reasoning"),
                             )
                             continue
-                    
+
                     if decision and target_agent:
                         target = target_agent
                         log_update(f"[{AGENT_NAME}] Routing to {target}")

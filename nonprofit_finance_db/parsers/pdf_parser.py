@@ -100,6 +100,10 @@ class PDFParser(BaseParser):
 
             logger.info(f"Successfully parsed {len(standardized_transactions)} transactions from {file_path}")
 
+            # Deduplicate check transactions that match payment details
+            standardized_transactions = self._deduplicate_check_transactions(standardized_transactions)
+            logger.info(f"After deduplication: {len(standardized_transactions)} transactions")
+
             # If Docling returned nothing, fall back to Gemini for a best-effort parse
             if not standardized_transactions and self.gemini_fallback:
                 logger.info("Docling returned no transactions; invoking Gemini fallback")
@@ -161,6 +165,72 @@ class PDFParser(BaseParser):
                 'statement_start_date': None,
                 'statement_end_date': None
             }
+
+    def _deduplicate_check_transactions(self, transactions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Remove duplicate check transactions.
+
+        Bank statements often list checks in two places:
+        1. A "Checks" section with just check number and amount
+        2. A "Withdrawals" section with the actual payment details
+
+        When a check is used for a payment, both entries represent the SAME transaction.
+        This method removes the generic "Check #XXXX" entry when there's a matching
+        payment detail entry with the same date and amount.
+
+        Args:
+            transactions: List of parsed transactions
+
+        Returns:
+            Deduplicated list of transactions
+        """
+        # Group transactions by date and amount
+        from collections import defaultdict
+        groups = defaultdict(list)
+
+        for txn in transactions:
+            date_key = txn.get('transaction_date')
+            amount = txn.get('amount')
+            if date_key and amount is not None:
+                key = (str(date_key), float(amount))
+                groups[key].append(txn)
+
+        # For each group, remove generic "Check #XXXX" if there's a detailed transaction
+        deduplicated = []
+        for (txn_date, txn_amount), group_txns in groups.items():
+            if len(group_txns) == 1:
+                # No duplicates in this group
+                deduplicated.extend(group_txns)
+            else:
+                # Multiple transactions with same date/amount
+                # Keep detailed transactions, remove generic check entries
+                detailed_txns = []
+                check_txns = []
+
+                for txn in group_txns:
+                    desc = txn.get('description', '')
+                    bank_item_type = txn.get('bank_item_type', '')
+
+                    # Check if this is a generic check entry (just "Check #XXXX")
+                    if bank_item_type == 'CHECK' and desc.strip().startswith('Check #'):
+                        check_txns.append(txn)
+                    else:
+                        detailed_txns.append(txn)
+
+                # If we have both check and detailed entries, keep only detailed
+                if detailed_txns and check_txns:
+                    logger.info(f"Deduplicating: Found {len(check_txns)} check(s) and {len(detailed_txns)} detailed transaction(s) for {txn_date} ${txn_amount}")
+                    logger.info(f"  Keeping detailed: {[t.get('description') for t in detailed_txns]}")
+                    logger.info(f"  Removing checks: {[t.get('description') for t in check_txns]}")
+                    deduplicated.extend(detailed_txns)
+                elif detailed_txns:
+                    # Only detailed transactions
+                    deduplicated.extend(detailed_txns)
+                else:
+                    # Only check transactions (no detailed info available)
+                    deduplicated.extend(check_txns)
+
+        return deduplicated
 
     def extract_statement_period(self, file_path: str) -> tuple[Optional[date], Optional[date]]:
         """
