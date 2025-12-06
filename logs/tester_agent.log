@@ -1,0 +1,6 @@
+[tester-agent] Started. Listening on topic 'test'...
+a2a_communicating_agents.agent_messaging.transport_manager - INFO - Initializing shared transport for agent: tester-agent
+  Using WebSocket transport (ws://localhost:3030)
+a2a_communicating_agents.agent_messaging.transport_manager - INFO - ✅ Shared transport initialized: websocket (by tester-agent)
+a2a_communicating_agents.agent_messaging.messenger - INFO - ✅ Agent 'tester-agent' using shared websocket transport
+a2a_communicating_agents.agent_messaging.messenger - INFO - ✅ Agent 'tester-agent' subscribed to topic 'test'

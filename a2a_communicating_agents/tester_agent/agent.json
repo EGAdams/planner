@@ -1,0 +1,193 @@
+{
+    "name": "tester-agent",
+    "version": "1.0.0",
+    "description": "Quality assurance specialist responsible for writing tests, running test suites, and validating code functionality. Ensures code quality through comprehensive testing strategies.",
+    "capabilities": [
+        {
+            "name": "write_tests",
+            "description": "Write unit tests, integration tests, or end-to-end tests for code.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "What functionality to test"
+                    },
+                    "test_type": {
+                        "type": "string",
+                        "enum": ["unit", "integration", "e2e", "functional"],
+                        "description": "Type of tests to write"
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Files containing code to test"
+                    },
+                    "context": {
+                        "type": "object"
+                    }
+                },
+                "required": ["description"]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "test_files_created": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "test_count": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        {
+            "name": "run_tests",
+            "description": "Execute test suites and report results.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "test_path": {
+                        "type": "string",
+                        "description": "Path to tests to run"
+                    },
+                    "test_type": {
+                        "type": "string",
+                        "description": "Type of tests to run"
+                    }
+                }
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "tests_run": {
+                        "type": "integer"
+                    },
+                    "tests_passed": {
+                        "type": "integer"
+                    },
+                    "tests_failed": {
+                        "type": "integer"
+                    },
+                    "failures": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "test_name": {
+                                    "type": "string"
+                                },
+                                "error": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "validate_code",
+            "description": "Verify code meets quality standards, runs correctly, and handles edge cases.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "What to validate"
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "requirements": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Specific requirements to validate against"
+                    }
+                },
+                "required": ["description"]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "valid": {
+                        "type": "boolean"
+                    },
+                    "issues": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "recommendations": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "debug_test_failures",
+            "description": "Investigate and diagnose why tests are failing.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the failing test(s)"
+                    },
+                    "test_output": {
+                        "type": "string",
+                        "description": "Test failure output or error messages"
+                    }
+                },
+                "required": ["description"]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "diagnosis": {
+                        "type": "string"
+                    },
+                    "root_cause": {
+                        "type": "string"
+                    },
+                    "suggested_fix": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ],
+    "topics": [
+        "testing",
+        "qa",
+        "quality",
+        "validation",
+        "test",
+        "tester",
+        "quality-assurance"
+    ],
+    "memory_access": "read-write"
+}

@@ -1,12 +1,12 @@
 #!/bin/bash
-# Launch orchestrator chat CLI. Defaults to auto-starting the orchestrator agent.
+# Launch orchestrator chat CLI using the WORKING simple async version
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
-VENV_PYTHON="$REPO_ROOT/.venv/bin/python"
+VENV_PYTHON="$REPO_ROOT/.venv/bin/python3"
 
-cd "$REPO_ROOT"
+cd "$REPO_ROOT/a2a_communicating_agents"
 
 if [ -x "$VENV_PYTHON" ]; then
     PYTHON_BIN="$VENV_PYTHON"
@@ -19,8 +19,8 @@ else
     exit 1
 fi
 
-if [ "$#" -eq 0 ]; then
-    set -- --auto-start
-fi
+echo "🚀 Starting WORKING orchestrator chat..."
+echo "✅ Using async WebSocket transport"
+echo ""
 
-exec "$PYTHON_BIN" a2a_communicating_agents/agent_messaging/orchestrator_chat.py "$@"
+exec "$PYTHON_BIN" simple_orchestrator_chat.py

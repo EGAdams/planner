@@ -17,6 +17,7 @@ import re
 import signal
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional, Sequence, Set, Tuple
@@ -89,7 +90,7 @@ class OrchestratorProcessManager:
 
 
 class OrchestratorChatSession:
-    """Stateful helper that polls the orchestrator topic and sends messages."""
+    """Stateful helper that uses WebSocket for real-time orchestrator communication."""
 
     _HEADER_PATTERN = re.compile(r"^\*\*(?P<label>[^*]+)\*\*\s*(?P<value>.*)$")
 
@@ -110,6 +111,8 @@ class OrchestratorChatSession:
         self._seen_ids: Set[str] = set()
         self._doc_manager = doc_manager or DocumentManager()
         self._transport_factory = transport_factory
+        self._incoming_messages: asyncio.Queue = asyncio.Queue()
+        self._subscription_active = False
         self.transport_name, self.transport = self._initialize_transport(
             transport_name=transport_name,
             transport=transport,
@@ -130,9 +133,22 @@ class OrchestratorChatSession:
             return transport_name, transport
 
         try:
-            name, transport_instance = self._transport_factory.create_transport(
-                agent_id=self.agent_name,
-                doc_manager=self._doc_manager,
+            # Get or create persistent event loop
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_closed():
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            # Create transport using async method with persistent loop
+            name, transport_instance = loop.run_until_complete(
+                self._transport_factory.create_transport_async(
+                    agent_id=self.agent_name,
+                    doc_manager=self._doc_manager,
+                )
             )
             return name, transport_instance
         except Exception as exc:  # pragma: no cover - defensive logging
@@ -190,6 +206,61 @@ class OrchestratorChatSession:
                 style = "white"
             console.print(f"[dim]{time_str}[/dim] [{style}]{sender}[/]: {content}")
 
+    async def _message_callback(self, message: AgentMessage) -> None:
+        """Callback for real-time WebSocket messages."""
+        # Add to incoming queue for processing
+        await self._incoming_messages.put(message)
+
+    def subscribe_to_topic(self):
+        """Subscribe to the topic for real-time message delivery (WebSocket only)."""
+        if self.transport_name != "websocket":
+            return  # Only WebSocket supports subscriptions
+
+        if self._subscription_active:
+            return
+
+        try:
+            asyncio.run(self.transport.subscribe(self.topic, self._message_callback))
+            self._subscription_active = True
+            console.print(f"  📬 Subscribed to topic '{self.topic}' for real-time updates", style="dim")
+        except Exception as e:
+            console.print(f"  ⚠️  Could not subscribe to topic: {e}", style="yellow")
+
+    async def wait_for_response_async(self, timeout: float = 15.0) -> List[AgentMessage]:
+        """Wait for incoming messages via WebSocket subscription."""
+        messages = []
+        deadline = asyncio.get_event_loop().time() + timeout
+
+        while asyncio.get_event_loop().time() < deadline:
+            try:
+                # Wait for message with remaining time
+                remaining = deadline - asyncio.get_event_loop().time()
+                if remaining <= 0:
+                    break
+
+                message = await asyncio.wait_for(
+                    self._incoming_messages.get(),
+                    timeout=min(remaining, 1.0)
+                )
+
+                # Deduplicate
+                key = self._message_key(message)
+                if key not in self._seen_ids:
+                    self._seen_ids.add(key)
+                    messages.append(message)
+
+            except asyncio.TimeoutError:
+                # No message yet, keep waiting
+                if messages:
+                    # We got at least one message, return what we have
+                    break
+                continue
+            except Exception as e:
+                console.print(f"  Error waiting for response: {e}", style="red")
+                break
+
+        return messages
+
     def send_user_message(self, message: str) -> Optional[AgentMessage]:
         """Send a user-authored message to the orchestrator topic."""
         payload = message.strip()
@@ -203,7 +274,18 @@ class OrchestratorChatSession:
             priority=TransportMessagePriority.NORMAL,
         )
         try:
-            success = asyncio.run(self.transport.send(transport_message))
+            # Get or create event loop for this thread
+            try:
+                loop = asyncio.get_event_loop()
+                if loop.is_closed():
+                    loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(loop)
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            # Run the send in the persistent loop
+            success = loop.run_until_complete(self.transport.send(transport_message))
         except Exception as exc:
             console.print(f"❌ Failed to send message: {exc}", style="red")
             return None
@@ -440,6 +522,9 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             console.print(f"❌ Failed to auto-start orchestrator: {exc}", style="red")
             manager = None
 
+    # Subscribe to topic if using WebSocket
+    session.subscribe_to_topic()
+
     # Initial refresh so we can see existing context.
     initial_messages = session.fetch_new_messages()
     if initial_messages:
@@ -468,10 +553,33 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
             continue
 
         session.send_user_message(user_input)
-        console.print("✅ Message sent.", style="green")
-        new_msgs = session.fetch_new_messages()
-        if new_msgs:
-            session.render_messages(new_msgs)
+        console.print("✅ Message sent. Waiting for response...", style="green")
+
+        # Wait for response using WebSocket subscription if available, otherwise poll
+        if session.transport_name == "websocket" and session._subscription_active:
+            # Real-time WebSocket - wait for incoming messages
+            new_msgs = asyncio.run(session.wait_for_response_async(timeout=15.0))
+            if new_msgs:
+                session.render_messages(new_msgs)
+            else:
+                console.print("⏱️  No response within 15 seconds. Orchestrator may be processing or offline.", style="yellow")
+        else:
+            # Fallback to polling for RAG/Letta transports
+            poll_timeout = 15.0
+            poll_interval = 1.0
+            start_time = time.time()
+            response_received = False
+
+            while time.time() - start_time < poll_timeout:
+                time.sleep(poll_interval)
+                new_msgs = session.fetch_new_messages()
+                if new_msgs:
+                    session.render_messages(new_msgs)
+                    response_received = True
+                    break
+
+            if not response_received:
+                console.print("⏱️  No response within 15 seconds. Orchestrator may be processing or offline.", style="yellow")
 
 
 if __name__ == "__main__":

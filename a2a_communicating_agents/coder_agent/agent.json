@@ -1,0 +1,163 @@
+{
+    "name": "coder-agent",
+    "version": "1.0.0",
+    "description": "Software development specialist capable of writing, refactoring, and implementing code across multiple programming languages. Handles feature implementation, bug fixes, and code generation tasks.",
+    "capabilities": [
+        {
+            "name": "implement_feature",
+            "description": "Implement a new feature or functionality based on requirements specification.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Detailed description of the feature to implement"
+                    },
+                    "context": {
+                        "type": "object",
+                        "description": "Additional context like files, dependencies, or design patterns"
+                    }
+                },
+                "required": ["description"]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "files_modified": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        {
+            "name": "fix_bug",
+            "description": "Debug and fix issues in existing code.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "Description of the bug or issue"
+                    },
+                    "error_message": {
+                        "type": "string",
+                        "description": "Error message or stack trace if available"
+                    },
+                    "context": {
+                        "type": "object"
+                    }
+                },
+                "required": ["description"]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "fix_description": {
+                        "type": "string"
+                    },
+                    "files_modified": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "refactor_code",
+            "description": "Improve code quality, readability, and maintainability without changing behavior.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "What needs to be refactored and why"
+                    },
+                    "files": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "description": "Specific files to refactor"
+                    }
+                },
+                "required": ["description"]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "improvements": {
+                        "type": "string"
+                    },
+                    "files_modified": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "write_code",
+            "description": "Generate code snippets or complete implementations from scratch.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "description": {
+                        "type": "string",
+                        "description": "What code to write"
+                    },
+                    "language": {
+                        "type": "string",
+                        "description": "Programming language"
+                    },
+                    "context": {
+                        "type": "object"
+                    }
+                },
+                "required": ["description"]
+            },
+            "output_schema": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "code": {
+                        "type": "string"
+                    },
+                    "explanation": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    ],
+    "topics": [
+        "code",
+        "development",
+        "implementation",
+        "programming",
+        "software",
+        "developer",
+        "coder"
+    ],
+    "memory_access": "read-write"
+}

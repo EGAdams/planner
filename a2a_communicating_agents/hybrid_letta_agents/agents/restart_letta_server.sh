@@ -13,6 +13,14 @@ if pgrep -f "debug_letta_server.py" >/dev/null 2>&1; then
   pkill -f "debug_letta_server.py"
 fi
 
+# Source the .env file to load environment variables
+if [[ -f ~/planner/.env ]]; then
+  echo "Loading environment variables from ~/planner/.env"
+  set -a
+  source ~/planner/.env
+  set +a
+fi
+
 # Require an OpenAI key before starting the server.
 if [[ -z "${OPENAI_API_KEY:-}" ]]; then
   echo "ERROR: OPENAI_API_KEY is not set. Export it, then rerun this script."

@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 """
-Orchestrator Agent
+Orchestrator Agent (Async Refactored with Observer Pattern)
+
 Routes user requests to the appropriate specialist agent using OpenAI.
+Uses Observer Pattern for real-time WebSocket message handling.
+
+GoF Patterns:
+- Observer Pattern: Subscribes to 'orchestrator' topic, receives callbacks
+- Facade Pattern: Uses AgentMessenger for simplified communication
+- Singleton Pattern: Shares WebSocket transport via TransportManager
 """
 
 import sys
 import os
 import time
 import json
+import asyncio
 from collections import deque
 from pathlib import Path
 from typing import Any, Deque, Dict, List, Optional, Set
@@ -17,6 +25,7 @@ try:
     from openai import OpenAI
 except ImportError:  # pragma: no cover - handled gracefully at runtime
     OpenAI = None
+
 # Add parent directory to path to import shared modules
 PLANNER_ROOT = Path(__file__).resolve().parents[2]
 
@@ -29,17 +38,31 @@ load_dotenv(dotenv_path=PLANNER_ROOT / ".env", override=True)
 sys.path.insert(0, str(PLANNER_ROOT))
 os.chdir(PLANNER_ROOT)
 
-from a2a_communicating_agents.agent_messaging import inbox, post_message, create_jsonrpc_response
+# NEW: Import async messenger and AgentMessage
+from a2a_communicating_agents.agent_messaging import (
+    AgentMessenger,  # Uses TransportManager singleton
+    create_jsonrpc_response,
+    AgentMessage,  # For type hints
+)
 from rag_system.core.document_manager import DocumentManager
 from a2a_communicating_agents.orchestrator_agent.a2a_dispatcher import A2ADispatcher
 
 AGENT_NAME = "orchestrator-agent"
 WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
 
+
 def log_update(message):
     print(f"[{AGENT_NAME}] {message}")
 
+
 class Orchestrator:
+    """
+    Orchestrator using Observer Pattern for real-time message handling.
+
+    Subscribes to 'orchestrator' topic once at startup, then processes all
+    messages via async callbacks. No polling loop needed.
+    """
+
     def __init__(self, *, llm_client=None, model_id: Optional[str] = None):
         self.known_agents = {}
         self.dispatcher = A2ADispatcher(workspace_root=WORKSPACE_ROOT)
@@ -61,6 +84,10 @@ class Orchestrator:
         self._ignored_senders = {AGENT_NAME.lower(), "orchestrator"}
         self._self_profile = self._load_self_profile()
         self._self_context = self._build_self_context()
+
+        # NEW: Create messenger instance using TransportManager singleton
+        self.messenger = AgentMessenger(agent_id=AGENT_NAME)
+        self._running = False
 
     def _build_self_aliases(self) -> Set[str]:
         aliases = {
@@ -145,10 +172,10 @@ class Orchestrator:
         namespace_segment = f" ({namespace})" if namespace else ""
         return f"{backend}{namespace_segment} -> {status}"
 
-    def discover_agents(self):
-        """Scan workspace for agent.json files"""
+    async def discover_agents(self):
+        """Scan workspace for agent.json files (async)"""
         print(f"[{AGENT_NAME}] Scanning for agents...")
-        registry = self.dispatcher.refresh_registry()
+        registry = await self.dispatcher.refresh_registry()
         snapshot = self.dispatcher.routing_snapshot()
 
         for agent_name, info in snapshot.items():
@@ -169,21 +196,29 @@ class Orchestrator:
         print(f"[{AGENT_NAME}] Discovered {len(self.known_agents)} agents: {list(self.known_agents.keys())}")
 
     def decide_route(self, user_request: str) -> Dict:
-        """Use Gemini to decide which agent should handle the request"""
+        """Use LLM to decide which agent should handle the request"""
 
         if not self.client:
             return self._fallback_route(user_request)
 
         system_prompt = (
             "You are the Orchestrator Agent. Route the user request to the best specialist "
-            "agent. Always reply with compact JSON containing keys: target_agent, reasoning, "
-            "method, params."
+            "agent based on their capabilities and topics. \n\n"
+            "IMPORTANT ROUTING RULES:\n"
+            "- For code writing, implementation, snippets, or programming tasks -> use 'coder-agent'\n"
+            "- For testing, QA, or validation tasks -> use 'tester-agent'\n"
+            "- For dashboard or UI state management -> use 'dashboard-agent'\n\n"
+            "Always reply with compact JSON containing keys: target_agent, reasoning, method, params."
         )
         agent_snapshot = json.dumps(self.known_agents, indent=2)
         user_prompt = (
             f"Available Agents:\n{agent_snapshot}\n\n"
             f'User Request: "{user_request}"\n\n'
-            "Return JSON with target_agent (or null), reasoning, method "
+            "Analyze the request and select the most appropriate agent based on:\n"
+            "1. Keywords in the request (code, write, implement, test, dashboard)\n"
+            "2. Agent capabilities and topics\n"
+            "3. The ROUTING RULES defined above\n\n"
+            "Return JSON with target_agent (must match exactly), reasoning, method "
             '(default "agent.execute_task"), and params (context, description, artifacts).'
         )
 
@@ -209,6 +244,27 @@ class Orchestrator:
     def _fallback_route(self, user_request: str) -> Optional[Dict]:
         """Simple keyword-based router when no API client is available."""
         normalized = user_request.lower()
+
+        # Priority keywords for specific agents
+        priority_mappings = {
+            "coder-agent": ["code", "write", "implement", "program", "function", "snippet", "webassembly", "wasm", "python", "javascript", "java"],
+            "tester-agent": ["test", "validate", "check", "verify", "qa", "quality"],
+            "dashboard-agent": ["dashboard", "ui", "interface", "display", "status"],
+        }
+
+        # Check priority keywords first
+        for agent_name, keywords in priority_mappings.items():
+            if agent_name in self.known_agents:
+                for keyword in keywords:
+                    if keyword in normalized:
+                        return {
+                            "target_agent": agent_name,
+                            "reasoning": f"Matched priority keyword '{keyword}' for {agent_name}.",
+                            "method": "agent.execute_task",
+                            "params": {"description": user_request},
+                        }
+
+        # Fallback to general scoring
         best_agent = None
         best_score = 0
 
@@ -237,132 +293,195 @@ class Orchestrator:
         if best_agent and best_score:
             return {
                 "target_agent": best_agent,
-                "reasoning": "Heuristic keyword match (no Gemini API key available).",
+                "reasoning": "Heuristic keyword match (no LLM API key available).",
                 "method": "agent.execute_task",
                 "params": {"description": user_request},
             }
         return None
 
+    def _get_topic_for_agent(self, agent_name: str) -> str:
+        """Map agent name to its topic."""
+        topic_map = {
+            "coder-agent": "code",
+            "tester-agent": "test",
+            "dashboard-agent": "ops",
+        }
+        return topic_map.get(agent_name, agent_name)
 
-    def run(self):
-        print(f"[{AGENT_NAME}] Started. Listening on topic 'orchestrator'...")
-        self.discover_agents()
-        
-        while True:
-            messages = inbox("orchestrator", limit=5, render=False)
-            
-            for msg in messages:
-                message_id = self._extract_message_id(msg)
-                if self._message_seen(message_id):
-                    continue
-                sender_name = (getattr(msg, "sender", "") or "").strip().lower()
-                if self._is_self_reference(sender_name):
-                    self._mark_message_processed(message_id)
-                    continue
-                try:
-                    content = msg.content
-                    # Unwrap markdown if present  # or find a better way to handle this
-                    if "```json" in content:
-                        content = content.split("```json")[1].split("```")[0].strip()
-                    
-                    # Simple text handling for now (if not JSON-RPC)
-                    # In a real system, we'd parse JSON-RPC requests to the orchestrator
-                    # But here we treat the message content as the "User Request"
-                    
-                    user_request = content
+    # ========================================================================
+    # ASYNC MESSAGE HANDLER (OBSERVER PATTERN)
+    # ========================================================================
 
-                    # Skip if it looks like a machine response
-                    if content.strip().startswith("{") and "jsonrpc" in content:
-                        log_update(f"[{AGENT_NAME}] Skipping machine response: {content[:50]}...")
-                        continue
+    async def _handle_message(self, message: AgentMessage):
+        """
+        Observer callback for incoming messages (GoF Observer Pattern).
 
-                    log_update(f"[{AGENT_NAME}] Processing request: {user_request[:50]}...")
-                    
-                    decision = self.decide_route(user_request)
-                    if not decision:
-                        log_update(f"[{AGENT_NAME}] Router produced no decision; responding directly.")
-                        self._respond_directly(
-                            user_request=user_request,
-                            reasoning="No matching agent available yet, so I'm responding directly.",
-                        )
-                        continue
-                    raw_target = decision.get("target_agent")
-                    if decision and not raw_target:
-                        log_update(f"[{AGENT_NAME}] Router returned no target; responding directly.")
-                        self._respond_directly(
-                            user_request=user_request,
-                            reasoning=decision.get("reasoning"),
-                        )
-                        continue
+        Called automatically when messages arrive on the 'orchestrator' topic.
+        This replaces the old polling loop with real-time event-driven handling.
+        """
+        # Check if already processed
+        message_id = self._extract_message_id(message)
+        if self._message_seen(message_id):
+            return
 
-                    target_agent = self._resolve_known_agent(raw_target)
-                    if decision and raw_target and not target_agent:
-                        log_update(
-                            f"[{AGENT_NAME}] Router suggested unknown agent '{raw_target}'; responding directly."
-                        )
-                        reasoning = decision.get("reasoning") or "Suggested agent is not registered."
-                        self._respond_directly(
-                            user_request=user_request,
-                            reasoning=f"{reasoning} (Agent '{raw_target}' is not available.)",
-                        )
-                        continue
+        # Check if from self
+        sender_name = (message.from_agent or "").strip().lower()
+        if self._is_self_reference(sender_name):
+            self._mark_message_processed(message_id)
+            return
 
-                    if decision and target_agent:
-                        if self._is_self_reference(target_agent):
-                            log_update(f"[{AGENT_NAME}] Direct chat requested; responding without delegation.")
-                            self._respond_directly(
-                                user_request=user_request,
-                                reasoning=decision.get("reasoning"),
-                            )
-                            continue
+        try:
+            content = message.content
 
-                    if decision and target_agent:
-                        target = target_agent
-                        log_update(f"[{AGENT_NAME}] Routing to {target}")
+            # Unwrap markdown if present
+            if "```json" in content:
+                content = content.split("```json")[1].split("```")[0].strip()
 
-                        params = decision.get("params", {})
-                        description = params.get("description", user_request)
-                        context = params.get("context", {})
-                        artifacts = params.get("artifacts")
+            # Skip JSON-RPC responses
+            if content.strip().startswith("{") and "jsonrpc" in content:
+                log_update(f"Skipping machine response: {content[:50]}...")
+                self._mark_message_processed(message_id)
+                return
 
-                        delegation = self.dispatcher.delegate(
-                            agent_name=target,
-                            description=description,
-                            context=context,
-                            artifacts=artifacts,
-                        )
-                        
-                        rpc_payload = json.dumps(delegation["payload"])
-                        target_topic = delegation["topic"]
+            log_update(f"Processing request: {content[:50]}...")
 
-                        # Send the message to the target agent
-                        post_message(
-                            message=rpc_payload,
-                            topic=target_topic,
-                            from_agent=AGENT_NAME
-                        )
-                        
-                        # Confirm to user
-                        post_message(
-                            message=f"I have routed your request to **{target}**. \nReasoning: {decision['reasoning']}",
-                            topic="orchestrator",
-                            from_agent=AGENT_NAME
-                        )
-                        
-                    else:
-                        print(f"[{AGENT_NAME}] No suitable agent found.")
-                        post_message(
-                            message="I could not find a suitable agent to handle your request.",
-                            topic="orchestrator",
-                            from_agent=AGENT_NAME
-                        )
+            # Route the message
+            decision = self.decide_route(content)
 
-                except Exception as e:
-                    print(f"[{AGENT_NAME}] Error processing message: {e}")
-                finally:
-                    self._mark_message_processed(message_id)
-            
-            time.sleep(10)
+            if not decision:
+                log_update("Router produced no decision; responding directly.")
+                await self._respond_directly_async(
+                    user_request=content,
+                    reasoning="No matching agent available yet, so I'm responding directly.",
+                )
+                self._mark_message_processed(message_id)
+                return
+
+            raw_target = decision.get("target_agent")
+            if not raw_target:
+                log_update("Router returned no target; responding directly.")
+                await self._respond_directly_async(
+                    user_request=content,
+                    reasoning=decision.get("reasoning"),
+                )
+                self._mark_message_processed(message_id)
+                return
+
+            target_agent = self._resolve_known_agent(raw_target)
+            if raw_target and not target_agent:
+                log_update(f"Router suggested unknown agent '{raw_target}'; responding directly.")
+                reasoning = decision.get("reasoning") or "Suggested agent is not registered."
+                await self._respond_directly_async(
+                    user_request=content,
+                    reasoning=f"{reasoning} (Agent '{raw_target}' is not available.)",
+                )
+                self._mark_message_processed(message_id)
+                return
+
+            if self._is_self_reference(target_agent):
+                log_update("Direct chat requested; responding without delegation.")
+                await self._respond_directly_async(
+                    user_request=content,
+                    reasoning=decision.get("reasoning"),
+                )
+                self._mark_message_processed(message_id)
+                return
+
+            # Route to target agent
+            log_update(f"Routing to {target_agent}")
+
+            params = decision.get("params", {})
+            description = params.get("description", content)
+            context = params.get("context", {})
+            artifacts = params.get("artifacts")
+
+            delegation = await self.dispatcher.delegate(
+                agent_name=target_agent,
+                description=description,
+                context=context,
+                artifacts=artifacts,
+            )
+
+            rpc_payload = json.dumps(delegation["payload"])
+            target_topic = delegation["topic"]
+
+            # Send to target agent via shared transport
+            await self.messenger.send_to_agent(
+                agent_id="board",
+                message=rpc_payload,
+                topic=target_topic
+            )
+
+            # Confirm to user on orchestrator topic
+            await self.messenger.send_to_agent(
+                agent_id="board",
+                message=f"I have routed your request to **{target_agent}**. \nReasoning: {decision['reasoning']}",
+                topic="orchestrator"
+            )
+
+            self._mark_message_processed(message_id)
+
+        except Exception as e:
+            log_update(f"Error processing message: {e}")
+            import traceback
+            traceback.print_exc()
+            self._mark_message_processed(message_id)
+
+    async def _respond_directly_async(
+        self,
+        user_request: str,
+        reasoning: Optional[str] = None
+    ):
+        """Send response back to orchestrator topic (async)."""
+        reply = self._generate_direct_response(user_request)
+        if reasoning:
+            reply = f"{reply}\n\n_{reasoning}_"
+
+        await self.messenger.send_to_agent(
+            agent_id="board",
+            message=reply,
+            topic="orchestrator"
+        )
+
+    # ========================================================================
+    # ASYNC MAIN LOOP (OBSERVER PATTERN)
+    # ========================================================================
+
+    async def run_async(self):
+        """
+        Main async event loop using Observer Pattern.
+
+        Subscribes to 'orchestrator' topic once, then handles all messages
+        via the _handle_message callback. No polling needed!
+        """
+        log_update("Started. Listening on topic 'orchestrator'...")
+
+        # Discover agents (async)
+        await self.discover_agents()
+
+        # Subscribe to orchestrator topic (Observer Pattern)
+        # Messages will be delivered to _handle_message callback automatically
+        await self.messenger.subscribe("orchestrator", self._handle_message)
+
+        log_update("✅ Subscribed to 'orchestrator' topic. Waiting for messages...")
+
+        # Keep running (just maintain event loop)
+        self._running = True
+        try:
+            while self._running:
+                await asyncio.sleep(1)  # Keep alive, messages arrive via callbacks
+        except KeyboardInterrupt:
+            log_update("Shutting down...")
+        finally:
+            self._running = False
+
+    def stop(self):
+        """Graceful shutdown."""
+        self._running = False
+
+    # ========================================================================
+    # HELPER METHODS (UNCHANGED - sync is fine)
+    # ========================================================================
 
     def _extract_message_id(self, message) -> str:
         identifier = getattr(message, "document_id", None) or getattr(message, "id", None)
@@ -389,16 +508,6 @@ class Orchestrator:
             self._processed_message_ids.discard(oldest)
         self._message_order.append(message_id)
         self._processed_message_ids.add(message_id)
-
-    def _respond_directly(self, *, user_request: str, reasoning: Optional[str] = None) -> None:
-        reply = self._generate_direct_response(user_request)
-        if reasoning:
-            reply = f"{reply}\n\n_{reasoning}_"
-        post_message(
-            message=reply,
-            topic="orchestrator",
-            from_agent=AGENT_NAME,
-        )
 
     def _generate_direct_response(self, user_request: str) -> str:
         """Craft a conversational response when the user is chatting with the orchestrator."""
@@ -434,6 +543,16 @@ class Orchestrator:
             f"Your message was: \"{user_request.strip()}\". {helpful_hint}"
         )
 
-if __name__ == "__main__":
+
+def main():
+    """Entry point with async support."""
     orchestrator = Orchestrator()
-    orchestrator.run()
+
+    try:
+        asyncio.run(orchestrator.run_async())
+    except KeyboardInterrupt:
+        print(f"\n[{AGENT_NAME}] Shutting down gracefully...")
+
+
+if __name__ == "__main__":
+    main()

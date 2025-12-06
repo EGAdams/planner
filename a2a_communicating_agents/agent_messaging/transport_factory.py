@@ -14,7 +14,10 @@ from typing import Optional, Tuple
 from .message_transport import MessageTransport
 from .websocket_transport import WebSocketTransport
 from .letta_transport import LettaTransport, LettaConfig
-from .rag_board_transport import RAGBoardTransport
+try:
+    from .rag_board_transport import RAGBoardTransport
+except ImportError:
+    RAGBoardTransport = None  # Optional dependency
 from .message_models import ConnectionConfig
 
 
@@ -26,11 +29,13 @@ class TransportFactory:
     Provides both async and sync interfaces for backward compatibility.
     """
     
-    TRANSPORT_PRIORITY = [
+    # Build transport priority list, excluding None (missing optional dependencies)
+    _TRANSPORT_LIST = [
         ("websocket", WebSocketTransport),
         ("letta", LettaTransport),
         ("rag", RAGBoardTransport),
     ]
+    TRANSPORT_PRIORITY = [(name, cls) for name, cls in _TRANSPORT_LIST if cls is not None]
     
     @classmethod
     async def create_transport_async(

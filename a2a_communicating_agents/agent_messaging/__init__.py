@@ -8,21 +8,31 @@ Also provides unified memory system with Letta and ChromaDB backends.
 from .message_transport import MessageTransport
 from .websocket_transport import WebSocketTransport
 from .letta_transport import LettaTransport, LettaConfig
-from .rag_board_transport import RAGBoardTransport
+try:
+    from .rag_board_transport import RAGBoardTransport
+except ImportError:
+    RAGBoardTransport = None  # Optional dependency
 from .transport_factory import TransportFactory
+from .transport_manager import TransportManager  # NEW: Singleton transport
 from .message_models import AgentMessage, MessagePriority
 from .messenger import (
-    AgentMessenger, 
-    send_to_agent, 
-    broadcast, 
-    post_message, 
-    read_messages, 
-    list_agents, 
+    AgentMessenger,
+    # Sync functions (backward compat, deprecated)
+    send_to_agent,
+    broadcast,
+    post_message,
+    read_messages,
+    list_agents,
     list_groups,
     create_jsonrpc_request,
     create_jsonrpc_response,
     inbox,
-    send
+    send,
+    # New async functions (preferred)
+    send_to_agent_async,
+    post_message_async,
+    inbox_async,
+    subscribe_async,
 )
 
 # Memory system imports
@@ -147,9 +157,11 @@ __all__ = [
     'LettaConfig',
     'RAGBoardTransport',
     'TransportFactory',
+    'TransportManager',  # NEW: Singleton
     'AgentMessage',
     'MessagePriority',
     'AgentMessenger',
+    # Sync functions (backward compat, deprecated)
     'send_to_agent',
     'broadcast',
     'post_message',
@@ -160,6 +172,11 @@ __all__ = [
     'create_jsonrpc_response',
     'inbox',
     'send',
+    # Async functions (preferred)
+    'send_to_agent_async',
+    'post_message_async',
+    'inbox_async',
+    'subscribe_async',
     # Memory system
     'MemoryBackend',
     'MemoryEntry',

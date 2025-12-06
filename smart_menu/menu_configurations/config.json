@@ -3,6 +3,75 @@
         "title": "A2A Communicating Agents",
         "submenu": [
             {
+                "title": "🚀 Agent Lifecycle & Diagnostics",
+                "submenu": [
+                    {
+                        "title": "📊 Check Agent Status",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ps aux | grep -E \"(orchestrator|coder|tester)_agent|websocket_server\" | grep -v grep || echo \"No agents running\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "🔍 Run Full Agent Diagnostic",
+                        "action": "bash -lc 'cd /home/adamsl/planner && echo \"=== Agent Processes ===\" && ps aux | grep -E \"(orchestrator|coder|tester|websocket)\" | grep -v grep && echo \"\" && echo \"=== Recent Orchestrator Log ===\" && tail -20 logs/orchestrator.log && echo \"\" && echo \"=== Recent Errors ===\" && grep -i \"error\" logs/*.log 2>/dev/null | tail -10 || echo \"No recent errors\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start WebSocket Server",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./start_websocket_server.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop WebSocket Server",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_websocket_server.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start Orchestrator Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent && /home/adamsl/planner/.venv/bin/python main.py'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop Orchestrator Agent",
+                        "action": "bash -lc 'pkill -f \"orchestrator_agent/main.py\" && echo \"Orchestrator agent stopped\" || echo \"No orchestrator agent running\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start Coder Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./start_coder_agent.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop Coder Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_coder_agent.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start Tester Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./start_tester_agent.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop Tester Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_tester_agent.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "🔄 Restart All Agents",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && echo \"Stopping agents...\" && ./stop_orchestrator.sh 2>/dev/null; ./stop_coder_agent.sh 2>/dev/null; ./stop_tester_agent.sh 2>/dev/null; sleep 2 && echo \"Starting agents...\" && ./start_websocket_server.sh && sleep 1 && ./start_orchestrator.sh && sleep 1 && ./start_coder_agent.sh && ./start_tester_agent.sh && echo \"Done! Check status to verify.\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "🛑 Stop All Agents",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_orchestrator.sh 2>/dev/null; ./stop_coder_agent.sh 2>/dev/null; ./stop_tester_agent.sh 2>/dev/null; ./stop_websocket_server.sh 2>/dev/null && echo \"All agents stopped\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    }
+                ]
+            },
+            {
                 "title": "Stack Operations & Verification",
                 "submenu": [
                     {
@@ -81,48 +150,32 @@
                 ]
             },
             {
-                "title": "Orchestrator Ops & Chat",
+                "title": "✅ Chat & Working Commands",
                 "submenu": [
                     {
-                        "title": "List Registered Letta Agents",
-                        "action": "bash -lc 'cd /home/adamsl/planner && /home/adamsl/planner/livekit-venv/bin/python a2a_communicating_agents/hybrid_letta_agents/agents/test_letta_minimal.py'",
-                        "working_directory": "/home/adamsl/planner"
-                    },
-                    {
-                        "title": "Launch Orchestrator Agent",
-                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent && /home/adamsl/planner/.venv/bin/python main.py'",
-                        "working_directory": "/home/adamsl/planner",
-                        "open_in_subprocess": true
-                    },
-                    {
-                        "title": "Open Orchestrator Chat Session",
+                        "title": "💬 Open Orchestrator Chat (WORKING)",
                         "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_chat.sh",
                         "working_directory": "/home/adamsl/planner/smart_menu",
                         "open_in_subprocess": true
                     },
                     {
-                        "title": "Show Orchestrator Logs",
-                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 200 logs/orchestrator.log'",
+                        "title": "📊 Show Agent Status",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ps aux | grep -E \"(orchestrator|coder|tester)_agent|websocket_server\" | grep -v grep || echo \"No agents running\"'",
                         "working_directory": "/home/adamsl/planner"
                     },
                     {
-                        "title": "Inspect Orchestrator Agent Card",
-                        "action": "cat /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent/agent.json",
+                        "title": "📜 Show Orchestrator Logs",
+                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 100 logs/orchestrator.log'",
                         "working_directory": "/home/adamsl/planner"
                     },
                     {
-                        "title": "Run Orchestrator Routing Test",
-                        "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_routing_test.sh",
-                        "working_directory": "/home/adamsl/planner/smart_menu"
-                    },
-                    {
-                        "title": "Check Agent Registry Snapshot",
-                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/agent_messaging && python3 run_collective.py'",
+                        "title": "📜 Show Coder Agent Logs",
+                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 100 logs/coder_agent.log'",
                         "working_directory": "/home/adamsl/planner"
                     },
                     {
-                        "title": "Send Orchestrator Test Message",
-                        "action": "bash -lc 'cd /home/adamsl/planner && .venv/bin/python a2a_communicating_agents/agent_messaging/send_agent_message.py orchestrator-agent \"Smart Menu test ping from Orchestrator Ops\"'",
+                        "title": "📜 Show WebSocket Logs",
+                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 100 logs/websocket.log'",
                         "working_directory": "/home/adamsl/planner"
                     }
                 ]

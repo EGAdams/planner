@@ -1,0 +1,272 @@
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/websocket_server.py:19: DeprecationWarning: websockets.server.WebSocketServerProtocol is deprecated
+  from websockets.server import WebSocketServerProtocol
+[08:01:31] INFO: 🚀 Starting WebSocket Message Board Server
+[08:01:31] INFO:    Listening on 0.0.0.0:3030
+[08:01:31] INFO:    Connect with: ws://localhost:3030
+[08:01:31] INFO:    Remote access: ws://<your-ip>:3030
+[08:01:31] INFO: 
+[08:01:31] INFO: server listening on 0.0.0.0:3030
+[08:01:31] INFO: ✅ WebSocket server is running!
+[08:01:31] INFO:    Press Ctrl+C to stop
+[08:01:31] INFO: 
+[08:04:02] INFO: connection open
+[08:04:02] INFO: ✅ Agent 'FINAL-ACK-TEST' connected (total: 1)
+[08:04:02] INFO: 📬 Agent 'FINAL-ACK-TEST' subscribed to topic 'orchestrator'
+[08:04:02] INFO: 📨 Agent 'FINAL-ACK-TEST' sending to topic 'orchestrator'
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/websocket_server.py:105: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "timestamp": datetime.utcnow().isoformat(),
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/websocket_server.py:125: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+  "timestamp": datetime.utcnow().isoformat(),
+[08:04:02] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:04:02] INFO: ✉️  Sending ACK to 'FINAL-ACK-TEST' for topic 'orchestrator'
+[08:04:02] INFO: ✅ ACK sent to 'FINAL-ACK-TEST'
+[08:04:03] INFO: ❌ Agent 'FINAL-ACK-TEST' disconnected (total: 0)
+[08:04:51] INFO: connection open
+[08:04:51] INFO: ✅ Agent 'MOMENT-OF-TRUTH' connected (total: 1)
+[08:04:51] INFO: 📬 Agent 'MOMENT-OF-TRUTH' subscribed to topic 'orchestrator'
+[08:04:52] INFO: 📨 Agent 'MOMENT-OF-TRUTH' sending to topic 'orchestrator'
+[08:04:52] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:04:52] INFO: ✉️  Sending ACK to 'MOMENT-OF-TRUTH' for topic 'orchestrator'
+[08:04:52] INFO: ✅ ACK sent to 'MOMENT-OF-TRUTH'
+[08:04:58] INFO: ❌ Agent 'MOMENT-OF-TRUTH' disconnected (total: 0)
+[08:05:31] INFO: connection open
+[08:05:31] INFO: ✅ Agent 'PLEASE-WORK-TEST' connected (total: 1)
+[08:05:31] INFO: 📬 Agent 'PLEASE-WORK-TEST' subscribed to topic 'orchestrator'
+[08:05:31] INFO: 📨 Agent 'PLEASE-WORK-TEST' sending to topic 'orchestrator'
+[08:05:31] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:05:31] INFO: ✉️  Sending ACK to 'PLEASE-WORK-TEST' for topic 'orchestrator'
+[08:05:31] INFO: ✅ ACK sent to 'PLEASE-WORK-TEST'
+[08:05:31] INFO: ❌ Agent 'PLEASE-WORK-TEST' disconnected (total: 0)
+[08:05:46] INFO: connection open
+[08:05:46] INFO: ✅ Agent 'user-chat-client' connected (total: 1)
+[08:05:46] INFO: 📬 Agent 'user-chat-client' subscribed to topic 'orchestrator'
+[08:05:46] INFO: 📨 Agent 'user-chat-client' sending to topic 'orchestrator'
+[08:05:46] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:05:46] INFO: ✉️  Sending ACK to 'user-chat-client' for topic 'orchestrator'
+[08:05:46] INFO: ✅ ACK sent to 'user-chat-client'
+[08:05:46] INFO: ❌ Agent 'user-chat-client' disconnected (total: 0)
+[08:14:07] INFO: connection open
+[08:14:07] INFO: ✅ Agent 'coder-agent' connected (total: 1)
+[08:14:07] INFO: 📬 Agent 'coder-agent' subscribed to topic 'code'
+[08:14:46] INFO: connection open
+[08:14:46] INFO: ✅ Agent 'orchestrator-agent' connected (total: 2)
+[08:14:46] INFO: 📬 Agent 'orchestrator-agent' subscribed to topic 'orchestrator'
+[08:14:57] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'testing'
+[08:14:57] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'testing'
+[08:14:57] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:14:58] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:14:58] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:14:58] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:14:58] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:14:58] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'testing'
+[08:14:58] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'testing'
+[08:14:58] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:14:58] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:14:58] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:14:58] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:14:58] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:14:58] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:14:58] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:14:58] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:14:58] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:14:58] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:14:58] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:14:58] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:14:58] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:14:58] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:14:58] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:14:58] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:14:58] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:14:58] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:14:58] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:14:58] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:14:58] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:15:09] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:09] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:09] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:09] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:18] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:18] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:18] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:18] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:18] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:18] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:18] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:18] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:18] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:18] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:18] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:18] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:31] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:15:31] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:15:31] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:15:31] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:15:31] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:15:31] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:31] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:15:31] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:15:31] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:15:31] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:15:31] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:15:31] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:15:31] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:15:31] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:31] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:15:31] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:15:44] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:44] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:44] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:44] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:44] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:44] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:15:44] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:44] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:50] INFO: connection open
+[08:15:50] INFO: ✅ Agent 'dashboard-ui' connected (total: 3)
+[08:15:50] INFO: 📬 Agent 'dashboard-ui' subscribed to topic 'orchestrator'
+[08:15:51] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:51] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:15:51] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:51] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:51] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:15:51] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:15:51] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:15:51] INFO: ✅ ACK sent to 'coder-agent'
+[08:15:57] INFO: 📨 Agent 'dashboard-ui' sending to topic 'orchestrator'
+[08:15:57] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:15:57] INFO: ✉️  Sending ACK to 'dashboard-ui' for topic 'orchestrator'
+[08:15:57] INFO: ✅ ACK sent to 'dashboard-ui'
+[08:16:03] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:16:03] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:16:03] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:16:03] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:07] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:16:07] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:16:07] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:16:07] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:07] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:07] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:16:07] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:07] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:07] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:07] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:16:07] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:07] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:07] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'memory'
+[08:16:07] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'memory'
+[08:16:07] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:07] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:07] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:16:07] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:07] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:10] INFO: connection open
+[08:16:10] WARNING: Agent orchestrator-agent reconnecting, closing old connection
+[08:16:10] INFO: ❌ Agent 'orchestrator-agent' disconnected (total: 2)
+[08:16:10] INFO: ✅ Agent 'orchestrator-agent' connected (total: 3)
+[08:16:10] INFO: 📬 Agent 'orchestrator-agent' subscribed to topic 'orchestrator'
+[08:16:21] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:16:21] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:16:21] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:16:21] INFO: ✅ ACK sent to 'coder-agent'
+[08:16:21] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:16:21] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:16:21] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:16:21] INFO: ✅ ACK sent to 'coder-agent'
+[08:16:30] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:16:30] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:16:30] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:16:30] INFO: ✅ ACK sent to 'coder-agent'
+[08:16:30] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:16:30] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:16:30] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:16:30] INFO: ✅ ACK sent to 'coder-agent'
+[08:16:30] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:16:30] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:16:30] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:16:30] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:30] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:16:30] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:16:30] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:16:30] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:40] INFO: ❌ Agent 'dashboard-ui' disconnected (total: 2)
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'memory'
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'memory'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:43] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:16:43] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:43] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:43] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:43] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:16:43] INFO: 📤 Sent message on topic 'code' to 1/1 subscribers
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:43] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:43] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:43] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:43] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:46] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:16:46] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:46] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:16:46] INFO: ✅ ACK sent to 'coder-agent'
+[08:16:46] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:16:46] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:46] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:16:46] INFO: ✅ ACK sent to 'coder-agent'
+[08:16:50] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'testing'
+[08:16:50] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'testing'
+[08:16:50] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:50] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:16:50] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:50] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:16:50] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:16:54] INFO: 📨 Agent 'coder-agent' sending to topic 'orchestrator'
+[08:16:54] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:16:54] INFO: ✉️  Sending ACK to 'coder-agent' for topic 'orchestrator'
+[08:16:54] INFO: ✅ ACK sent to 'coder-agent'
+[08:17:16] INFO: ❌ Agent 'coder-agent' disconnected (total: 1)
+[08:18:51] INFO: connection open
+[08:18:51] INFO: ✅ Agent 'user-chat-client' connected (total: 2)
+[08:18:51] INFO: 📬 Agent 'user-chat-client' subscribed to topic 'orchestrator'
+[08:18:51] INFO: 📨 Agent 'user-chat-client' sending to topic 'orchestrator'
+[08:18:51] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:18:51] INFO: ✉️  Sending ACK to 'user-chat-client' for topic 'orchestrator'
+[08:18:51] INFO: ✅ ACK sent to 'user-chat-client'
+[08:18:51] INFO: ❌ Agent 'user-chat-client' disconnected (total: 1)
+[08:18:54] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'code'
+[08:18:54] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'code'
+[08:18:54] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:18:54] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:18:54] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:18:54] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:18:54] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:20:12] INFO: connection open
+[08:20:12] INFO: ✅ Agent 'user-chat-client' connected (total: 2)
+[08:20:12] INFO: 📬 Agent 'user-chat-client' subscribed to topic 'orchestrator'
+[08:20:12] INFO: 📨 Agent 'user-chat-client' sending to topic 'orchestrator'
+[08:20:12] INFO: 📤 Sent message on topic 'orchestrator' to 2/2 subscribers
+[08:20:12] INFO: ✉️  Sending ACK to 'user-chat-client' for topic 'orchestrator'
+[08:20:12] INFO: ✅ ACK sent to 'user-chat-client'
+[08:20:12] INFO: ❌ Agent 'user-chat-client' disconnected (total: 1)
+[08:20:15] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'testing'
+[08:20:15] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'testing'
+[08:20:15] INFO: ✅ ACK sent to 'orchestrator-agent'
+[08:20:15] INFO: 📨 Agent 'orchestrator-agent' sending to topic 'orchestrator'
+[08:20:15] INFO: 📤 Sent message on topic 'orchestrator' to 1/1 subscribers
+[08:20:15] INFO: ✉️  Sending ACK to 'orchestrator-agent' for topic 'orchestrator'
+[08:20:15] INFO: ✅ ACK sent to 'orchestrator-agent'

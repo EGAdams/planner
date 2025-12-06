@@ -20,6 +20,10 @@ tpl.innerHTML = `
       background: #e6ffe6;
       border-color:#9bd49b;
     }
+    :host([data-state="done"][data-category="Personal"]) {
+      background: #e8e8e8;
+      border-color:#999;
+    }
     .row{ display:flex; gap:8px; align-items:center; }
     select, input[type="text"] {
       padding:6px 8px;
@@ -236,11 +240,18 @@ export class CategoryPicker extends HTMLElement {
   }
 
   private finalize() {
-    // Remove the selector and show a green state
+    // Remove the selector and show a green state (or grey for Personal)
     const fullLabel = joinLabels(this.path);
     this._value = fullLabel;
     this.internals.setFormValue(fullLabel);
     this.updateStatus(false);
+
+    // Check if the root category is "Personal" and set data-category attribute
+    const rootCategory = this.path.length > 0 ? this.path[0].label : "";
+    if (rootCategory === "Personal") {
+      this.setAttribute("data-category", "Personal");
+    }
+
     this.markComplete();
     // Remove the <select> (as requested), show reset button
     this.selectEl.remove();
@@ -267,6 +278,8 @@ export class CategoryPicker extends HTMLElement {
     this._value = "";
     this.internals.setFormValue(null);
     this.resetBtn.hidden = true;
+    // Remove data-category attribute when resetting
+    this.removeAttribute("data-category");
     // Recreate the select if it was removed
     if (!this.root.getElementById("selector")) {
       const row = this.root.querySelector(".row")!;
@@ -342,6 +355,10 @@ export class CategoryPicker extends HTMLElement {
     this.internals.setFormValue(v || null);
     this.statusEl.value = v || "";
     if (v) {
+      // Check if value starts with "Personal" to set grey styling
+      if (v.startsWith("Personal")) {
+        this.setAttribute("data-category", "Personal");
+      }
       this.markComplete();
       this.selectEl?.remove();
       this.resetBtn.hidden = false;

@@ -1,28 +1,42 @@
 #!/usr/bin/env python3
 """
-Agent-to-Agent Messaging System
+Agent-to-Agent Messaging System (Async Refactored)
 
-Enable AI agents to communicate with each other through:
-1. Direct messages via WebSocket (Primary)
-2. Letta Server (Fallback)
-3. Shared memory message boards (Final Fallback)
+Implements GoF Facade Pattern to provide simple interface for agent communication.
+Uses TransportManager Singleton to ensure all agents share the same WebSocket connection.
+
+Key Changes:
+- All methods converted to async/await
+- Uses TransportManager singleton (no duplicate connections)
+- Observer pattern support via subscribe()
+- Backward compatibility wrappers for sync code
+- Eliminates RAG fallback for messaging (WebSocket-first)
+
+GoF Patterns:
+- Facade Pattern: AgentMessenger simplifies transport complexity
+- Singleton Pattern: TransportManager ensures one connection
+- Observer Pattern: subscribe() for real-time message delivery
 """
 
 import os
 import asyncio
 import json
 import uuid
-from typing import Optional, List, Dict
+import logging
+from typing import Optional, List, Dict, Callable, Awaitable
 from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.table import Table
 
-# Import new transport system
-from .transport_factory import TransportFactory
+# Import transport system
+from .transport_manager import TransportManager  # NEW: Use singleton
 from .message_models import AgentMessage, MessagePriority
-from .rag_board_transport import RAGBoardTransport
+try:
+    from .rag_board_transport import RAGBoardTransport
+except ImportError:
+    RAGBoardTransport = None  # Optional dependency
 
 # Try to import Letta for backward compatibility methods
 try:
@@ -31,6 +45,12 @@ except ImportError:
     Letta = None
 
 console = Console()
+logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# JSON-RPC HELPERS
+# ============================================================================
 
 def create_jsonrpc_request(method: str, params: Dict, request_id: int = 1) -> str:
     """Create a JSON-RPC 2.0 request string"""
@@ -41,6 +61,7 @@ def create_jsonrpc_request(method: str, params: Dict, request_id: int = 1) -> st
         "id": request_id
     })
 
+
 def create_jsonrpc_response(result: Dict, request_id: int = 1) -> str:
     """Create a JSON-RPC 2.0 response string"""
     return json.dumps({
@@ -49,38 +70,49 @@ def create_jsonrpc_response(result: Dict, request_id: int = 1) -> str:
         "id": request_id
     })
 
-class AgentMessenger:
-    """Handle agent-to-agent communication with smart transport fallback"""
 
-    def __init__(self, base_url: Optional[str] = None, api_key: Optional[str] = None, agent_id: Optional[str] = None):
+# ============================================================================
+# AGENT MESSENGER (FACADE PATTERN)
+# ============================================================================
+
+class AgentMessenger:
+    """
+    Facade for agent communication using shared TransportManager.
+
+    This class provides a simple interface for agents to send/receive messages
+    while using the shared TransportManager singleton underneath. This eliminates
+    duplicate WebSocket connections and RAG transport fallbacks.
+
+    GoF Patterns:
+        - Facade Pattern: Simplifies transport interface
+        - Uses Singleton (TransportManager) internally
+
+    Example:
+        >>> messenger = AgentMessenger("my-agent")
+        >>> await messenger.send_to_agent("coder-agent", "write hello world")
+        >>> await messenger.subscribe("responses", my_callback)
+    """
+
+    def __init__(self, agent_id: Optional[str] = None):
         """
-        Initialize messenger with automatic transport selection.
-        
+        Initialize messenger (uses shared transport via TransportManager).
+
         Args:
-            base_url: Letta server URL (optional)
-            api_key: Letta API key (optional)
-            agent_id: ID of the current agent (optional but recommended)
+            agent_id: ID of this agent (optional, auto-generated if None)
+
+        Note:
+            Multiple AgentMessenger instances with different agent_ids
+            will still use the SAME underlying WebSocket connection.
         """
         self.agent_id = agent_id or f"agent-{uuid.uuid4().hex[:8]}"
-        
-        # Initialize transport using factory
-        try:
-            self.transport_name, self.transport = TransportFactory.create_transport(
-                agent_id=self.agent_id,
-                letta_base_url=base_url,
-                letta_api_key=api_key
-            )
-            console.print(f"  Messenger initialized using: {self.transport_name}", style="green")
-        except Exception as e:
-            console.print(f"    Failed to initialize transport: {e}", style="yellow")
-            console.print("    Messaging may be limited to RAG board.", style="yellow")
-            self.transport = None
-            self.transport_name = "none"
+        self._transport_initialized = False
+        self.transport = None
+        self.transport_name = None
 
-        # Keep direct Letta client for group management (not yet in transport interface)
-        self.base_url = base_url or os.getenv('LETTA_BASE_URL', 'http://localhost:8283')
-        self.api_key = api_key or os.getenv('LETTA_API_KEY')
-        
+        # Keep direct Letta client for backward compatibility
+        self.base_url = os.getenv('LETTA_BASE_URL', 'http://localhost:8283')
+        self.api_key = os.getenv('LETTA_API_KEY')
+
         try:
             if Letta:
                 if self.api_key:
@@ -92,159 +124,193 @@ class AgentMessenger:
         except Exception:
             self.client = None
 
+    async def _ensure_transport(self):
+        """
+        Lazy initialization of transport via TransportManager singleton.
+
+        First call initializes shared transport, subsequent calls reuse it.
+        """
+        if not self._transport_initialized:
+            logger.debug(f"Agent '{self.agent_id}' getting shared transport")
+            self.transport_name, self.transport = \
+                await TransportManager.get_transport(self.agent_id)
+            self._transport_initialized = True
+            logger.info(
+                f"✅ Agent '{self.agent_id}' using shared {self.transport_name} transport"
+            )
+
     # ========================================================================
-    # DIRECT AGENT MESSAGING
+    # ASYNC MESSAGING METHODS
     # ========================================================================
 
-    def send_message(self, agent_id: str, message: str, role: str = "user") -> Dict:
+    async def send_to_agent(
+        self,
+        agent_id: str,
+        message: str,
+        topic: Optional[str] = None,
+        priority: MessagePriority = MessagePriority.NORMAL,
+        role: str = "user"
+    ) -> bool:
         """
-        Send a direct message to another agent using active transport
-        
+        Send message to specific agent (async).
+
         Args:
-            agent_id: Target agent ID
+            agent_id: Target agent ID or "board" for broadcast
             message: Message content
+            topic: Topic/channel (defaults to agent_id)
+            priority: Message priority
             role: Message role (user, assistant, system)
 
         Returns:
-            Response dict (simulated for async transports)
+            True if sent successfully, False otherwise
+
+        Example:
+            >>> await messenger.send_to_agent("coder-agent", "write code", topic="code")
         """
-        if not self.transport:
-            console.print("  No active transport", style="red")
-            return {"error": "No transport"}
+        await self._ensure_transport()
 
         try:
             msg = AgentMessage(
                 to_agent=agent_id,
                 from_agent=self.agent_id,
                 content=message,
+                topic=topic or agent_id,
+                priority=priority,
                 metadata={"role": role}
             )
-            
-            # Use async run for the transport send
-            success = asyncio.run(self.transport.send(msg))
-            
+
+            success = await self.transport.send(msg)
+
             if success:
-                console.print(f"  Message sent to {agent_id[:8]} via {self.transport_name}", style="green")
-                return {"status": "sent", "transport": self.transport_name}
+                logger.debug(f"✅ {self.agent_id} → {agent_id} ({len(message)} chars)")
+                return True
             else:
-                console.print(f"  Failed to send message via {self.transport_name}", style="red")
-                return {"error": "Send failed"}
+                logger.warning(f"❌ Failed to send from {self.agent_id} to {agent_id}")
+                return False
 
         except Exception as e:
-            console.print(f"  Error sending message: {e}", style="red")
-            raise
+            logger.error(f"Error sending message from {self.agent_id} to {agent_id}: {e}")
+            return False
 
-    def read_messages(self, agent_id: str, limit: int = 10) -> List[Dict]:
+    async def subscribe(
+        self,
+        topic: str,
+        callback: Callable[[AgentMessage], Awaitable[None]]
+    ) -> bool:
         """
-        Read messages for an agent
-        
-        Note: This currently relies on Letta or RAG polling depending on transport.
+        Subscribe to topic using Observer Pattern (WebSocket only).
+
+        Your callback will be invoked automatically when messages arrive.
+
+        Args:
+            topic: Topic to subscribe to
+            callback: Async function(message: AgentMessage) -> None
+
+        Returns:
+            True if subscribed successfully
+
+        Example:
+            >>> async def handle_message(msg: AgentMessage):
+            ...     print(f"Got message: {msg.content}")
+            >>>
+            >>> await messenger.subscribe("code", handle_message)
         """
-        # If using RAG transport or fallback, poll RAG
-        if self.transport_name == "rag" or isinstance(self.transport, RAGBoardTransport):
-            try:
-                messages = asyncio.run(self.transport.poll_messages(agent_id))
-                if messages:
-                    console.print(f"  Found {len(messages)} messages (RAG)", style="cyan")
-                    return messages
-            except Exception as e:
-                console.print(f"  Error reading RAG messages: {e}", style="red")
-        
-        # Fallback to Letta client if available
-        if self.client:
-            try:
-                messages = self.client.agents.messages.list(
-                    agent_id=agent_id,
-                    limit=limit
+        await self._ensure_transport()
+
+        try:
+            if self.transport_name == "websocket":
+                await self.transport.subscribe(topic, callback)
+                logger.info(f"✅ Agent '{self.agent_id}' subscribed to topic '{topic}'")
+                return True
+            else:
+                logger.warning(
+                    f"Subscribe not supported on {self.transport_name} transport. "
+                    "Use read_messages() polling instead."
                 )
-                if messages:
-                    console.print(f"  Found {len(messages)} messages (Letta)", style="cyan")
-                    return messages
-            except Exception:
-                pass
-                
-        return []
+                return False
 
-    def list_agents(self) -> List[Dict]:
-        """List all available agents"""
-        if self.client:
-            try:
-                agents = self.client.agents.list()
-                if hasattr(agents, 'agents'):
-                    agents_list = agents.agents
-                else:
-                    agents_list = agents if isinstance(agents, list) else []
-
-                if agents_list:
-                    table = Table(title="Available Agents")
-                    table.add_column("ID", style="cyan")
-                    table.add_column("Name", style="green")
-                    table.add_column("Description", style="white")
-
-                    for agent in agents_list:
-                        agent_id = agent.id[:12] + "..." if len(agent.id) > 12 else agent.id
-                        name = getattr(agent, 'name', 'Unknown')
-                        desc = getattr(agent, 'description', '')[:50]
-                        table.add_row(agent_id, name, desc)
-
-                    console.print(table)
-                return agents_list
-            except Exception as e:
-                console.print(f"  Error listing agents: {e}", style="red")
-        return []
-
-    # ========================================================================
-    # GROUP MESSAGING (Multi-Agent Collaboration)
-    # ========================================================================
-
-    def create_group(self, name: str, description: str = "") -> Optional[str]:
-        """Create an agent group (Letta only for now)"""
-        if not self.client:
-            console.print("  Group management requires Letta connection", style="red")
-            return None
-            
-        try:
-            group = self.client.groups.create(name=name, description=description)
-            console.print(f"  Created group: {name} (ID: {group.id})", style="green")
-            return group.id
         except Exception as e:
-            console.print(f"  Error creating group: {e}", style="red")
-            return None
+            logger.error(f"Error subscribing to topic '{topic}': {e}")
+            return False
 
-    def send_to_group(self, group_id: str, message: str) -> Dict:
-        """Send a message to all agents in a group"""
-        if not self.client:
-            console.print("  Group messaging requires Letta connection", style="red")
-            return {"error": "No Letta connection"}
+    async def read_messages(
+        self,
+        topic: str,
+        limit: int = 10
+    ) -> List[AgentMessage]:
+        """
+        Poll for messages on topic (fallback for non-WebSocket transports).
+
+        For WebSocket, prefer subscribe() instead.
+
+        Args:
+            topic: Topic to read from
+            limit: Maximum messages to return
+
+        Returns:
+            List of AgentMessage objects
+
+        Example:
+            >>> messages = await messenger.read_messages("code", limit=5)
+        """
+        await self._ensure_transport()
 
         try:
-            response = self.client.groups.messages.create(
-                group_id=group_id,
-                messages=[{"role": "user", "content": message}]
-            )
-            console.print(f"  Broadcast to group {group_id[:8]}...", style="green")
-            return response
-        except Exception as e:
-            console.print(f"  Failed to broadcast: {e}", style="red")
-            raise
-
-    def list_groups(self) -> List[Dict]:
-        """List all agent groups"""
-        if not self.client:
-            return []
-            
-        try:
-            groups = self.client.groups.list()
-            if hasattr(groups, 'groups'):
-                groups_list = groups.groups
+            if hasattr(self.transport, 'poll_messages'):
+                messages = await self.transport.poll_messages("board", topic=topic)
+                return messages[:limit]
             else:
-                groups_list = groups if isinstance(groups, list) else []
+                logger.warning(f"Polling not supported on {self.transport_name}")
+                return []
 
-            if groups_list:
-                table = Table(title="Agent Groups")
+        except Exception as e:
+            logger.error(f"Error reading messages from topic '{topic}': {e}")
+            return []
+
+    # ========================================================================
+    # LETTA COMPATIBILITY METHODS (unchanged, for backward compat)
+    # ========================================================================
+
+    def list_agents(self) -> List:
+        """List all agents (via Letta if available)"""
+        if not self.client:
+            console.print("  Letta client not available", style="yellow")
+            return []
+
+        try:
+            agents_list = self.client.list_agents()
+            if agents_list:
+                table = Table(title=f"Agents ({len(agents_list)} found)")
                 table.add_column("ID", style="cyan")
                 table.add_column("Name", style="green")
-                table.add_column("Description", style="white")
+                table.add_column("Description", style="yellow")
+
+                for agent in agents_list:
+                    agent_id = agent.id[:12] + "..." if len(agent.id) > 12 else agent.id
+                    name = getattr(agent, 'name', 'Unknown')
+                    desc = (getattr(agent, 'description', '') or '')[:50]
+                    table.add_row(agent_id, name, desc)
+
+                console.print(table)
+            return agents_list
+
+        except Exception as e:
+            console.print(f"  Error listing agents: {e}", style="red")
+            return []
+
+    def list_groups(self) -> List:
+        """List all agent groups (via Letta if available)"""
+        if not self.client:
+            console.print("  Letta client not available", style="yellow")
+            return []
+
+        try:
+            groups_list = self.client.list_groups()
+            if groups_list:
+                table = Table(title=f"Groups ({len(groups_list)} found)")
+                table.add_column("ID", style="cyan")
+                table.add_column("Name", style="green")
+                table.add_column("Description", style="yellow")
 
                 for group in groups_list:
                     group_id = group.id[:12] + "..." if len(group.id) > 12 else group.id
@@ -254,130 +320,163 @@ class AgentMessenger:
 
                 console.print(table)
             return groups_list
+
         except Exception as e:
             console.print(f"  Error listing groups: {e}", style="red")
             return []
 
-    # ========================================================================
-    # MEMORY-BASED MESSAGE BOARD (Fallback/Complement)
-    # ========================================================================
 
-    def post_to_board(self, message: str, topic: str = "general",
-                      from_agent: str = "unknown", priority: str = "normal"):
-        """
-        Post a message to shared memory board using RAG transport
-        """
-        try:
-            # Use RAG transport directly if available, or create temporary one
-            if isinstance(self.transport, RAGBoardTransport):
-                transport = self.transport
-            else:
-                from rag_system.core.document_manager import DocumentManager
-                # from a2a_communicating_agents.agent_messaging.rag_board_transport import RAGBoardTransport
-                transport= RAGBoardTransport(DocumentManager())
-                asyncio.run(transport.connect())
+# ============================================================================
+# ASYNC CONVENIENCE FUNCTIONS (PRIMARY INTERFACE)
+# ============================================================================
 
-            msg = AgentMessage(
-                to_agent="board",
-                from_agent=from_agent,
-                content=message,
-                topic=topic,
-                priority=MessagePriority(priority) if priority in ["low", "normal", "high", "urgent"] else MessagePriority.NORMAL
-            )
-            
-            success = asyncio.run(transport.send(msg))
-            
-            if success:
-                console.print(f"  Posted to message board: {topic}", style="green")
-                return "msg-id-placeholder"
-            else:
-                console.print("  Failed to post to board", style="red")
-                return None
+async def send_to_agent_async(
+    agent_id: str,
+    message: str,
+    from_agent: str = "sender",
+    topic: Optional[str] = None,
+    priority: MessagePriority = MessagePriority.NORMAL
+) -> bool:
+    """
+    Send message to agent (async convenience function).
 
-        except Exception as e:
-            console.print(f"  Error posting to board: {e}", style="red")
-            return None
+    Uses shared TransportManager singleton.
 
-    def read_board(self, topic: Optional[str] = None, limit: int = 10, *, render: bool = True):
-        """Read messages from shared memory board"""
-        try:
-            if isinstance(self.transport, RAGBoardTransport):
-                transport = self.transport
-            else:
-                from rag_system.core.document_manager import DocumentManager
-                transport = RAGBoardTransport(DocumentManager())
-            
-            # Use poll_messages from transport
-            messages = asyncio.run(transport.poll_messages("board", topic=topic))
-            
-            if messages:
-                if render:
-                    console.print(f"\n  Message Board ({len(messages)} messages):", style="cyan")
-                    for i, msg in enumerate(messages[:limit], 1):
-                        # Handle both dict results and AgentMessage objects
-                        content = msg.content if hasattr(msg, 'content') else str(msg)
-                        source = msg.from_agent if hasattr(msg, 'from_agent') else "unknown"
-                        
-                        panel = Panel(
-                            content[:300] + ("..." if len(content) > 300 else ""),
-                            title=f"[{i}] From: {source}",
-                            border_style="blue"
-                        )
-                        console.print(panel)
-                return messages
-            else:
-                if render:
-                    console.print("  Message board is empty", style="yellow")
-                return []
+    Example:
+        >>> await send_to_agent_async("coder-agent", "write hello world")
+    """
+    messenger = AgentMessenger(agent_id=from_agent)
+    return await messenger.send_to_agent(agent_id, message, topic=topic, priority=priority)
 
-        except Exception as e:
-            console.print(f"  Error reading board: {e}", style="red")
-            return []
+
+async def post_message_async(
+    message: str,
+    topic: str = "general",
+    from_agent: str = "sender",
+    to_agent: str = "board",
+    priority: MessagePriority = MessagePriority.NORMAL
+) -> bool:
+    """
+    Post message to topic (async convenience function).
+
+    Uses shared TransportManager singleton.
+
+    Example:
+        >>> await post_message_async("Hello world", topic="orchestrator")
+    """
+    messenger = AgentMessenger(agent_id=from_agent)
+    return await messenger.send_to_agent(to_agent, message, topic=topic, priority=priority)
+
+
+async def inbox_async(
+    topic: str,
+    limit: int = 10,
+    agent_id: str = "inbox-reader"
+) -> List[AgentMessage]:
+    """
+    Read messages from topic (async convenience function).
+
+    Uses shared TransportManager singleton.
+
+    Example:
+        >>> messages = await inbox_async("orchestrator", limit=5)
+    """
+    messenger = AgentMessenger(agent_id=agent_id)
+    return await messenger.read_messages(topic, limit=limit)
+
+
+async def subscribe_async(
+    topic: str,
+    callback: Callable[[AgentMessage], Awaitable[None]],
+    agent_id: str = "subscriber"
+) -> bool:
+    """
+    Subscribe to topic with callback (async convenience function).
+
+    Uses shared TransportManager singleton.
+
+    Example:
+        >>> async def my_handler(msg):
+        ...     print(msg.content)
+        >>>
+        >>> await subscribe_async("code", my_handler)
+    """
+    messenger = AgentMessenger(agent_id=agent_id)
+    return await messenger.subscribe(topic, callback)
 
 
 # ============================================================================
-# CONVENIENCE FUNCTIONS
+# BACKWARD COMPATIBILITY (SYNC WRAPPERS)
+# ============================================================================
+# These wrap async functions for old code that expects sync interface.
+# NEW CODE SHOULD USE ASYNC VERSIONS ABOVE.
 # ============================================================================
 
-_messenger = None
+def send_to_agent(agent_id: str, message: str, from_agent: str = "sender") -> bool:
+    """
+    Sync wrapper for send_to_agent_async().
 
-def _get_messenger():
-    """Lazy initialization of messenger"""
-    global _messenger
-    if not _messenger:
-        _messenger = AgentMessenger()
-    return _messenger
+    DEPRECATED: Use send_to_agent_async() in new code.
+    """
+    return asyncio.run(send_to_agent_async(agent_id, message, from_agent=from_agent))
 
-def send_to_agent(agent_id: str, message: str):
-    """Send message to another agent"""
-    messenger = _get_messenger()
-    return messenger.send_message(agent_id, message)
 
-def broadcast(group_id: str, message: str):
-    """Broadcast to agent group"""
-    messenger = _get_messenger()
-    return messenger.send_to_group(group_id, message)
+def post_message(
+    message: str,
+    topic: str = "general",
+    from_agent: str = "sender",
+    to_agent: str = "board"
+) -> bool:
+    """
+    Sync wrapper for post_message_async().
 
-def post_message(message: str, topic: str = "general", from_agent: str = "claude"):
-    """Post to shared message board"""
-    messenger = _get_messenger()
-    return messenger.post_to_board(message, topic=topic, from_agent=from_agent)
+    DEPRECATED: Use post_message_async() in new code.
+    """
+    return asyncio.run(post_message_async(message, topic, from_agent, to_agent))
 
-def read_messages(topic: Optional[str] = None, limit: int = 10, *, render: bool = True):
-    """Read from message board"""
-    messenger = _get_messenger()
-    return messenger.read_board(topic=topic, limit=limit, render=render)
+
+def read_messages(
+    topic: str,
+    limit: int = 10,
+    render: bool = False
+) -> List[AgentMessage]:
+    """
+    Sync wrapper for inbox_async().
+
+    DEPRECATED: Use inbox_async() in new code.
+
+    Args:
+        topic: Topic to read from
+        limit: Max messages
+        render: Ignored (kept for compatibility)
+
+    Returns:
+        List of messages
+    """
+    return asyncio.run(inbox_async(topic, limit=limit))
+
 
 def list_agents():
-    """List all agents"""
-    messenger = _get_messenger()
+    """List all agents via Letta"""
+    messenger = AgentMessenger()
     return messenger.list_agents()
 
+
 def list_groups():
-    """List all agent groups"""
-    messenger = _get_messenger()
+    """List all agent groups via Letta"""
+    messenger = AgentMessenger()
     return messenger.list_groups()
 
-# Aliases for easier usage
-inbox = read_messages
-send = send_to_agent
+
+# Aliases
+inbox = read_messages  # Backward compat
+send = send_to_agent   # Backward compat
+broadcast = send_to_agent  # Simplified
+
+
+# ============================================================================
+# DEPRECATED BACKWARD COMPATIBILITY - DO NOT USE IN NEW CODE
+# ============================================================================
+# These exist only to avoid breaking old code.
+# Use async versions (send_to_agent_async, post_message_async, etc) instead.
+# ============================================================================

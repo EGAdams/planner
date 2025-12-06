@@ -2395,3 +2395,10 @@
 [2025-12-02 22:40:16] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
 [2025-12-02 22:40:16] Starting metrics collection for event: 
 [2025-12-02 22:40:16] Metrics collection completed for event: 
+[2025-12-04 15:42:20] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-04 15:42:20] Starting metrics collection for event: 
+[2025-12-04 15:42:20] Initialized metrics file: /home/adamsl/planner/nonprofit_finance_db/.claude-collective/metrics/metrics-20251204.json
+[2025-12-04 15:42:20] Metrics collection completed for event: 
+[2025-12-04 15:42:28] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-04 15:42:28] Starting metrics collection for event: 
+[2025-12-04 15:42:28] Metrics collection completed for event: 

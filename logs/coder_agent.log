@@ -1,0 +1,204 @@
+[coder-agent] Initialized with model: gpt-4o-mini
+[coder-agent] Started. Listening on topic 'code'...
+a2a_communicating_agents.agent_messaging.transport_manager - INFO - Initializing shared transport for agent: coder-agent
+  Using WebSocket transport (ws://localhost:3030)
+a2a_communicating_agents.agent_messaging.transport_manager - INFO - ✅ Shared transport initialized: websocket (by coder-agent)
+a2a_communicating_agents.agent_messaging.messenger - INFO - ✅ Agent 'coder-agent' using shared websocket transport
+a2a_communicating_agents.agent_messaging.messenger - INFO - ✅ Agent 'coder-agent' subscribed to topic 'code'
+[coder-agent] ✅ Subscribed to 'code' topic. Waiting for requests...
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "17c1bc69-4e43-4e27-ab9c-73...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "17c1bc69-4e43-4e27-ab9c-735c382ec916",
+  "target_agent": "coder-agent",
+  "description": "Write a hello world function.",
+  "context": "User requested to write a simple function.",
+  "artifacts": []
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+WebSocket send error: 
+a2a_communicating_agents.agent_messaging.messenger - WARNING - ❌ Failed to send from coder-agent to board
+WebSocket send error: 
+a2a_communicating_agents.agent_messaging.messenger - WARNING - ❌ Failed to send from coder-agent to board
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "5724d0bf-2034-4a31-a949-f4...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "5724d0bf-2034-4a31-a949-f4ea16bb186e",
+  "target_agent": "coder-agent",
+  "description": "Write a hello world function.",
+  "context": "User requested to write a simple function.",
+  "artifacts": []
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+WebSocket send error: 
+a2a_communicating_agents.agent_messaging.messenger - WARNING - ❌ Failed to send from coder-agent to board
+WebSocket send error: 
+a2a_communicating_agents.agent_messaging.messenger - WARNING - ❌ Failed to send from coder-agent to board
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "515019c1-221b-4bd2-9bc9-cf...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "515019c1-221b-4bd2-9bc9-cfcbf6079313",
+  "target_agent": "coder-agent",
+  "description": "Here's a simple 'Hello, World!' function written in Python. This code includes comments to explain each part of the function.",
+  "context": "Write a hello world function in Python.",
+  "artifacts": [
+    {
+      "code": "def hello_world():\n    \"\"\"\n    This function prints 'Hello, World!' to the console.\n    It demonstrates a simple way to output text in Python.\n    \"\"\"\n    print(\"Hello, World!\")  # Output the string to the console\n\n# Call the function to execute it\nhello_world()",
+      "explanation": "- **Function Definition**: The function `hello_world()` is defined using the `def` keyword.\n- **Docstring**: A docstring immediately follows the function definition, providing a brief description of what the function does.\n- **Print Statement**: The `print()` function is used to display the string 'Hello, World!' in the console.\n- **Function Call**: The function is called at the end to execute it, which will display 'Hello, World!' when the script runs."
+    }
+  ]
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+a2a_communicating_agents.agent_messaging.messenger - WARNING - ❌ Failed to send from coder-agent to board
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "d7639515-a216-4914-b92a-cb...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "d7639515-a216-4914-b92a-cb8af2f73fd6",
+  "target_agent": "coder-agent",
+  "description": "Here's a simple 'Hello, World!' function written in Python. The code includes comments that explain each part of the function.",
+  "context": "Write a hello world function in Python.",
+  "artifacts": {
+    "code": "def hello_world():\n    \"\"\"\n    A simple function that prints 'Hello, World!' to the console.\n    \"\"\"\n    # Print the greeting message to the console\n    print(\"Hello, World!\")\n\n# Call the function to execute it\nhello_world()"
+  }
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "3a5cb956-e5dc-48f9-93b9-c4...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "3a5cb956-e5dc-48f9-93b9-c4f5cd03ebce",
+  "target_agent": "coder-agent",
+  "description": "Here's a simple 'Hello, World!' function written in Python, complete with comments to explain each part of the code.",
+  "context": "Generate a simple 'Hello, World!' function in Python with comments.",
+  "artifacts": {
+    "code": "def hello_world():\n    \"\"\"This function prints 'Hello, World!' to the console.\"\"\"\n    print(\"Hello, World!\")\nhello_world()"
+  }
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "86c803a0-6907-4132-a33d-2f...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "86c803a0-6907-4132-a33d-2f5df7917375",
+  "target_agent": "coder-agent",
+  "description": "Here's a simple 'Hello, World!' function written in Python, complete with comments explaining each part of the function.",
+  "context": "Generate a simple 'Hello, World!' function in Python with comments.",
+  "artifacts": {
+    "code": "def hello_world():\n    \"\"\"\n    This function prints 'Hello, World!' to the console.\n    It is a simple demonstration of a function in Python.\n    \"\"\"\n    # Print the message to the console\n    print(\"Hello, World!\")\n\n# Call the function to execute it\nhello_world()",
+    "explanation": "- **Function Definition**: The `def` keyword is used to define a function named `hello_world`.\n- **Docstring**: The triple quotes `\"\"\"` allow you to write a multi-line comment, which serves as a documentation string (docstring) for the function, explaining what it does.\n- **Print Statement**: The `print()` function is called with the string \"Hello, World!\" to output the message to the console.\n- **Function Call**: The last line `hello_world()` calls the function, triggering its execution and displaying the message."
+  }
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "bf29265e-9649-4804-bc19-46...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "bf29265e-9649-4804-bc19-46f38a8a69c1",
+  "target_agent": "coder-agent",
+  "description": "Here's a simple 'Hello, World!' function written in Python, complete with detailed comments explaining each part of the function.",
+  "context": "Generate a simple 'Hello, World!' function in Python with detailed comments.",
+  "artifacts": {
+    "code": "def hello_world():\n    \"\"\"\n    This function prints 'Hello, World!' to the console.\n    It serves as a basic example of a function in Python.\n    \"\"\"\n    print(\"Hello, World!\")  # Output the string 'Hello, World!' to the console\n\n# Call the function to execute it\nhello_world()"
+  }
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "cf7a6b5d-11b1-4595-a117-40...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "cf7a6b5d-11b1-4595-a117-404903e7a0c5",
+  "target_agent": "coder-agent",
+  "description": "Here's a simple 'Hello, World!' function written in Python, complete with detailed comments explaining each part of the function.",
+  "context": "Generate a simple 'Hello, World!' function in Python with detailed comments.",
+  "artifacts": {
+    "code": "def hello_world():\n    \"\"\"\n    This function prints the message 'Hello, World!' to the console.\n    It serves as a simple demonstration of function definition and output in Python.\n    \"\"\"\n    print(\"Hello, World!\")\nhello_world()"
+  }
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "b3561c75-6e4a-44e9-a112-c6...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "b3561c75-6e4a-44e9-a112-c6be63f289be",
+  "target_agent": "coder-agent",
+  "description": "Write a hello world snippet in webassembly.",
+  "context": "webassembly",
+  "artifacts": []
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+WebSocket error: Set changed size during iteration
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "833865e4-ce41-4381-8dc2-a8...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "833865e4-ce41-4381-8dc2-a82e2f50ce8e",
+  "target_agent": "coder-agent",
+  "description": "Generate a WebAssembly module that exports a function to print 'Hello, World!' to the console.",
+  "context": "Write a hello world snippet in WebAssembly.",
+  "artifacts": []
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "3f35b29b-279e-4ea0-afee-01...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "3f35b29b-279e-4ea0-afee-01fb8b69c678",
+  "target_agent": "coder-agent",
+  "description": "Write a hello world snippet in webassembly.",
+  "context": "webassembly",
+  "artifacts": []
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "feb26613-c65c-45a0-88fa-f1...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "feb26613-c65c-45a0-88fa-f1988ede6c03",
+  "target_agent": "coder-agent",
+  "description": "Generate a WebAssembly module that exports a function to print 'Hello, World!' to the console.",
+  "context": "Write a hello world snippet in WebAssembly.",
+  "artifacts": []
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+[WebSocketTransport] Callback completed for topic 'code'
+[WebSocketTransport] Received message for topic 'code', subscriptions: ['code']
+[WebSocketTransport] Invoking callback for topic 'code'
+[coder-agent] Received message from orchestrator-agent: {"jsonrpc": "2.0", "method": "agent.execute_task", "params": {"task_id": "8e1337ff-8344-48dd-be36-81...
+[coder-agent] Handling method: agent.execute_task
+[coder-agent] Parameters: {
+  "task_id": "8e1337ff-8344-48dd-be36-8111386b865c",
+  "target_agent": "coder-agent",
+  "description": "The user has provided a detailed request for a WebAssembly module and included a code snippet along with an explanation.",
+  "context": "Generate a WebAssembly module that exports a function to print 'Hello, World!' to the console.",
+  "artifacts": {
+    "wat_code": "(module\n  (import \"env\" \"console_log\" (func $console_log (param i32)))\n  (data (i32.const 0) \"Hello, World!\\00\")\n  (export \"hello_world\" (func $hello_world))\n  (func $hello_world\n    (call $console_log (i32.const 0))\n  )\n)"
+  }
+}
+httpx - INFO - HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"

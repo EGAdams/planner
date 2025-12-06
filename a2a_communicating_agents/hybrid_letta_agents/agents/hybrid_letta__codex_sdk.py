@@ -325,7 +325,6 @@ def run_codex_coder(
         pass
     return json.dumps(contract, indent=2)
 
-
 def run_codex_tester(
     spec: str,
     implementation: str = "",
@@ -494,7 +493,6 @@ def run_codex_tester(
         pass
     return json.dumps(contract, indent=2)
 
-
 def run_test_suite(
     framework: str = "pytest",
     target: str = "tests",
@@ -585,7 +583,6 @@ def run_test_suite(
     except OSError:
         pass
     return json.dumps(contract, indent=2)
-
 
 def run_tdd_validator(
     contracts_json: str,
@@ -721,7 +718,6 @@ def run_tdd_validator(
     }
     return json.dumps(summary_contract, indent=2)
 
-
 def create_letta_client() -> Letta:
     base_url = os.environ.get("LETTA_BASE_URL", "http://localhost:8283")
     print(f"Using self-hosted Letta at {base_url} (override with LETTA_BASE_URL).")
@@ -729,17 +725,14 @@ def create_letta_client() -> Letta:
     print(f"Letta client created with base URL: {client.base_url}")
     return client
 
-
 def ensure_workspace_dir() -> None:
     print(f"WORKSPACE_DIR = {WORKSPACE_DIR}")
     WORKSPACE_DIR.mkdir(parents=True, exist_ok=True)
-
 
 def reset_contract_log() -> None:
     log_path = WORKSPACE_DIR / CONTRACT_LOG_NAME
     if log_path.exists():
         log_path.unlink()
-
 
 def _extract_tool_return_text(tool_return: Any) -> str:
     if tool_return is None:
@@ -764,7 +757,6 @@ def _extract_tool_return_text(tool_return: Any) -> str:
     if isinstance(text, str):
         return text
     return str(tool_return)
-
 
 def validate_tdd_contracts(messages: List[Any]) -> None:
     contracts: List[Dict[str, Any]] = []
@@ -825,6 +817,7 @@ def main() -> None:
 
     # 2) Create an orchestrator agent which can call those tools
     print(f"Creating orchestrator with model: {ORCH_MODEL}")
+    print( "*** do not forget to set CODEX_MODEL in the tool environment if needed ***" )
     orchestrator_agent = client.agents.create(
         model=ORCH_MODEL,
         embedding="openai/text-embedding-3-small",
@@ -858,11 +851,12 @@ def main() -> None:
 
     # 3) Send initial high-level task to orchestrator
     print("Sending initial task to orchestrator...")
+    print("(This may take 5-10 minutes as the agent executes the full TDD workflow...)")
     try:
         response = client.agents.messages.create(
             agent_id=orchestrator_agent.id,
             messages=[{"role": "user", "content": USER_TASK}],
-            timeout=180,
+            timeout=600,  # 10 minutes - TDD workflow with multiple tool calls takes time
         )
     except letta_client.APIConnectionError as e:
         print("❌ Letta connection / timeout error while sending message.")
