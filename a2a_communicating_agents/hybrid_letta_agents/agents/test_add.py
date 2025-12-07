@@ -7,31 +7,30 @@ from add import add
     "a,b,expected",
     [
         (1, 2, 3),
-        (10, 0, 10),
-        (0, 0, 0),
         (-5, -7, -12),
-        (-3, 9, 6),
-        (9, -3, 6),
-        (2_147_483_600, 100, 2_147_483_700),
-        (-2_147_483_600, -100, -2_147_483_700),
+        (-10, 15, 5),
+        (0, 0, 0),
+        (12345678901234567890, 98765432109876543210, 111111111011111111100),
     ],
 )
 def test_add_valid_inputs(a, b, expected):
     assert add(a, b) == expected
 
 
-@pytest.mark.parametrize("bad_a", [None, 1.0, "1", [1], (1,), {1}, object()])
-def test_add_invalid_first_operand(bad_a):
+@pytest.mark.parametrize("value", ["3", 4.5, [1], {"a": 1}, None])
+def test_add_raises_type_error_for_non_ints(value):
     with pytest.raises(TypeError):
-        add(bad_a, 1)
-
-
-@pytest.mark.parametrize("bad_b", [None, 2.5, "b", [2], (2,), {2: 2}, object()])
-def test_add_invalid_second_operand(bad_b):
+        add(value, 1)
     with pytest.raises(TypeError):
-        add(1, bad_b)
+        add(1, value)
 
 
-def test_add_invalid_both_operands():
+def test_add_rejects_bool_inputs():
     with pytest.raises(TypeError):
-        add("3", 4.0)
+        add(True, 1)
+    with pytest.raises(TypeError):
+        add(1, False)
+
+
+def test_add_handles_extreme_negatives():
+    assert add(-2**62, -2**62) == -(2**63) * 2
