@@ -83,7 +83,7 @@ def main_verbose():
     print("="*70)
     # i think that user task is pulled in from the import *
     # it is going to be modified here so that we can start simple testing
-    USER_TASK = "Write a Hello World Python program"
+    USER_TASK = "What have we done so far today?"
     print( USER_TASK )
     print("="*70)
 

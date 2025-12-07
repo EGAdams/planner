@@ -162,167 +162,122 @@ def run_codex_coder(
     workspace_dir: Optional[str] = None,
 ) -> str:
     """
-    Codex Coder Agent.
+    Codex Coder Agent launcher.
+
+    - Prepares a natural-language spec for a coding task.
+    - Invokes Codex via the Codex SDK (through a Node.js bridge).
+    - Codex runs in `workspace-write` mode and writes all code directly.
+    - Returns a structured contract report describing what Codex generated.
 
     Args:
         spec: Natural-language spec for the feature to implement.
         language: Target programming language (e.g. "python", "typescript").
-        file_name: File name to write the generated code into.
-        workspace_dir: Optional workspace directory to write into. If not provided,
-            defaults to the current working directory of the tool.
+        file_name: Main file Codex should create or modify in the workspace.
+        workspace_dir: Optional working directory for Codex to operate in. Defaults to current directory.
 
     Returns:
-        A short status string including the file path where code was written.
+        A JSON string describing the contract, including the Codex-side report.
     """
-    import json
-    import hashlib
-    import os
-    import shutil
-    import subprocess
-    import sys
-    import textwrap
-    from pathlib import Path
+    base_dir = Path(workspace_dir or os.getcwd()).resolve()
+    base_dir.mkdir(parents=True, exist_ok=True)
 
-    prompt = textwrap.dedent(
-        f"""
-        <instructions>
-        Instructions:
-        You are an elite software engineer (Coder Agent).
-        Implement the requested feature as a single {language} file.
-        Return ONLY the raw file contents without fences or commentary.
-        </instructions>
-
-        <spec>
-        Specification:
-        ---------------- SPEC START ----------------
-        {spec}
-        ----------------- SPEC END -----------------
-        </spec>
-        """
-    )
-
-    auth_path = Path.home() / ".codex" / "auth.json"
-    if not auth_path.exists():
+    # Locate Node
+    node_bin = shutil.which("node")
+    if not node_bin:
         raise RuntimeError(
-            f"Codex credentials not found at {auth_path}. "
-            "Run `codex login` or `codex auth --with-api-key` first."
+            "Node.js binary not found on PATH. Please install Node 18+."
         )
 
-    codex_bin = shutil.which("codex")
-    if not codex_bin:
-        raise RuntimeError("Codex CLI binary not found on PATH. Install via `npm install -g @openai/codex`.")
+    # Locate the Codex Node bridge script
+    bridge_path_env = os.environ.get("CODEX_NODE_BRIDGE")
+    bridge_path = (
+        Path(bridge_path_env).resolve()
+        if bridge_path_env
+        else (base_dir / "node_executables" / "codex_coder_bridge.mjs")
+    )
+    if not bridge_path.exists():
+        raise RuntimeError(
+            f"Codex bridge script not found at {bridge_path}. "
+            "Set CODEX_NODE_BRIDGE or place codex_coder_bridge.mjs there."
+        )
 
+    # Decide which Codex model to use (same logic you had before)
     model_name = os.environ.get("CODEX_MODEL")
-    print( "CODEX_MODEL:", model_name )
     if not model_name:
         orch_model = os.environ.get("ORCH_MODEL", "")
         candidate = orch_model.split("/", 1)[-1] if "/" in orch_model else orch_model
-        print( "ORCH_MODEL:", orch_model, "candidate:", candidate )
         if candidate and not candidate.startswith("gpt-4o"):
-            print( "setting model_name to candidate:", candidate )
             model_name = candidate
         else:
-            print( "setting model_name to gpt-5.1-codex because candidate was:", candidate )
             model_name = "gpt-5.1-codex"
 
-    base_dir = Path(workspace_dir or os.getcwd())
-    base_dir.mkdir(parents=True, exist_ok=True)
-
-    cmd = [
-        codex_bin,
-        "exec",
-        "--experimental-json",
-        "--sandbox",
-        "read-only",
-        "--skip-git-repo-check",
-    ]
-    if model_name:
-        cmd.extend(["--model", model_name])
+    payload = {
+        "spec": spec,
+        "language": language,
+        "fileName": file_name,
+        "workspaceDir": str(base_dir),
+        "model": model_name,
+    }
 
     completed = subprocess.run(
-        cmd,
-        input=prompt,
+        [node_bin, str(bridge_path)],
+        input=json.dumps(payload),
         text=True,
         capture_output=True,
         cwd=str(base_dir),
         check=False,
     )
 
-    final_text: Optional[str] = None
-    failure_reason: Optional[str] = None
-
-    for raw_line in completed.stdout.splitlines():
-        raw_line = raw_line.strip()
-        if not raw_line:
-            continue
-        try:
-            event = json.loads(raw_line)
-        except json.JSONDecodeError:
-            continue
-
-        etype = event.get("type")
-        if etype == "item.completed":
-            item = event.get("item", {})
-            if item.get("type") == "agent_message":
-                final_text = item.get("text", "")
-        elif etype == "turn.failed":
-            error = event.get("error", {}) or {}
-            failure_reason = error.get("message") or str(error)
-
     if completed.returncode != 0:
+        # The bridge writes a JSON error payload even on failure
+        msg = completed.stderr.strip() or completed.stdout.strip()
         raise RuntimeError(
-            f"Codex CLI failed with exit code {completed.returncode}: {completed.stderr.strip()}"
+            f"Codex bridge failed with exit code {completed.returncode}: {msg}"
         )
 
-    if failure_reason:
-        raise RuntimeError(f"Codex CLI reported failure: {failure_reason}")
+    try:
+        bridge_result = json.loads(completed.stdout or "{}")
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"Failed to parse Codex bridge output as JSON: {exc}\n"
+            f"Raw output:\n{completed.stdout}"
+        ) from exc
 
-    if final_text is None or not final_text.strip():
-        raise RuntimeError("Codex CLI returned empty response.")
+    status = bridge_result.get("status", "unknown")
+    if status == "error":
+        raise RuntimeError(
+            f"Codex bridge reported error: {bridge_result.get('message')}"
+        )
 
-    code_text = final_text.strip()
-
-    if not code_text.strip():
-        raise RuntimeError("Coder tool returned empty content.")
-
-    # Best-effort strip surrounding fences if the model returned ``` blocks
-    if "```" in code_text:
-        segments = code_text.split("```")
-        if len(segments) >= 3:
-            # content is usually in the 2nd segment
-            code_text = segments[1]
-            # strip possible "python" language tag on the first line
-            lines = code_text.splitlines()
-            if lines and lines[0].strip().startswith(("python", "py")): # TODO: extend for other languages # use language param?
-                lines = lines[1:]
-            code_text = "\n".join(lines)
-
-    # Write to file
-    base_dir = Path(workspace_dir or os.getcwd())
-    base_dir.mkdir(parents=True, exist_ok=True)
+    # Where we *expect* the main file to be, according to our contract.
     out_path = base_dir / file_name
-    out_path.write_text(code_text, encoding="utf-8")
 
     contract = {
         "contract_type": "code_generation",
-        "status": "success",
+        "status": status,
         "file_path": str(out_path),
         "language": language,
-        "bytes": len(code_text.encode("utf-8")),
-        "lines": len(code_text.splitlines()),
         "spec_hash": hashlib.sha256(spec.encode("utf-8")).hexdigest(),
+        "workspace_dir": str(base_dir),
+        # Pass through the Codex-side report so downstream tools can inspect it.
+        "codex_report": bridge_result,
     }
+
+    # Optional: log to JSONL file
     try:
-        default_log_name = CONTRACT_LOG_NAME
+        default_log_name = CONTRACT_LOG_NAME  # type: ignore[name-defined]
     except NameError:
         default_log_name = "tdd_contracts.jsonl"
+
     log_name = os.environ.get("CONTRACT_LOG_NAME", default_log_name)
     log_path = base_dir / log_name
     try:
         with log_path.open("a", encoding="utf-8") as log_file:
             log_file.write(json.dumps(contract) + "\n")
     except OSError:
+        # Best-effort logging; don't fail the whole run.
         pass
+
     return json.dumps(contract, indent=2)
 
 def run_codex_tester(
@@ -334,59 +289,48 @@ def run_codex_tester(
     workspace_dir: Optional[str] = None,
 ) -> str:
     """
-    Codex Tester Agent.
+    Codex Tester Agent launcher.
+
+    - Prepares a feature specification and optional implementation snippet.
+    - Invokes Codex via a Node.js tester bridge that uses the Codex SDK.
+    - Codex runs in `workspace-write` sandbox mode and writes test files directly.
+    - Returns a structured contract report describing the generated tests.
 
     Args:
         spec: Natural-language feature specification that tests should target.
-        implementation: Optional current implementation snippet to give the tester
-            concrete references once code exists.
-        language: Programming language of the code.
+        implementation: Optional implementation snippet to give Codex more context.
+        language: Programming language of the code under test.
         test_framework: e.g. "pytest", "unittest", "jest".
-        file_name: File name to write the generated tests into.
-        workspace_dir: Optional workspace directory to write into. If not provided,
-            defaults to the current working directory of the tool.
+        file_name: Main test file Codex should create/overwrite in the workspace.
+        workspace_dir: Optional workspace directory Codex should operate in.
+            Defaults to the current working directory.
 
     Returns:
-        A short status string including the file path where tests were written.
+        A JSON string describing the contract, including Codex's report.
     """
-    import json
-    import hashlib
-    import os
-    import shutil
-    import subprocess
-    import textwrap
-    from pathlib import Path
+    base_dir = Path(workspace_dir or os.getcwd()).resolve()
+    base_dir.mkdir(parents=True, exist_ok=True)
 
-    prompt = textwrap.dedent(
-        f"""
-        You are an elite software test engineer (Tester Agent).
-        Given the feature specification (and optional current implementation), produce a comprehensive
-        {test_framework} test suite in {language}. Cover happy paths, edge cases, and failure handling.
-        Return ONLY the raw test file contents without fences or commentary.
+    # Locate Node
+    node_bin = shutil.which("node")
+    if not node_bin:
+        raise RuntimeError("Node.js binary `node` not found on PATH. Please install Node 18+.")
 
-        Feature spec:
-        --------------- SPEC START ---------------
-        {spec}
-        ---------------- SPEC END ----------------
+    # Locate the Codex tester Node bridge
+    bridge_path_env = os.environ.get("CODEX_TESTER_NODE_BRIDGE")
+    if bridge_path_env:
+        bridge_path = Path(bridge_path_env).resolve()
+    else:
+        # default: node_executables/codex_tester_bridge.mjs under the workspace
+        bridge_path = base_dir / "node_executables" / "codex_tester_bridge.mjs"
 
-        Current implementation (may be empty when tests are written first):
-        --------- IMPLEMENTATION START ---------
-        {implementation}
-        ---------- IMPLEMENTATION END ----------
-        """
-    )
-
-    auth_path = Path.home() / ".codex" / "auth.json"
-    if not auth_path.exists():
+    if not bridge_path.exists():
         raise RuntimeError(
-            f"Codex credentials not found at {auth_path}. "
-            "Run `codex login` or `codex auth --with-api-key` first."
+            f"Codex tester bridge script not found at {bridge_path}. "
+            "Set CODEX_TESTER_NODE_BRIDGE or place codex_tester_bridge.mjs there."
         )
 
-    codex_bin = shutil.which("codex")
-    if not codex_bin:
-        raise RuntimeError("Codex CLI binary not found on PATH. Install via `npm install -g @openai/codex`.")
-
+    # Model selection logic (same pattern as Coder)
     model_name = os.environ.get("CODEX_MODEL")
     if not model_name:
         orch_model = os.environ.get("ORCH_MODEL", "")
@@ -396,101 +340,74 @@ def run_codex_tester(
         else:
             model_name = "gpt-5.1-codex"
 
-    base_dir = Path(workspace_dir or os.getcwd())
-    base_dir.mkdir(parents=True, exist_ok=True)
-
-    cmd = [
-        codex_bin,
-        "exec",
-        "--experimental-json",
-        "--sandbox",
-        "read-only",
-        "--skip-git-repo-check",
-    ]
-    if model_name:
-        cmd.extend(["--model", model_name])
+    payload = {
+        "spec": spec,
+        "implementation": implementation,
+        "language": language,
+        "testFramework": test_framework,
+        "fileName": file_name,
+        "workspaceDir": str(base_dir),
+        "model": model_name,
+    }
 
     completed = subprocess.run(
-        cmd,
-        input=prompt,
+        [node_bin, str(bridge_path)],
+        input=json.dumps(payload),
         text=True,
         capture_output=True,
         cwd=str(base_dir),
         check=False,
     )
 
-    final_text: Optional[str] = None
-    failure_reason: Optional[str] = None
-
-    for raw_line in completed.stdout.splitlines():
-        raw_line = raw_line.strip()
-        if not raw_line:
-            continue
-        try:
-            event = json.loads(raw_line)
-        except json.JSONDecodeError:
-            continue
-
-        etype = event.get("type")
-        if etype == "item.completed":
-            item = event.get("item", {})
-            if item.get("type") == "agent_message":
-                final_text = item.get("text", "")
-        elif etype == "turn.failed":
-            error = event.get("error", {}) or {}
-            failure_reason = error.get("message") or str(error)
-
     if completed.returncode != 0:
+        msg = completed.stderr.strip() or completed.stdout.strip()
         raise RuntimeError(
-            f"Codex CLI failed with exit code {completed.returncode}: {completed.stderr.strip()}"
+            f"Codex tester bridge failed with exit code {completed.returncode}: {msg}"
         )
 
-    if failure_reason:
-        raise RuntimeError(f"Codex CLI reported failure: {failure_reason}")
+    try:
+        bridge_result = json.loads(completed.stdout or "{}")
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(
+            f"Failed to parse Codex tester bridge output as JSON: {exc}\n"
+            f"Raw output:\n{completed.stdout}"
+        ) from exc
 
-    if final_text is None or not final_text.strip():
-        raise RuntimeError("Codex CLI returned empty response.")
+    status = bridge_result.get("status", "unknown")
+    if status != "success":
+        raise RuntimeError(
+            f"Codex tester bridge reported error: {bridge_result.get('message') or bridge_result}"
+        )
 
-    test_text = final_text.strip()
-
-    if not test_text.strip():
-        raise RuntimeError("Tester tool returned empty content.")
-
-    # Best-effort strip ``` fences
-    if "```" in test_text:
-        segments = test_text.split("```")
-        if len(segments) >= 3:
-            test_text = segments[1]
-            lines = test_text.splitlines()
-            if lines and lines[0].strip().startswith(("python", "py")):
-                lines = lines[1:]
-            test_text = "\n".join(lines)
-
-    base_dir = Path(workspace_dir or os.getcwd())
-    base_dir.mkdir(parents=True, exist_ok=True)
     out_path = base_dir / file_name
-    out_path.write_text(test_text, encoding="utf-8")
 
     contract = {
         "contract_type": "test_generation",
-        "status": "success",
+        "status": status,
         "file_path": str(out_path),
         "test_framework": test_framework,
         "language": language,
         "spec_hash": hashlib.sha256(spec.encode("utf-8")).hexdigest(),
         "implementation_hash": hashlib.sha256((implementation or "").encode("utf-8")).hexdigest(),
+        "workspace_dir": str(base_dir),
+        "codex_report": bridge_result,
     }
+
+    # Best-effort JSONL logging (same pattern as Coder)
     try:
-        default_log_name = CONTRACT_LOG_NAME
+        default_log_name = CONTRACT_LOG_NAME  # type: ignore[name-defined]
     except NameError:
         default_log_name = "tdd_contracts.jsonl"
+
     log_name = os.environ.get("CONTRACT_LOG_NAME", default_log_name)
     log_path = base_dir / log_name
     try:
         with log_path.open("a", encoding="utf-8") as log_file:
             log_file.write(json.dumps(contract) + "\n")
     except OSError:
+        # Don't fail the run if logging breaks.
         pass
+
     return json.dumps(contract, indent=2)
 
 def run_test_suite(
