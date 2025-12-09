@@ -1,5 +1,17 @@
 [
     {
+        "title": "start letta server",
+        "action": "cd /home/adamsl/planner && ./start_letta_dec_09_2025.sh",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "kill letta server",
+        "action": "cd /home/adamsl/planner && pkill -f 'letta server' || true",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
         "title": "A2A Communicating Agents",
         "submenu": [
             {

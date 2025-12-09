@@ -2,22 +2,29 @@
 > admin-dashboard@1.0.0 start
 > node backend/dist/server.js
 
-2025-12-06T18:54:15.063Z ADMIN_HOST from env: undefined
-2025-12-06T18:54:15.087Z Admin dashboard server running on http://127.0.0.1:3000
-2025-12-06T18:54:15.087Z Process management enabled with persistent state
-2025-12-06T18:54:15.097Z Server orchestrator initialized
+2025-12-09T00:35:08.814Z ADMIN_HOST from env: undefined
+2025-12-09T00:35:08.827Z Admin dashboard server running on http://127.0.0.1:3000
+2025-12-09T00:35:08.827Z Process management enabled with persistent state
+2025-12-09T00:35:08.835Z Server orchestrator initialized
 Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/letta
 Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/orchestrator
-2025-12-06T18:54:15.118Z Discovered agent: coder-agent in /home/adamsl/planner/a2a_communicating_agents/coder_agent
-2025-12-06T18:54:15.121Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
-2025-12-06T18:54:15.152Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
-2025-12-06T18:54:15.163Z Discovered agent: tester-agent in /home/adamsl/planner/a2a_communicating_agents/tester_agent
-2025-12-06T18:54:15.169Z Discovered agent: planner-agent in /home/adamsl/planner
-2025-12-06T18:54:15.585Z Discovered 5 agents
-2025-12-06T18:54:15.585Z Agent discovery complete. Registered agents:
-2025-12-06T18:56:14.162Z Server api-server started with PID 79503
-2025-12-06T19:40:48.762Z Server livekit-voice-agent started with PID undefined
-2025-12-06T19:40:49.691Z Server livekit-voice-agent started with PID undefined
-2025-12-06T19:40:50.902Z Server pydantic-web-server started with PID undefined
-2025-12-06T19:41:10.465Z Server letta-server started with PID 143712
-2025-12-06T21:09:35.334Z Process letta-server died unexpectedly
+2025-12-09T00:35:08.846Z Discovered agent: coder-agent in /home/adamsl/planner/a2a_communicating_agents/coder_agent
+2025-12-09T00:35:08.848Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
+2025-12-09T00:35:08.862Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
+2025-12-09T00:35:08.866Z Discovered agent: tester-agent in /home/adamsl/planner/a2a_communicating_agents/tester_agent
+2025-12-09T00:35:08.868Z Discovered agent: planner-agent in /home/adamsl/planner
+2025-12-09T00:35:09.122Z Discovered 5 agents
+2025-12-09T00:35:09.122Z Agent discovery complete. Registered agents:
+2025-12-09T00:36:41.663Z Server api-server started with PID 1787
+2025-12-09T01:18:53.793Z Process api-server died unexpectedly
+2025-12-09T01:18:54.504Z Server api-server stopped
+2025-12-09T01:18:55.894Z Server api-server started with PID 24924
+2025-12-09T15:08:52.746Z Server letta-server started with PID 530295
+2025-12-09T15:59:02.550Z Process letta-server died unexpectedly
+2025-12-09T15:59:02.890Z Server letta-server stopped
+2025-12-09T16:02:26.070Z Server letta-server started with PID 582923
+2025-12-09T16:57:28.320Z Process letta-server died unexpectedly
+2025-12-09T19:31:52.820Z Server letta-server started with PID 829420
+2025-12-09T20:24:47.295Z Process letta-server died unexpectedly
+2025-12-09T20:47:55.541Z Server letta-server started with PID 912337
+2025-12-09T20:49:07.041Z Server letta-server stopped

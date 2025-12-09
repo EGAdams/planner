@@ -35,10 +35,11 @@ class GeminiReceiptEngine(ReceiptEngine):
         
         # Try models in order of preference (best OCR accuracy first)
         # Updated to use Gemini 2.5/2.0 models (1.5 models are deprecated)
+        # Using flash first to avoid pro quota limits
         model_names = [
-            'gemini-2.5-pro',
-            'gemini-2.5-flash',
+            'gemini-2.5-flash',  # Try flash first (separate quota)
             'gemini-2.0-flash',
+            'gemini-2.5-pro',
             'gemini-pro-latest'
         ]
         

@@ -239,6 +239,7 @@ INSERT INTO categories (id, name, kind, parent_id, is_active) VALUES
   (131, 'Family Fare', 'EXPENSE', 130, 1),
   (132, 'Meijer', 'EXPENSE', 130, 1),
   (133, 'Restaurants (members/guests)', 'EXPENSE', 130, 1),
+  (135, 'Gordon Food', 'EXPENSE', 130, 1),
   (134, 'Other', 'EXPENSE', 130, 1),
 
   (140, 'Office', 'EXPENSE', 1, 1),

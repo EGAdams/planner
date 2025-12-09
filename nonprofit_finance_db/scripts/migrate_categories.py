@@ -40,6 +40,7 @@ CATEGORIES = [
     {"id": 131, "name": "Family Fare", "parent_id": 130},
     {"id": 132, "name": "Meijer", "parent_id": 130},
     {"id": 133, "name": "Restaurants (members/guests)", "parent_id": 130},
+    {"id": 135, "name": "Gordon Food", "parent_id": 130},
     {"id": 134, "name": "Other", "parent_id": 130},
 
     {"id": 140, "name": "Office", "parent_id": 1},

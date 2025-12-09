@@ -208,14 +208,6 @@ class ReceiptScanner extends HTMLElement {
                             <label for="description">Description:</label>
                             <input type="text" id="description" name="description">
                         </div>
-                        
-                        <div class="form-group">
-                            <label for="categoryId">Category:</label>
-                            <!-- Category picker will be integrated here -->
-                            <select id="categoryId" name="categoryId" required>
-                                <option value="">Select Category</option>
-                            </select>
-                        </div>
 
                         <div class="form-actions">
                             <button type="button" class="cancel" id="cancelButton">Cancel</button>
@@ -235,7 +227,6 @@ class ReceiptScanner extends HTMLElement {
         this.receiptItemsBody = this.shadowRoot.getElementById('receiptItemsBody');
         this.cancelButton = this.shadowRoot.getElementById('cancelButton');
         this.saveButton = this.shadowRoot.getElementById('saveButton');
-        this.categoryIdSelect = this.shadowRoot.getElementById('categoryId');
         this.calculatedAmountInput = this.shadowRoot.getElementById('calculatedAmount');
         this.categoryOptions = [];
         this.categoriesPromise = null;
@@ -494,13 +485,6 @@ class ReceiptScanner extends HTMLElement {
             }
             const categories = await response.json();
             this.categoryOptions = this._buildCategoryTree(categories);
-            this.categoryIdSelect.innerHTML = '<option value="">Select Category</option>';
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.id;
-                option.textContent = cat.name;
-                this.categoryIdSelect.appendChild(option);
-            });
         } catch (error) {
             console.error('Error fetching categories:', error);
             // Optionally show error to user
@@ -656,7 +640,6 @@ class ReceiptScanner extends HTMLElement {
         this._clearError();
 
         const form = this.receiptForm;
-        const selectedCategoryId = form.elements.categoryId.value;
 
         const categorizedItems = (this.parsedData.items || []).filter(
             (item) => item.category_id
@@ -690,7 +673,6 @@ class ReceiptScanner extends HTMLElement {
             expense_date: form.elements.transactionDate.value,
             total_amount: parseFloat(form.elements.totalAmount.value),
             tax_amount: parseFloat(form.elements.taxAmount.value) || 0.0,
-            category_id: selectedCategoryId ? parseInt(selectedCategoryId) : null,
             payment_method: form.elements.paymentMethod.value,
             description: form.elements.description.value,
             original_file_name: this.originalFileName,
