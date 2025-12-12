@@ -1,0 +1,416 @@
+[
+    {
+        "title": "start letta server",
+        "action": "cd /home/adamsl/planner && ./start_letta_dec_09_2025.sh",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "kill letta server",
+        "action": "cd /home/adamsl/planner && pkill -f 'letta server' || true",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "A2A Communicating Agents",
+        "submenu": [
+            {
+                "title": "🚀 Agent Lifecycle & Diagnostics",
+                "submenu": [
+                    {
+                        "title": "📊 Check Agent Status",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ps aux | grep -E \"(orchestrator|coder|tester)_agent|websocket_server\" | grep -v grep || echo \"No agents running\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "🔍 Run Full Agent Diagnostic",
+                        "action": "bash -lc 'cd /home/adamsl/planner && echo \"=== Agent Processes ===\" && ps aux | grep -E \"(orchestrator|coder|tester|websocket)\" | grep -v grep && echo \"\" && echo \"=== Recent Orchestrator Log ===\" && tail -20 logs/orchestrator.log && echo \"\" && echo \"=== Recent Errors ===\" && grep -i \"error\" logs/*.log 2>/dev/null | tail -10 || echo \"No recent errors\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start WebSocket Server",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./start_websocket_server.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop WebSocket Server",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_websocket_server.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start Orchestrator Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent && /home/adamsl/planner/.venv/bin/python main.py'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop Orchestrator Agent",
+                        "action": "bash -lc 'pkill -f \"orchestrator_agent/main.py\" && echo \"Orchestrator agent stopped\" || echo \"No orchestrator agent running\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start Coder Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./start_coder_agent.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop Coder Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_coder_agent.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "▶️ Start Tester Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./start_tester_agent.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "⏹️ Stop Tester Agent",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_tester_agent.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "🔄 Restart All Agents",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && echo \"Stopping agents...\" && ./stop_orchestrator.sh 2>/dev/null; ./stop_coder_agent.sh 2>/dev/null; ./stop_tester_agent.sh 2>/dev/null; sleep 2 && echo \"Starting agents...\" && ./start_websocket_server.sh && sleep 1 && ./start_orchestrator.sh && sleep 1 && ./start_coder_agent.sh && ./start_tester_agent.sh && echo \"Done! Check status to verify.\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "🛑 Stop All Agents",
+                        "action": "bash -lc 'cd /home/adamsl/planner/a2a_communicating_agents && ./stop_orchestrator.sh 2>/dev/null; ./stop_coder_agent.sh 2>/dev/null; ./stop_tester_agent.sh 2>/dev/null; ./stop_websocket_server.sh 2>/dev/null && echo \"All agents stopped\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    }
+                ]
+            },
+            {
+                "title": "Stack Operations & Verification",
+                "submenu": [
+                    {
+                        "title": "Start A2A Service Stack",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ./start_a2a_system.sh'",
+                        "working_directory": "/home/adamsl/planner",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "Stop A2A Service Stack",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ./stop_a2a_system.sh'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Show Latest Stack Status Summary",
+                        "action": "cat /home/adamsl/planner/documents/agent_communication/A2A_SYSTEM_STATUS.md",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Verify Letta Health Endpoint",
+                        "action": "bash -lc 'cd /home/adamsl/planner && python a2a_communicating_agents/hybrid_letta_agents/tests/test_letta_server.py'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Run Letta Client Integration Test",
+                        "action": "bash -lc 'cd /home/adamsl/planner && python a2a_communicating_agents/hybrid_letta_agents/test_letta_client_direct.py'",
+                        "working_directory": "/home/adamsl/planner"
+                    }
+                ]
+            },
+            {
+                "title": "Agent Diagnostics & Tests",
+                "submenu": [
+                    {
+                        "title": "Messaging Smoke Tests",
+                        "submenu": [
+                            {
+                                "title": "Agent Discovery Smoke Test",
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_agent_discovery.sh",
+                                "working_directory": "/home/adamsl/planner/smart_menu"
+                            },
+                            {
+                                "title": "Delegation Workflow Test",
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_delegation.sh",
+                                "working_directory": "/home/adamsl/planner/smart_menu"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Memory & Transport Tests",
+                        "submenu": [
+                            {
+                                "title": "Run Memory Fallback Test",
+                                "action": "bash ../a2a_communicating_agents/agent_messaging/tests/test_memory_system.sh",
+                                "working_directory": "/home/adamsl/planner/smart_menu"
+                            },
+                            {
+                                "title": "Transport Fallback Validation (TODO)",
+                                "action": "echo 'Transport fallback validation not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Voice & LiveKit Prep",
+                        "submenu": [
+                            {
+                                "title": "Voice Capability Checklist (TODO)",
+                                "action": "echo 'Voice capability scaffolding not implemented yet.'"
+                            },
+                            {
+                                "title": "LiveKit Service Tasks (TODO)",
+                                "action": "echo 'LiveKit integration commands not implemented yet.'"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "title": "✅ Chat & Working Commands",
+                "submenu": [
+                    {
+                        "title": "💬 Open Orchestrator Chat (WORKING)",
+                        "action": "bash ../a2a_communicating_agents/agent_messaging/tests/run_orchestrator_chat.sh",
+                        "working_directory": "/home/adamsl/planner/smart_menu",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "📊 Show Agent Status",
+                        "action": "bash -lc 'cd /home/adamsl/planner && ps aux | grep -E \"(orchestrator|coder|tester)_agent|websocket_server\" | grep -v grep || echo \"No agents running\"'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "📜 Show Orchestrator Logs",
+                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 100 logs/orchestrator.log'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "📜 Show Coder Agent Logs",
+                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 100 logs/coder_agent.log'",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "📜 Show WebSocket Logs",
+                        "action": "bash -lc 'cd /home/adamsl/planner && tail -n 100 logs/websocket.log'",
+                        "working_directory": "/home/adamsl/planner"
+                    }
+                ]
+            },
+            {
+                "title": "Maintenance Backlog",
+                "submenu": [
+                    {
+                        "title": "Letta Server Admin Tasks",
+                        "submenu": [
+                            {
+                                "title": "Check Letta Health Endpoint",
+                                "action": "bash -lc 'cd /home/adamsl/planner && (curl -fsS http://localhost:8283/health || curl -fsS http://localhost:8283/v1/health || (echo \"Letta health endpoint is not responding\" && exit 1))'",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Tail Letta Server Logs",
+                                "action": "bash -lc 'cd /home/adamsl/planner && tail -n 200 logs/letta.log'",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Restart Letta Server",
+                                "action": "bash -lc 'cd /home/adamsl/planner && ./scripts/restart_letta_server.sh'",
+                                "working_directory": "/home/adamsl/planner"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "PostgreSQL Setup Tasks (TODO)",
+                        "submenu": [
+                            {
+                                "title": "Initialize PostgreSQL Database",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Check PostgreSQL Connection",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Reset Database",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Database Schema",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Dashboard & UI Tasks (TODO)",
+                        "submenu": [
+                            {
+                                "title": "Start Dashboard Server",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Build Dashboard Assets",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Dashboard Connectivity",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Open Dashboard in Browser",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Service Management Tasks (TODO)",
+                        "submenu": [
+                            {
+                                "title": "Start All Services",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Stop All Services",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Service Status",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Service Logs",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Memory & Messaging Tasks (TODO)",
+                        "submenu": [
+                            {
+                                "title": "Test ChromaDB Memory",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Letta Memory Backend",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Reset Memory Storage",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "View Memory Stats",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    },
+                    {
+                        "title": "WebSocket & Transport Tasks (TODO)",
+                        "submenu": [
+                            {
+                                "title": "Test WebSocket Connection",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Transport Factory",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Test Fallback Mechanisms",
+                                "action": "echo 'Not implemented yet.'"
+                            },
+                            {
+                                "title": "Verify Message Routing",
+                                "action": "echo 'Not implemented yet.'"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Finance Report",
+        "submenu": [
+            {
+                "title": "Process Bank Statements",
+                "submenu": [
+                    {
+                        "title": "Parse and Validate PDF",
+                        "action": "bash /home/adamsl/planner/nonprofit_finance_db/scripts/interactive_parse_validate.sh",
+                        "working_directory": "/home/adamsl/planner"
+                    },
+                    {
+                        "title": "Parse Receipts",
+                        "submenu": []
+                    },
+                    {
+                        "title": "Put parsed data into database",
+                        "submenu": []
+                    },
+                    {
+                        "title": "Tests",
+                        "submenu": [
+                            {
+                                "title": "Test Parse Bank PDF Endpoint",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_parse_bank_pdf_endpoint.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Test Docling Account Summary",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_docling_account_summary.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Test Docling Sign Hints",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_docling_sign_hints.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Test PDF Parser Fallback",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_pdf_parser_fallback.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            },
+                            {
+                                "title": "Run All Bank PDF Tests",
+                                "action": "cd /home/adamsl/planner && python -m pytest nonprofit_finance_db/tests/test_parse_bank_pdf_endpoint.py nonprofit_finance_db/tests/test_docling_account_summary.py nonprofit_finance_db/tests/test_docling_sign_hints.py nonprofit_finance_db/tests/test_pdf_parser_fallback.py -v",
+                                "working_directory": "/home/adamsl/planner"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "title": "Dashboard",
+        "action": "echo 'opening dashboard project...'",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Event-Bus ",
+        "action": "echo 'opening event-bus project...'",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Show this config.json",
+        "action": "cat /home/adamsl/linuxBash/python_menus/smart_menu/config.json",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Show the Plan",
+        "action": "echo 'showing plan...'",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Open auto memgpt workspace",
+        "action": "code /home/adamsl/agent_99/",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Open Linux Bash Workspace",
+        "action": "code /home/adamsl/linuxBash",
+        "working_directory": "/home/adamsl/linuxBash",
+        "open_in_subprocess": false
+    }
+]

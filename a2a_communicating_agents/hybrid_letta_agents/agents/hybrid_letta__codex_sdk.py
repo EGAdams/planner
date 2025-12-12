@@ -178,6 +178,14 @@ def run_codex_coder(
     Returns:
         A JSON string describing the contract, including the Codex-side report.
     """
+    
+    import os
+    import json
+    import shutil
+    import subprocess
+    import hashlib
+    from pathlib import Path
+    
     base_dir = Path(workspace_dir or os.getcwd()).resolve()
     base_dir.mkdir(parents=True, exist_ok=True)
 
