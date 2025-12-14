@@ -159,7 +159,7 @@ grep -E "(model|MODEL)" .env 2>/dev/null | sed 's/=.*/=***HIDDEN***/' || echo "N
 
 **Required environment variables:**
 - `OPENAI_API_KEY` - For LLM-based routing and code generation
-- `ORCHESTRATOR_MODEL` or `OPENAI_MODEL` - Model to use (default: gpt-4o-mini)
+- `ORCHESTRATOR_MODEL` or `OPENAI_MODEL` - Model to use (default: gpt-5-mini)
 - `CODER_MODEL` - Model for coder agent (optional, defaults to OPENAI_MODEL)
 
 ### 8. Restart Agents (if needed)
@@ -339,7 +339,7 @@ Debug workflow:
    ```bash
    grep "Initialized with model" logs/coder.log | tail -1
    ```
-   Result: Should show model name (e.g., gpt-4o-mini)
+   Result: Should show model name (e.g., gpt-5-mini)
 
 6. Send test message and verify code generation
 

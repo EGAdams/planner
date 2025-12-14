@@ -79,7 +79,7 @@ if pgrep -f "debug_letta_server.py" >/dev/null 2>&1; then
 fi
 
 export LETTA_BASE_URL="${LETTA_BASE_URL:-http://localhost:8283}"
-export LETTA_ORCHESTRATOR_MODEL="${LETTA_ORCHESTRATOR_MODEL:-openai/gpt-4o-mini}"
+export LETTA_ORCHESTRATOR_MODEL="${LETTA_ORCHESTRATOR_MODEL:-openai/gpt-5-mini}"
 
 echo "Starting Letta on Postgres..."
 echo "  LETTA_BASE_URL=${LETTA_BASE_URL}"

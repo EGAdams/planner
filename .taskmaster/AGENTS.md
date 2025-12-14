@@ -248,7 +248,7 @@ task-master models --setup
 # Set specific models
 task-master models --set-main gpt-5.1-codex
 task-master models --set-research perplexity-llama-3.1-sonar-large-128k-online
-task-master models --set-fallback gpt-4o-mini
+task-master models --set-fallback gpt-5-mini
 ```
 
 ## Task Structure & IDs
@@ -348,7 +348,7 @@ cat .env                           # For CLI usage
 task-master models
 
 # Test with different model
-task-master models --set-fallback gpt-4o-mini
+task-master models --set-fallback gpt-5-mini
 ```
 
 ### MCP Connection Issues

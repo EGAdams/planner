@@ -90,7 +90,7 @@ python3 test_letta_simple.py
 Make sure these are set:
 - `LETTA_BASE_URL` (default: http://localhost:8283)
 - `OPENAI_API_KEY` (required for both Letta and Codex)
-- `ORCH_MODEL` (default: openai/gpt-4o-mini)
+- `ORCH_MODEL` (default: openai/gpt-5-mini)
 - `CODEX_MODEL` (optional, defaults based on ORCH_MODEL)
 
 ## Next Steps

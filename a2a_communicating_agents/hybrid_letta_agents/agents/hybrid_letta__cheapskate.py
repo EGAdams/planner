@@ -16,7 +16,7 @@ Requirements:
 
 Environment:
   LETTA_BASE_URL      # e.g. http://localhost:8283 (optional, defaults to that)
-  OPENAI_API_KEY      # used by the Letta server for openai/gpt-4o-mini
+  OPENAI_API_KEY      # used by the Letta server for openai/gpt-5-mini
 
 How it works:
   1. Main thread runs Claude Agent SDK (has access to Claude Code)
@@ -46,7 +46,7 @@ from claude_agent_sdk import query as claude_query
 # ---------- Configuration ----------
 
 WORKSPACE_DIR = Path(__file__).resolve().parent
-ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini")
+ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-5-mini")
 
 # Initial task for the orchestrator
 USER_TASK = textwrap.dedent(

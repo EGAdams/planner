@@ -124,7 +124,7 @@ tester_tool = client.tools.create_from_function(func=run_claude_tester)
 
 orchestrator = client.agents.create(
     name="letta_orchestrator",
-    model="openai/gpt-4o-mini",
+    model="openai/gpt-5-mini",
     tools=[coder_tool.name, tester_tool.name],
 )
 ```
@@ -220,7 +220,7 @@ letta_client = Letta(base_url="http://localhost:8283")
 # Get or create orchestrator agent
 orchestrator = letta_client.agents.get_or_create(
     name="voice_orchestrator",
-    model="openai/gpt-4o-mini",
+    model="openai/gpt-5-mini",
     memory_blocks=[
         {"label": "persona", "value": "I am a voice-enabled orchestrator..."}
     ]
@@ -262,7 +262,7 @@ async def test_letta_voice():
     # Create test agent
     agent = client.agents.create(
         name="test_voice_agent",
-        model="openai/gpt-4o-mini",
+        model="openai/gpt-5-mini",
         memory_blocks=[
             {"label": "persona", "value": "I am a voice test agent"}
         ]

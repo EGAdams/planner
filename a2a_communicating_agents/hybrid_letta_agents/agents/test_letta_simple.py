@@ -18,7 +18,7 @@ def test_simple_interaction():
     # Create a simple agent with no tools
     print("Creating test agent...")
     agent = client.agents.create(
-        model=os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini"),
+        model=os.environ.get("ORCH_MODEL", "openai/gpt-5-mini"),
         embedding="openai/text-embedding-3-small",
         memory_blocks=[
             {

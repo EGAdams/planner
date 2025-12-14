@@ -38,7 +38,7 @@ We built **hybrid_letta__a2a.py** which uses your existing A2A messaging infrast
 ### How It Works
 
 1. **Letta Orchestrator** (runs in separate thread):
-   - Uses GPT-4o-mini for orchestration (cheap, fast)
+   - Uses gpt-5-mini for orchestration (cheap, fast)
    - Has two custom tools: `run_claude_coder` and `run_claude_tester`
    - Tools send requests via A2A messaging (`rag_system.send()`)
 

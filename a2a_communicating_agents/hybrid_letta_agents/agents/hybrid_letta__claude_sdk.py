@@ -16,7 +16,7 @@ Requirements (host + Letta tool sandbox):
 Environment:
 
   LETTA_BASE_URL      # e.g. http://localhost:8283  (optional, defaults to that)
-  OPENAI_API_KEY      # used by the Letta server for openai/gpt-4o-mini
+  OPENAI_API_KEY      # used by the Letta server for openai/gpt-5-mini
 
 Authentication:
 
@@ -46,7 +46,7 @@ WORKSPACE_DIR = Path(__file__).resolve().parent
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-3-5-sonnet-latest")
 
 # Orchestrator model inside Letta (Letta only supports: letta, openai, google_ai)
-ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini")
+ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-5-mini")
 
 # Initial task given to the orchestrator
 USER_TASK = textwrap.dedent(
@@ -343,7 +343,7 @@ def main() -> None:
         print(
             "\nHints:\n"
             "- Make sure your Letta server is running and reachable at LETTA_BASE_URL.\n"
-            "- Confirm the server has OPENAI_API_KEY set so it can call openai/gpt-4o-mini.\n"
+            "- Confirm the server has OPENAI_API_KEY set so it can call openai/gpt-5-mini.\n"
             "- Confirm ANTHROPIC_API_KEY is set on the host so the tools can call Claude.\n"
             "- If the operation is legitimately long-running, you can increase "
             "timeout_in_seconds further."

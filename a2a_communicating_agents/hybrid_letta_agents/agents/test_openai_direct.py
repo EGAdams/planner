@@ -43,7 +43,7 @@ def test_openai_api():
         return False
     
     # Test model - same as hybrid_letta__codex_sdk.py uses
-    model = "gpt-4o-mini"
+    model = "gpt-5-mini"
     print(f"\n[{datetime.now()}] Testing model: {model}")
     
     # Simple test message
@@ -126,7 +126,7 @@ def test_streaming_api():
         start_time = time.time()
         
         stream = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5-mini",
             messages=[{"role": "user", "content": "Count from 1 to 5, one number per line."}],
             stream=True,
             timeout=30

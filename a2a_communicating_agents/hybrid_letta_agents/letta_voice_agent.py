@@ -209,7 +209,7 @@ async def get_or_create_orchestrator(letta_client: Letta) -> str:
             letta_client.agents.create,
             name=agent_name,
             llm_config={
-                "model": os.getenv("LETTA_ORCHESTRATOR_MODEL", "openai/gpt-4o-mini"),
+                "model": os.getenv("LETTA_ORCHESTRATOR_MODEL", "openai/gpt-5-mini"),
                 "model_endpoint_type": "openai",
                 "context_window": 8000
             },
@@ -290,7 +290,7 @@ async def entrypoint(ctx: JobContext):
         ),
 
         # Large Language Model: Use minimal LLM since Letta handles reasoning
-        llm=openai.LLM(model="gpt-4o-mini"),
+        llm=openai.LLM(model="gpt-5-mini"),
 
         # Text-to-Speech: Cartesia or OpenAI
         tts=tts,

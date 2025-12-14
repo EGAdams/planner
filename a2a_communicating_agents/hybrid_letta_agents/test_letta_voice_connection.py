@@ -58,7 +58,7 @@ async def test_create_orchestrator():
     try:
         agent = await client.create_agent(
             name="test_voice_orchestrator",
-            model="openai/gpt-4o-mini",
+            model="openai/gpt-5-mini",
             memory_blocks=[
                 {
                     "label": "persona",

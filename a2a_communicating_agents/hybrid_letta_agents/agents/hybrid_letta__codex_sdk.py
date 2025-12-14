@@ -18,7 +18,7 @@ Requirements (host + Letta tool sandbox):
 Environment:
 
   LETTA_BASE_URL      # e.g. http://localhost:8283  (optional, defaults to that)
-  OPENAI_API_KEY      # used by Letta server for openai/gpt-4o-mini
+  OPENAI_API_KEY      # used by Letta server for openai/gpt-5-mini
   CODEX_MODEL         # optional override for Codex CLI model (defaults to gpt-5.1-codex if ORCH_MODEL unsupported)
 """
 
@@ -43,7 +43,7 @@ WORKSPACE_DIR = Path(__file__).resolve().parent
 CONTRACT_LOG_NAME = "tdd_contracts.jsonl"
 
 # Orchestrator model inside Letta (Letta only supports: letta, openai, google_ai)
-ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini")
+ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-5-mini")
 
 # Initial task given to the orchestrator
 FEATURE_SPEC = textwrap.dedent(
@@ -789,7 +789,7 @@ def main() -> None:
         print(
             "\nHints:\n"
             "- Make sure your Letta server is running and reachable at LETTA_BASE_URL.\n"
-            "- Confirm the server has OPENAI_API_KEY set so it can call openai/gpt-4o-mini.\n"
+            "- Confirm the server has OPENAI_API_KEY set so it can call openai/gpt-5-mini.\n"
             "- Confirm the Codex CLI is installed + authenticated via `codex login` so the tools can call Codex.\n"
             "- If the operation is legitimately long-running, you can increase "
             "timeout_in_seconds further."

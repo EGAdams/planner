@@ -30,7 +30,7 @@ fi
 
 # Optional overrides; adjust as needed.
 export LETTA_BASE_URL="${LETTA_BASE_URL:-http://localhost:8283}"
-export LETTA_ORCHESTRATOR_MODEL="${LETTA_ORCHESTRATOR_MODEL:-openai/gpt-4o-mini}"
+export LETTA_ORCHESTRATOR_MODEL="${LETTA_ORCHESTRATOR_MODEL:-openai/gpt-5-mini}"
 
 echo "Starting Letta server with LETTA_BASE_URL=${LETTA_BASE_URL}"
 echo "Using orchestrator model: ${LETTA_ORCHESTRATOR_MODEL}"

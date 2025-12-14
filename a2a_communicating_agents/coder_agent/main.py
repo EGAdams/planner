@@ -58,7 +58,7 @@ class CoderAgent:
         try:
             from openai import OpenAI
             self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-            self.model_id = os.getenv("CODER_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
+            self.model_id = os.getenv("CODER_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-5-mini"
             log_update(f"Initialized with model: {self.model_id}")
         except ImportError:
             log_update("OpenAI package not available. Code generation will be limited.")

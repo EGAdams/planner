@@ -17,7 +17,7 @@ Requirements:
 
 Environment:
   LETTA_BASE_URL      # e.g. http://localhost:8283  (optional, defaults to that)
-  OPENAI_API_KEY      # used by the Letta server for openai/gpt-4o-mini
+  OPENAI_API_KEY      # used by the Letta server for openai/gpt-5-mini
 """
 
 from __future__ import annotations
@@ -40,7 +40,7 @@ from claude_agent_sdk import query as claude_query
 
 WORKSPACE_DIR = Path(__file__).resolve().parent
 COMM_DIR = WORKSPACE_DIR / ".letta_claude_comm"  # Communication directory
-ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini")
+ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-5-mini")
 
 USER_TASK = textwrap.dedent(
     """

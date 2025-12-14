@@ -183,7 +183,7 @@ Make sure these are set:
 ```bash
 export LETTA_BASE_URL="http://localhost:8283"  # Letta server
 export OPENAI_API_KEY="sk-..."                 # For Letta + Codex
-export ORCH_MODEL="openai/gpt-4o-mini"        # Optional
+export ORCH_MODEL="openai/gpt-5-mini"        # Optional
 export CODEX_MODEL="gpt-5.1-codex"            # Optional
 export CODEX_NODE_BRIDGE="/path/to/codex_coder_bridge.mjs"  # Optional
 ```

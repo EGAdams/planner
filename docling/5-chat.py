@@ -80,7 +80,7 @@ def get_chat_response(messages, context: str) -> str:
 
     # Create the streaming response
     stream = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-5-mini",
         messages=messages_with_context,
         temperature=0.7,
         stream=True,

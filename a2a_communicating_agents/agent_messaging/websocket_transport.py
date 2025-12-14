@@ -33,17 +33,17 @@ class WebSocketTransport(MessageTransport):
     def __init__(
         self,
         config: ConnectionConfig,
-        mock_server: Optional['MockWebSocketServer'] = None
+        test_server: Optional['TestWebSocketServer'] = None
     ):
         """
         Initialize WebSocket transport.
 
         Args:
             config: Connection configuration
-            mock_server: Optional mock server for testing
+            test_server: Optional test server for unit testing (None in production)
         """
         self.config = config
-        self._mock_server = mock_server
+        self._test_server = test_server
         self._connected = False
         self._subscriptions: Dict[str, Callable[[AgentMessage], Awaitable[None]]] = {}
         self.agent_id: Optional[str] = None
@@ -56,9 +56,9 @@ class WebSocketTransport(MessageTransport):
         if self.agent_id is None:
             raise ValueError("agent_id must be set before connecting")
 
-        if self._mock_server:
-            # Use mock server for testing
-            await self._mock_server.connect_agent(self.agent_id)
+        if self._test_server:
+            # Use test server for unit testing
+            await self._test_server.connect_agent(self.agent_id)
             self._connected = True
             return
 
@@ -101,8 +101,8 @@ class WebSocketTransport(MessageTransport):
         if not self._connected:
             return
 
-        if self._mock_server:
-            await self._mock_server.disconnect_agent(self.agent_id)
+        if self._test_server:
+            await self._test_server.disconnect_agent(self.agent_id)
         elif self._websocket:
             # Cancel receiver task
             if self._receiver_task:
@@ -133,8 +133,8 @@ class WebSocketTransport(MessageTransport):
             print(f"WebSocket send error: Not connected")
             return False
 
-        if self._mock_server:
-            return await self._mock_server.send_message(message)
+        if self._test_server:
+            return await self._test_server.send_message(message)
 
         # Real WebSocket send
         try:
@@ -207,8 +207,8 @@ class WebSocketTransport(MessageTransport):
 
         self._subscriptions[topic] = callback
 
-        if self._mock_server:
-            await self._mock_server.subscribe(self.agent_id, topic)
+        if self._test_server:
+            await self._test_server.subscribe(self.agent_id, topic)
         else:
             # Send subscription request to server
             request = {
@@ -227,8 +227,8 @@ class WebSocketTransport(MessageTransport):
         if topic in self._subscriptions:
             del self._subscriptions[topic]
 
-        if self._mock_server and self.agent_id:
-            await self._mock_server.unsubscribe(self.agent_id, topic)
+        if self._test_server and self.agent_id:
+            await self._test_server.unsubscribe(self.agent_id, topic)
         elif self._websocket:
             # Send unsubscription request to server
             request = {

@@ -22,7 +22,7 @@ Create a hybrid multi-agent system where:
 ### 1. **Letta Server Setup** ✓
 - **Location**: Running on `http://localhost:8283`
 - **Database**: PostgreSQL at `postgresql+asyncpg://letta:letta@localhost:5432/letta`
-- **Orchestrator Model**: `openai/gpt-4o-mini` (working perfectly)
+- **Orchestrator Model**: `openai/gpt-5-mini` (working perfectly)
 - **Embedding Model**: `openai/text-embedding-3-small`
 - **Start Script**: `./start_letta_postgres.sh`
 
@@ -49,7 +49,7 @@ OPENAI_API_KEY='sk-proj-...' # Actual key stored in ~/.bashrc
 ```
 User Task
     ↓
-Letta Orchestrator (GPT-4o-mini)
+Letta Orchestrator (gpt-5-mini)
     ↓ (decides to call tool)
 run_claude_coder OR run_claude_tester
     ↓ (executes in Letta tool sandbox)
@@ -182,7 +182,7 @@ def get_claude_oauth_token() -> str:
 # Output shows:
 ✓ Server running at: http://localhost:8283
 ✓ Letta version: v0.15.1
-✓ Model: openai/gpt-4o-mini
+✓ Model: openai/gpt-5-mini
 ✓ PostgreSQL connected
 ```
 
@@ -195,7 +195,7 @@ ANTHROPIC_API_KEY=<OAuth_token>      # ❌ CURRENTLY INVALID (OAuth token)
 # Optional (not required):
 LETTA_BASE_URL='http://localhost:8283'  # Defaults to this if not set
 CLAUDE_MODEL='claude-3-5-sonnet-latest'  # Defaults to this if not set
-ORCH_MODEL='openai/gpt-4o-mini'          # Defaults to this if not set
+ORCH_MODEL='openai/gpt-5-mini'          # Defaults to this if not set
 ```
 
 ### Script Execution
@@ -379,7 +379,7 @@ Created tester_tool:
 
 ### Successful Agent Creation
 ```
-Creating orchestrator with model: openai/gpt-4o-mini
+Creating orchestrator with model: openai/gpt-5-mini
 Created orchestrator agent: agent-5c5f61d0-5676-4489-b0d5-42aa4e9ead44
 ```
 

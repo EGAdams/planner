@@ -66,7 +66,7 @@ class Orchestrator:
     def __init__(self, *, llm_client=None, model_id: Optional[str] = None):
         self.known_agents = {}
         self.dispatcher = A2ADispatcher(workspace_root=WORKSPACE_ROOT)
-        self.model_id = model_id or os.getenv("ORCHESTRATOR_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
+        self.model_id = model_id or os.getenv("ORCHESTRATOR_MODEL") or os.getenv("OPENAI_MODEL") or "gpt-5-mini"
         if llm_client is not None:
             self.client = llm_client
         elif OpenAI is None:

@@ -105,7 +105,7 @@ When working correctly, you'll see:
 ```
 ┌─────────────────┐
 │  Orchestrator   │  (Letta Agent)
-│  (GPT-4o-mini)  │
+│  (gpt-5-mini)  │
 └────────┬────────┘
          │
          ├──────────┬──────────────┬────────────┬───────────────┐

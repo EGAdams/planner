@@ -23,7 +23,7 @@ except Exception:
 # ---------- Models ----------
 MODEL_GEMINI_2_0_FLASH = "gemini-2.0-flash"
 MODEL_GEMINI_2_5_FLASH = os.getenv("GEMINI_RAG_MODEL", "gemini-2.5-flash")  # for RAG agent reasoning + answers
-MODEL_OPENAI_DEFAULT = "gpt-4o-mini"
+MODEL_OPENAI_DEFAULT = "gpt-5-mini"
 
 def pick_model():
     if HAS_LITELLM:

@@ -29,7 +29,7 @@ WORKSPACE_DIR = Path(__file__).resolve().parent
 CONTRACT_LOG_NAME = "tdd_contracts.jsonl"
 AGENT_ID_FILE = WORKSPACE_DIR / ".letta_agent_id"
 
-ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-4o-mini")
+ORCH_MODEL = os.environ.get("ORCH_MODEL", "openai/gpt-5-mini")
 
 # ---------- Time Tool ----------
 
