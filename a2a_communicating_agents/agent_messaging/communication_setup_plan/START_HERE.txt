@@ -1,0 +1,97 @@
+================================================================================
+AGENT COMMUNICATION SYSTEM - SETUP PACKAGE
+================================================================================
+
+LOCATION: /home/adamsl/planner/a2a_communicating_agents/agent_messaging/communication_setup_plan/
+
+This directory contains everything needed to set up the agent communication
+system in a new location.
+
+================================================================================
+QUICK START (RECOMMENDED)
+================================================================================
+
+1. Copy this entire directory to where you want the system:
+
+   cp -r communication_setup_plan /your/destination/
+
+2. Go there:
+
+   cd /your/destination/communication_setup_plan
+
+3. Run the setup script (it installs to current directory):
+
+   ./migrate_agent_system.sh
+
+4. Follow the prompts. Done!
+
+================================================================================
+FILES IN THIS PACKAGE
+================================================================================
+
+README.md                                     ← START HERE (overview)
+migrate_agent_system.sh                       ← Automated setup script
+SIMPLE_MIGRATION_INSTRUCTIONS.md              ← Quick guide
+AGENT_COMMUNICATION_SYSTEM_MIGRATION_GUIDE.md ← Complete documentation
+MIGRATION_QUICK_REFERENCE.txt                 ← File paths & commands
+MIGRATION_PACKAGE_README.md                   ← Guide to the guides
+
+================================================================================
+HOW THE SCRIPT WORKS
+================================================================================
+
+The script runs from the CURRENT DIRECTORY by default:
+
+  ./migrate_agent_system.sh              # Installs HERE (current directory)
+
+  ./migrate_agent_system.sh /other/path  # Installs THERE (specified path)
+
+It will:
+  ✓ Copy all 27 system files
+  ✓ Create Python virtual environment
+  ✓ Install all dependencies
+  ✓ Create configuration files
+  ✓ Verify everything works
+
+Time: 15-20 minutes
+
+================================================================================
+WHAT GETS INSTALLED
+================================================================================
+
+After running the script, you'll have:
+
+  agent_messaging/        ← 17 Python files (core system)
+  rag_system/             ← 10 Python files (RAG fallback)
+  venv/                   ← Python virtual environment
+  setup.py                ← Package setup
+  requirements.txt        ← Dependencies
+  .env                    ← Configuration
+  test_system.py          ← Test script
+  README.md               ← Usage guide
+
+================================================================================
+NEED HELP?
+================================================================================
+
+• For simple instructions:  Read SIMPLE_MIGRATION_INSTRUCTIONS.md
+• For complete guide:       Read AGENT_COMMUNICATION_SYSTEM_MIGRATION_GUIDE.md
+• For quick reference:      Check MIGRATION_QUICK_REFERENCE.txt
+• Just run the script:      ./migrate_agent_system.sh
+
+================================================================================
+SUPPORT
+================================================================================
+
+If something goes wrong:
+  1. Check the Troubleshooting section in the main guide
+  2. Make sure Python 3.10+ is installed: python3 --version
+  3. Verify virtual environment is activated: source venv/bin/activate
+
+================================================================================
+READY TO START?
+================================================================================
+
+Read README.md or just run: ./migrate_agent_system.sh
+
+================================================================================

@@ -8321,3 +8321,259 @@
 [2025-12-09 18:10:30] Metrics collection completed for event: 
 [2025-12-09 18:10:30] Metrics collection completed for event: 
 [2025-12-09 18:10:31] Metrics collection completed for event: 
+[2025-12-14 06:55:49] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:55:49] Starting metrics collection for event: 
+[2025-12-14 06:55:49] Initialized metrics file: /home/adamsl/planner/.claude-collective/metrics/metrics-20251214.json
+[2025-12-14 06:55:49] Metrics collection completed for event: 
+[2025-12-14 06:55:58] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:55:58] Starting metrics collection for event: 
+[2025-12-14 06:55:58] Metrics collection completed for event: 
+[2025-12-14 06:57:33] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:33] Starting metrics collection for event: 
+[2025-12-14 06:57:33] Metrics collection completed for event: 
+[2025-12-14 06:57:37] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:37] Starting metrics collection for event: 
+[2025-12-14 06:57:37] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:37] Starting metrics collection for event: 
+[2025-12-14 06:57:37] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:37] Starting metrics collection for event: 
+[2025-12-14 06:57:37] Metrics collection completed for event: 
+[2025-12-14 06:57:37] Metrics collection completed for event: 
+[2025-12-14 06:57:37] Metrics collection completed for event: 
+[2025-12-14 06:57:43] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:43] Starting metrics collection for event: 
+[2025-12-14 06:57:43] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:43] Starting metrics collection for event: 
+[2025-12-14 06:57:43] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:43] Starting metrics collection for event: 
+[2025-12-14 06:57:43] Metrics collection completed for event: 
+[2025-12-14 06:57:43] Metrics collection completed for event: 
+[2025-12-14 06:57:43] Metrics collection completed for event: 
+[2025-12-14 06:57:47] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:47] Starting metrics collection for event: 
+[2025-12-14 06:57:47] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:47] Starting metrics collection for event: 
+[2025-12-14 06:57:47] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:47] Starting metrics collection for event: 
+[2025-12-14 06:57:47] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:47] Starting metrics collection for event: 
+[2025-12-14 06:57:47] Metrics collection completed for event: 
+[2025-12-14 06:57:47] Metrics collection completed for event: 
+[2025-12-14 06:57:47] Metrics collection completed for event: 
+[2025-12-14 06:57:47] Metrics collection completed for event: 
+[2025-12-14 06:57:51] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:51] Starting metrics collection for event: 
+[2025-12-14 06:57:51] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:51] Starting metrics collection for event: 
+[2025-12-14 06:57:51] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:51] Starting metrics collection for event: 
+[2025-12-14 06:57:51] Metrics collection completed for event: 
+[2025-12-14 06:57:51] Metrics collection completed for event: 
+[2025-12-14 06:57:51] Metrics collection completed for event: 
+[2025-12-14 06:57:55] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:55] Starting metrics collection for event: 
+[2025-12-14 06:57:55] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:55] Starting metrics collection for event: 
+[2025-12-14 06:57:55] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:57:55] Starting metrics collection for event: 
+[2025-12-14 06:57:55] Metrics collection completed for event: 
+[2025-12-14 06:57:55] Metrics collection completed for event: 
+[2025-12-14 06:57:56] Metrics collection completed for event: 
+[2025-12-14 06:58:00] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:00] Starting metrics collection for event: 
+[2025-12-14 06:58:00] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:00] Starting metrics collection for event: 
+[2025-12-14 06:58:00] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:00] Starting metrics collection for event: 
+[2025-12-14 06:58:00] Metrics collection completed for event: 
+[2025-12-14 06:58:00] Metrics collection completed for event: 
+[2025-12-14 06:58:00] Metrics collection completed for event: 
+[2025-12-14 06:58:04] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:04] Starting metrics collection for event: 
+[2025-12-14 06:58:04] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:04] Starting metrics collection for event: 
+[2025-12-14 06:58:04] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:04] Starting metrics collection for event: 
+[2025-12-14 06:58:04] Metrics collection completed for event: 
+[2025-12-14 06:58:04] Metrics collection completed for event: 
+[2025-12-14 06:58:04] Metrics collection completed for event: 
+[2025-12-14 06:58:08] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:08] Starting metrics collection for event: 
+[2025-12-14 06:58:08] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:08] Starting metrics collection for event: 
+[2025-12-14 06:58:08] Metrics collection completed for event: 
+[2025-12-14 06:58:08] Metrics collection completed for event: 
+[2025-12-14 06:58:12] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:12] Starting metrics collection for event: 
+[2025-12-14 06:58:12] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:12] Starting metrics collection for event: 
+[2025-12-14 06:58:12] Metrics collection completed for event: 
+[2025-12-14 06:58:12] Metrics collection completed for event: 
+[2025-12-14 06:58:17] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:17] Starting metrics collection for event: 
+[2025-12-14 06:58:17] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:17] Starting metrics collection for event: 
+[2025-12-14 06:58:17] Metrics collection completed for event: 
+[2025-12-14 06:58:17] Metrics collection completed for event: 
+[2025-12-14 06:58:21] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:21] Starting metrics collection for event: 
+[2025-12-14 06:58:21] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:21] Starting metrics collection for event: 
+[2025-12-14 06:58:21] Metrics collection completed for event: 
+[2025-12-14 06:58:21] Metrics collection completed for event: 
+[2025-12-14 06:58:46] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:47] Starting metrics collection for event: 
+[2025-12-14 06:58:47] Metrics collection completed for event: 
+[2025-12-14 06:58:47] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 06:58:47] Starting metrics collection for event: 
+[2025-12-14 06:58:47] Metrics collection completed for event: 
+[2025-12-14 07:06:16] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:16] Starting metrics collection for event: 
+[2025-12-14 07:06:16] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:16] Starting metrics collection for event: 
+[2025-12-14 07:06:16] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:16] Starting metrics collection for event: 
+[2025-12-14 07:06:16] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:16] Starting metrics collection for event: 
+[2025-12-14 07:06:16] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:16] Starting metrics collection for event: 
+[2025-12-14 07:06:16] Metrics collection completed for event: 
+[2025-12-14 07:06:16] Metrics collection completed for event: 
+[2025-12-14 07:06:16] Metrics collection completed for event: 
+[2025-12-14 07:06:16] Metrics collection completed for event: 
+[2025-12-14 07:06:16] Metrics collection completed for event: 
+[2025-12-14 07:06:25] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:25] Starting metrics collection for event: 
+[2025-12-14 07:06:25] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:25] Starting metrics collection for event: 
+[2025-12-14 07:06:25] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:25] Starting metrics collection for event: 
+[2025-12-14 07:06:25] Metrics collection completed for event: 
+[2025-12-14 07:06:25] Metrics collection completed for event: 
+[2025-12-14 07:06:25] Metrics collection completed for event: 
+[2025-12-14 07:06:26] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:26] Starting metrics collection for event: 
+[2025-12-14 07:06:26] Metrics collection completed for event: 
+[2025-12-14 07:06:37] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:37] Starting metrics collection for event: 
+[2025-12-14 07:06:37] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:37] Starting metrics collection for event: 
+[2025-12-14 07:06:37] Metrics collection completed for event: 
+[2025-12-14 07:06:37] Metrics collection completed for event: 
+[2025-12-14 07:06:38] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:38] Starting metrics collection for event: 
+[2025-12-14 07:06:38] Metrics collection completed for event: 
+[2025-12-14 07:06:46] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:46] Starting metrics collection for event: 
+[2025-12-14 07:06:46] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:46] Starting metrics collection for event: 
+[2025-12-14 07:06:46] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:46] Starting metrics collection for event: 
+[2025-12-14 07:06:46] Metrics collection completed for event: 
+[2025-12-14 07:06:46] Metrics collection completed for event: 
+[2025-12-14 07:06:46] Metrics collection completed for event: 
+[2025-12-14 07:06:53] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:53] Starting metrics collection for event: 
+[2025-12-14 07:06:53] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:06:53] Starting metrics collection for event: 
+[2025-12-14 07:06:53] Metrics collection completed for event: 
+[2025-12-14 07:06:53] Metrics collection completed for event: 
+[2025-12-14 07:08:38] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:08:38] Starting metrics collection for event: 
+[2025-12-14 07:08:38] Metrics collection completed for event: 
+[2025-12-14 07:08:39] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:08:39] Starting metrics collection for event: 
+[2025-12-14 07:08:39] Metrics collection completed for event: 
+[2025-12-14 07:09:04] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:09:04] Starting metrics collection for event: 
+[2025-12-14 07:09:04] Metrics collection completed for event: 
+[2025-12-14 07:09:04] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:09:04] Starting metrics collection for event: 
+[2025-12-14 07:09:04] Metrics collection completed for event: 
+[2025-12-14 07:10:07] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:10:07] Starting metrics collection for event: 
+[2025-12-14 07:10:07] Metrics collection completed for event: 
+[2025-12-14 07:10:07] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:10:07] Starting metrics collection for event: 
+[2025-12-14 07:10:07] Metrics collection completed for event: 
+[2025-12-14 07:10:40] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:10:40] Starting metrics collection for event: 
+[2025-12-14 07:10:40] Metrics collection completed for event: 
+[2025-12-14 07:10:41] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:10:41] Starting metrics collection for event: 
+[2025-12-14 07:10:41] Metrics collection completed for event: 
+[2025-12-14 07:10:41] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:10:41] Starting metrics collection for event: 
+[2025-12-14 07:10:41] Metrics collection completed for event: 
+[2025-12-14 07:11:26] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:11:26] Starting metrics collection for event: 
+[2025-12-14 07:11:26] Metrics collection completed for event: 
+[2025-12-14 07:11:27] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:11:27] Starting metrics collection for event: 
+[2025-12-14 07:11:27] Metrics collection completed for event: 
+[2025-12-14 07:23:13] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:13] Starting metrics collection for event: 
+[2025-12-14 07:23:13] Metrics collection completed for event: 
+[2025-12-14 07:23:15] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:15] Starting metrics collection for event: 
+[2025-12-14 07:23:15] Metrics collection completed for event: 
+[2025-12-14 07:23:18] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:18] Starting metrics collection for event: 
+[2025-12-14 07:23:18] Metrics collection completed for event: 
+[2025-12-14 07:23:34] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:34] Starting metrics collection for event: 
+[2025-12-14 07:23:34] Metrics collection completed for event: 
+[2025-12-14 07:23:35] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:35] Starting metrics collection for event: 
+[2025-12-14 07:23:35] Metrics collection completed for event: 
+[2025-12-14 07:23:35] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:35] Starting metrics collection for event: 
+[2025-12-14 07:23:35] Metrics collection completed for event: 
+[2025-12-14 07:23:35] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:35] Starting metrics collection for event: 
+[2025-12-14 07:23:35] Metrics collection completed for event: 
+[2025-12-14 07:23:36] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:23:36] Starting metrics collection for event: 
+[2025-12-14 07:23:36] Metrics collection completed for event: 
+[2025-12-14 07:24:57] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:24:57] Starting metrics collection for event: 
+[2025-12-14 07:24:57] Metrics collection completed for event: 
+[2025-12-14 07:24:57] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:24:57] Starting metrics collection for event: 
+[2025-12-14 07:24:58] Metrics collection completed for event: 
+[2025-12-14 07:25:11] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:25:11] Starting metrics collection for event: 
+[2025-12-14 07:25:11] Metrics collection completed for event: 
+[2025-12-14 07:25:49] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:25:49] Starting metrics collection for event: 
+[2025-12-14 07:25:49] Metrics collection completed for event: 
+[2025-12-14 07:25:49] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:25:49] Starting metrics collection for event: 
+[2025-12-14 07:25:49] Metrics collection completed for event: 
+[2025-12-14 07:25:50] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:25:50] Starting metrics collection for event: 
+[2025-12-14 07:25:50] Metrics collection completed for event: 
+[2025-12-14 07:25:50] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:25:50] Starting metrics collection for event: 
+[2025-12-14 07:25:50] Metrics collection completed for event: 
+[2025-12-14 07:25:51] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:25:51] Starting metrics collection for event: 
+[2025-12-14 07:25:51] Metrics collection completed for event: 
+[2025-12-14 07:26:18] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:26:18] Starting metrics collection for event: 
+[2025-12-14 07:26:18] Metrics collection completed for event: 
+[2025-12-14 07:26:18] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:26:18] Starting metrics collection for event: 
+[2025-12-14 07:26:18] Metrics collection completed for event: 
+[2025-12-14 07:26:18] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 07:26:18] Starting metrics collection for event: 
+[2025-12-14 07:26:18] Metrics collection completed for event: 
+[2025-12-14 10:00:23] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 10:00:23] Starting metrics collection for event: 
+[2025-12-14 10:00:23] Metrics collection completed for event: 
+[2025-12-14 10:00:34] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 10:00:34] Starting metrics collection for event: 
+[2025-12-14 10:00:34] Metrics collection completed for event: 
+[2025-12-14 10:03:14] METRICS COLLECTION TRIGGERED - Event: , Tool: , Agent: 
+[2025-12-14 10:03:14] Starting metrics collection for event: 
+[2025-12-14 10:03:14] Metrics collection completed for event: 

@@ -16,3 +16,7 @@ Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_
 2025-12-11T13:10:33.041Z Discovered 5 agents
 2025-12-11T13:10:33.041Z Agent discovery complete. Registered agents:
 2025-12-11T13:10:55.779Z Server api-server started with PID 57330
+2025-12-12T14:02:47.539Z 
+Shutting down gracefully...
+2025-12-12T14:02:48.229Z Process api-server died unexpectedly
+2025-12-12T14:02:48.640Z Server closed

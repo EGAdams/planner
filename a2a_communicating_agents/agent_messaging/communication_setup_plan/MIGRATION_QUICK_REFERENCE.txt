@@ -1,0 +1,101 @@
+================================================================================
+AGENT COMMUNICATION SYSTEM - QUICK REFERENCE SHEET
+================================================================================
+
+SOURCE MACHINE PATH: /home/adamsl/planner
+DESTINATION: Your new directory (you choose)
+
+================================================================================
+COMPLETE FILE LIST - ALL PATHS
+================================================================================
+
+CORE SYSTEM FILES (17 files - REQUIRED)
+────────────────────────────────────────────────────────────────────────────
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/__init__.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/message_transport.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/websocket_transport.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/letta_transport.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/rag_board_transport.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/transport_factory.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/transport_manager.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/message_models.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/messenger.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/memory_backend.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/letta_memory.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/chromadb_memory.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/memory_factory.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/websocket_server.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/send_agent_message.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/send_hello.py
+
+RAG SYSTEM FILES (10 files - REQUIRED)
+────────────────────────────────────────────────────────────────────────────
+/home/adamsl/planner/rag_system/__init__.py
+/home/adamsl/planner/rag_system/core/__init__.py
+/home/adamsl/planner/rag_system/core/document_manager.py
+/home/adamsl/planner/rag_system/core/rag_engine.py
+/home/adamsl/planner/rag_system/core/context_provider.py
+/home/adamsl/planner/rag_system/models/__init__.py
+/home/adamsl/planner/rag_system/models/document.py
+/home/adamsl/planner/rag_system/utils/__init__.py
+/home/adamsl/planner/rag_system/utils/text_processing.py
+/home/adamsl/planner/rag_system/rag_tools.py
+
+OPTIONAL TEST FILES (4 files)
+────────────────────────────────────────────────────────────────────────────
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/tests/test_memory_system.py
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/tests/test_memory_system.sh
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/tests/test_agent_discovery.sh
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/tests/test_delegation.sh
+
+OPTIONAL DOCUMENTATION (3 files)
+────────────────────────────────────────────────────────────────────────────
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/unified_memory_system.md
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/ORCHESTRATOR_CHAT_GUIDE.md
+/home/adamsl/planner/a2a_communicating_agents/agent_messaging/a2a_project_roadmap.md
+
+================================================================================
+PYTHON DEPENDENCIES
+================================================================================
+websockets>=15.0.1
+letta-client>=1.3.1
+chromadb>=1.3.0
+pydantic>=2.12.5
+rich>=14.2.0
+
+================================================================================
+ENVIRONMENT VARIABLES
+================================================================================
+WEBSOCKET_URL=ws://localhost:3030
+LETTA_BASE_URL=http://localhost:8283
+LETTA_API_KEY=your_letta_api_key_here
+MEMORY_STORAGE_PATH=/path/to/storage
+
+================================================================================
+QUICK START COMMANDS
+================================================================================
+
+# 1. Create directories
+mkdir -p /your/new/path/agent_messaging/storage/chromadb
+mkdir -p /your/new/path/agent_messaging/tests
+mkdir -p /your/new/path/rag_system/core
+mkdir -p /your/new/path/rag_system/models
+mkdir -p /your/new/path/rag_system/utils
+mkdir -p /your/new/path/rag_system/storage
+
+# 2. Copy files (if on same machine)
+cp -r /home/adamsl/planner/a2a_communicating_agents/agent_messaging/* \
+      /your/new/path/agent_messaging/
+cp -r /home/adamsl/planner/rag_system/* \
+      /your/new/path/rag_system/
+
+# 3. Setup Python environment
+cd /your/new/path
+python3 -m venv venv
+source venv/bin/activate
+pip install websockets letta-client chromadb pydantic rich
+
+# 4. Test
+python agent_messaging/websocket_server.py
+
+================================================================================
