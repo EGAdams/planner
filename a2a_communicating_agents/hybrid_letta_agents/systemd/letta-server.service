@@ -1,0 +1,20 @@
+[Unit]
+Description=Letta Server with PostgreSQL Backend
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=adamsl
+WorkingDirectory=/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents
+Environment="PATH=/home/adamsl/planner/.venv/bin:/usr/bin:/bin"
+Environment="LETTA_PG_URI=postgresql+pg8000://letta:letta@localhost:5432/letta"
+EnvironmentFile=/home/adamsl/.env
+ExecStart=/home/adamsl/planner/.venv/bin/letta server
+Restart=on-failure
+RestartSec=10s
+StandardOutput=append:/tmp/letta_server.log
+StandardError=append:/tmp/letta_server.log
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,16 @@
+[Unit]
+Description=Letta Voice Demo Web Server
+After=network.target
+
+[Service]
+Type=simple
+User=adamsl
+WorkingDirectory=/home/adamsl/ottomator-agents/livekit-agent
+ExecStart=/usr/bin/python3 -m http.server 8888
+Restart=on-failure
+RestartSec=5s
+StandardOutput=append:/tmp/demo_server.log
+StandardError=append:/tmp/demo_server.log
+
+[Install]
+WantedBy=multi-user.target

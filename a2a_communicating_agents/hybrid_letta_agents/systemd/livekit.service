@@ -1,0 +1,16 @@
+[Unit]
+Description=LiveKit Server (Dev Mode)
+After=network.target
+
+[Service]
+Type=simple
+User=adamsl
+WorkingDirectory=/home/adamsl/ottomator-agents/livekit-agent
+ExecStart=/home/adamsl/ottomator-agents/livekit-agent/livekit-server --dev --bind 0.0.0.0
+Restart=on-failure
+RestartSec=5s
+StandardOutput=append:/tmp/livekit.log
+StandardError=append:/tmp/livekit.log
+
+[Install]
+WantedBy=multi-user.target

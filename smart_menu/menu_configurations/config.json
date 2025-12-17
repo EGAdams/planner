@@ -12,6 +12,18 @@
         "open_in_subprocess": false
     },
     {
+        "title": "🎤 Start Letta Voice System (All-in-One)",
+        "action": "bash /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/start_voice_system.sh",
+        "working_directory": "/home/adamsl/planner",
+        "open_in_subprocess": true
+    },
+    {
+        "title": "🔄 Restart Letta Voice System",
+        "action": "bash /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh",
+        "working_directory": "/home/adamsl/planner",
+        "open_in_subprocess": true
+    },
+    {
         "title": "A2A Communicating Agents",
         "submenu": [
             {

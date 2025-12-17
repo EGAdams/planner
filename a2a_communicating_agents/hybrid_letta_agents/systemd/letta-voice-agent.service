@@ -1,0 +1,19 @@
+[Unit]
+Description=Letta Voice Agent (LiveKit Integration)
+After=network.target livekit.service letta-server.service
+Requires=livekit.service letta-server.service
+
+[Service]
+Type=simple
+User=adamsl
+WorkingDirectory=/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents
+Environment="PATH=/home/adamsl/planner/.venv/bin:/usr/bin:/bin"
+EnvironmentFile=/home/adamsl/.env
+ExecStart=/home/adamsl/planner/.venv/bin/python letta_voice_agent.py dev
+Restart=on-failure
+RestartSec=10s
+StandardOutput=append:/tmp/voice_agent.log
+StandardError=append:/tmp/voice_agent.log
+
+[Install]
+WantedBy=multi-user.target
