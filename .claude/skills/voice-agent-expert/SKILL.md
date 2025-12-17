@@ -62,25 +62,76 @@ grep -E "LIVEKIT|DEEPGRAM|CARTESIA|OPENAI" /home/adamsl/ottomator-agents/livekit
 
 **Always use `dev` mode for local testing!**
 
-### Issue #2: Duplicate Processes (VERY COMMON)
+### Issue #2: Duplicate Processes (VERY COMMON - CAUSES AUDIO CUTTING)
 
 Multiple voice agents running simultaneously causes:
+- ❌ **Voice output cuts off intermittently** (most noticeable symptom)
 - ❌ WebSocket timeout errors
 - ❌ "room connection has timed out (signal)" errors
 - ❌ Agent joins but doesn't respond
+- ❌ Agents competing for audio, causing 1-2 second gaps in speech
 
-**Check for duplicates:**
+**Root Cause**: When multiple agents run, they compete for the audio stream. One agent might grab the microphone while the other is speaking, causing the cutoff.
+
+**AUTOMATIC DETECTION & FIXING** (Built into scripts as of Dec 2024):
+
+Both `start_voice_system.sh` and `restart_voice_system.sh` now automatically:
+- ✅ Detect duplicate voice agent processes
+- ✅ Kill all duplicates and start fresh (restart script)
+- ✅ Skip starting if exactly one agent is already running in DEV mode (start script)
+- ✅ Kill and restart if agent is running in wrong mode (START instead of DEV)
+
+**DUPLICATE PREVENTION SYSTEM** (New - Dec 2024):
+
+Comprehensive protection against creating duplicates:
+- ✅ **PID file locking**: `/tmp/letta_voice_agent.pid` tracks running instance
+- ✅ **Lock files**: `/tmp/letta_voice_agent.lock` prevents race conditions
+- ✅ **Pre-start checks**: `check_agent_running.sh` rejects if already running
+- ✅ **Safe starter**: `start_voice_agent_safe.sh` combines all protections
+- ✅ **Safe stopper**: `stop_voice_agent_safe.sh` cleans up PID/lock files
+- ✅ **Systemd service**: Optional production-grade single-instance guarantee
+
+See: `DUPLICATE_PREVENTION.md` for complete documentation
+
+**Manual check for duplicates:**
 ```bash
 ps aux | grep "letta_voice_agent" | grep -v grep
+# Should see ONLY ONE process with "dev" in command
 ```
 
-**If you see more than ONE process, kill all and restart:**
+**Manual fix if needed:**
 ```bash
 pkill -f "letta_voice_agent.py"
 /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/start_voice_system.sh
 ```
 
-### Issue #3: Token Expiration
+### Issue #3: Stale Livekit Rooms (NEWLY DISCOVERED - Dec 2024)
+
+**Symptoms**: "Waiting for agent to join..." that never resolves
+
+**Cause**: Livekit rooms get stuck with stale participant connections from previous sessions. When you try to restart Livekit, it can't shut down gracefully because it's "waiting for participants to exit."
+
+**Why this happens**: Browser disconnects don't always clean up properly, leaving ghost participants in rooms.
+
+**AUTOMATIC FIX** (Built into restart script as of Dec 2024):
+
+The `restart_voice_system.sh` now automatically detects stale rooms and force kills Livekit:
+```bash
+# Script automatically checks for:
+# "waiting for participants to exit" in logs
+# If found: force kills Livekit (-9) to bypass graceful shutdown
+```
+
+**Manual fix if needed:**
+```bash
+# Use the dedicated room cleaning script
+/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/clean_livekit_rooms.sh
+
+# Or restart script auto-handles it:
+/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh
+```
+
+### Issue #4: Token Expiration
 
 Tokens expire after ~6 hours. If you see connection errors:
 ```bash
@@ -192,9 +243,67 @@ Or send a single message:
 /home/adamsl/planner/.venv/bin/python3 hybrid_letta_persistent.py "Your message here"
 ```
 
+## Duplicate Prevention Tools (New - Dec 2024)
+
+### Manual Duplicate Prevention
+
+If you need to manually start the voice agent (not recommended):
+
+```bash
+# Check if safe to start (prevents duplicates)
+./check_agent_running.sh
+
+# Safe start with all protections
+./start_voice_agent_safe.sh
+
+# Safe stop with cleanup
+./stop_voice_agent_safe.sh
+```
+
+### Production: Systemd Service
+
+For production environments, use systemd for guaranteed single-instance:
+
+```bash
+# Install service
+sudo cp systemd/letta-voice-agent-safe.service /etc/systemd/system/
+sudo systemctl daemon-reload
+
+# Enable and start
+sudo systemctl enable letta-voice-agent-safe
+sudo systemctl start letta-voice-agent-safe
+
+# Status
+sudo systemctl status letta-voice-agent-safe
+```
+
+**Benefits:**
+- Systemd guarantees only one instance
+- Automatic restart on failure
+- Integrated logging
+- Clean PID management
+
+### Troubleshooting Duplicates
+
+If you still get duplicates despite protections:
+
+```bash
+# Check for stale PID/lock files
+ls -la /tmp/letta_voice_agent.*
+
+# Clean up stale files
+rm -f /tmp/letta_voice_agent.pid /tmp/letta_voice_agent.lock
+
+# Verify no processes running
+ps aux | grep "letta_voice_agent" | grep -v grep
+
+# Start fresh
+./start_voice_system.sh
+```
+
 ## Quick Start Scripts
 
-### Smart Startup (Idempotent - Safe to Run Anytime)
+### Smart Startup (Idempotent - Safe to Run Anytime, Now with Duplicate Prevention)
 
 Use this after a reboot or when you're not sure what's running:
 
@@ -203,10 +312,13 @@ Use this after a reboot or when you're not sure what's running:
 ```
 
 This script:
-- ✓ Checks each service and only starts what's NOT running
-- ✓ Safe to run multiple times (idempotent)
-- ✓ Perfect for after reboot or fresh start
-- ✓ Detects and fixes voice agents running in wrong mode
+- ✅ Checks each service and only starts what's NOT running
+- ✅ Safe to run multiple times (idempotent)
+- ✅ Perfect for after reboot or fresh start
+- ✅ **AUTOMATIC DUPLICATE DETECTION**: Detects if multiple voice agents are running
+- ✅ Kills duplicates automatically (fixes audio cutting issue)
+- ✅ Detects and fixes voice agents running in wrong mode (START vs DEV)
+- ✅ Skips starting if exactly one agent is already running in correct DEV mode
 
 ### Clean Restart (When Things Are Broken)
 
@@ -217,9 +329,11 @@ Use this when you have connection issues or duplicate processes:
 ```
 
 This script:
-- Kills ALL existing voice agents and Livekit instances
-- Starts everything fresh from scratch
-- Use when you have timeout errors or conflicts
+- ✅ **DUPLICATE DETECTION**: Reports how many duplicate agents are running
+- ✅ Kills ALL existing voice agents and Livekit instances
+- ✅ Force kills if graceful shutdown fails
+- ✅ Starts everything fresh from scratch
+- ✅ Use when you have timeout errors, audio cutting, or conflicts
 
 ### Quick Aliases
 
@@ -260,6 +374,61 @@ curl http://localhost:7880/
 ```
 
 ## Troubleshooting
+
+### Problem: Voice Output Cuts Off / Audio Stops Intermittently
+
+**Symptoms:**
+- Agent voice output cuts off for 1-2 seconds during speech
+- Audio comes back but keeps cutting off
+- Happens occasionally, not every time
+
+**Root Causes & Fixes:**
+
+1. **Duplicate Voice Agents (MOST COMMON - 90% of cases)**
+   ```bash
+   # Check for duplicates
+   ps aux | grep "letta_voice_agent" | grep -v grep | wc -l
+   # Should return 1, not 2 or more
+
+   # If more than 1, the scripts will auto-fix:
+   /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh
+   ```
+
+   **Why this happens**: Multiple agents compete for the audio stream. When one grabs control, the other stops outputting, causing gaps.
+
+2. **Aggressive VAD (Voice Activity Detection) Settings**
+
+   The VAD may be too sensitive and detecting its own voice output as user speech. This was fixed in Dec 2024:
+   - `min_silence_duration` increased from 500ms to 800ms
+   - `speech_pad_ms` increased from 30ms to 300ms
+   - `min_speech_duration` increased to 300ms
+
+   Location: `letta_voice_agent.py:424-430`
+
+3. **Echo/Feedback Loop**
+
+   If using speakers instead of headphones, the microphone picks up the agent's voice. Solutions:
+   - Use headphones for testing
+   - Reduce speaker volume
+   - Add echo cancellation (optional):
+     ```bash
+     # Add to /home/adamsl/ottomator-agents/livekit-agent/.env
+     LIVEKIT_AUDIO_ECHO_CANCELLATION=true
+     LIVEKIT_AUDIO_NOISE_SUPPRESSION=true
+     ```
+
+**Quick Fix Workflow:**
+```bash
+# 1. Kill all duplicates
+pkill -f "letta_voice_agent.py"
+
+# 2. Restart with automatic duplicate detection
+./start_voice_system.sh
+
+# 3. Verify only ONE agent running
+ps aux | grep "letta_voice_agent" | grep -v grep
+# Should see exactly 1 process with "dev" in command
+```
 
 ### Problem: "room connection has timed out (signal)"
 
@@ -320,6 +489,21 @@ echo "DEEPGRAM_API_KEY set: $([ -n \"$DEEPGRAM_API_KEY\" ] && echo 'yes' || echo
 3. Check browser console for WebRTC errors
 4. Ensure microphone permissions are granted
 
+### Problem: "Waiting for agent to join..." (never resolves)
+
+**Cause**: Stale Livekit rooms with ghost participants
+
+```bash
+# Automatic fix - restart script detects and handles this:
+/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh
+
+# Or use dedicated room cleaner:
+/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/clean_livekit_rooms.sh
+
+# Check if Livekit is stuck:
+grep "waiting for participants to exit" /tmp/livekit.log
+```
+
 ### Problem: "Agent joins but doesn't respond"
 
 ```bash
@@ -329,7 +513,7 @@ curl -s http://localhost:8283/v1/agents | python3 -m json.tool | head -20
 # Check voice agent logs (run in foreground to see output)
 cd /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents
 export $(grep -v '^#' /home/adamsl/ottomator-agents/livekit-agent/.env | xargs)
-/home/adamsl/planner/.venv/bin/python3 letta_voice_agent.py start
+/home/adamsl/planner/.venv/bin/python3 letta_voice_agent.py dev
 # Watch for errors in terminal
 ```
 
@@ -414,14 +598,18 @@ Debug steps:
 ### Critical Rules
 1. **ALWAYS use `dev` mode, NEVER `start` mode** for local testing
 2. **ONLY ONE voice agent process** should be running at a time
-3. **Check for duplicates FIRST** when troubleshooting timeouts
-4. **Use start_voice_system.sh** after reboots (idempotent)
-5. **Use restart_voice_system.sh** when things are broken (nuclear)
+3. **Check for duplicates FIRST** when troubleshooting audio cutting or timeouts
+4. **Scripts auto-detect duplicates** as of Dec 2024 - no manual checking needed
+5. **Use start_voice_system.sh** after reboots (idempotent, auto-detects issues)
+6. **Use restart_voice_system.sh** when things are broken (nuclear restart)
 
 ### Common Error → Solution Mapping
 
 | Error | Root Cause | Fix |
 |-------|------------|-----|
+| **Voice cuts off intermittently** | **Duplicate voice agents (MOST COMMON)** | **Scripts auto-fix, or manual: `pkill -f letta_voice_agent` → restart** |
+| **"Waiting for agent to join..."** | **Stale Livekit rooms (NEWLY DISCOVERED)** | **Restart script auto-detects and force kills, or use clean_livekit_rooms.sh** |
+| Voice cuts off occasionally | Aggressive VAD or echo feedback | Updated VAD settings (Dec 2024), use headphones |
 | "room connection has timed out (signal)" | Voice agent in START mode or duplicates | Kill all → restart with DEV mode |
 | "Agent joins but no response" | Duplicate voice agents fighting | `pkill -f letta_voice_agent` → restart |
 | "Permission denied" / Token errors | Expired token (>6 hours old) | Generate fresh token |
@@ -433,11 +621,17 @@ Debug steps:
 # Start everything (safe, idempotent)
 /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/start_voice_system.sh
 
-# Nuclear restart (when broken)
+# Nuclear restart (when broken, auto-handles stale rooms)
 /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh
+
+# Clean stale Livekit rooms (NEW - Dec 2024)
+/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/clean_livekit_rooms.sh
 
 # Check for duplicates (most common issue)
 ps aux | grep "letta_voice_agent" | grep -v grep
+
+# Check if Livekit is stuck with stale rooms
+grep "waiting for participants to exit" /tmp/livekit.log
 
 # Generate fresh token
 /home/adamsl/planner/.venv/bin/python3 /home/adamsl/planner/.claude/skills/voice-agent-expert/scripts/generate_token.py
@@ -451,13 +645,17 @@ ps aux | grep "letta_voice_agent" | grep -v grep
 This skill provides complete guidance for the Letta Voice Agent system:
 
 - **Architecture**: Livekit + Letta + Deepgram + TTS
-- **Quick Start**: Use `start_voice_system.sh` (idempotent)
+- **Quick Start**: Use `start_voice_system.sh` (idempotent, auto-detects duplicates)
 - **Alternative**: Use `chat_with_letta.py` for text-only chat
 - **Critical Knowledge**: DEV mode vs START mode difference
-- **Most Common Issues**: Duplicate processes, wrong mode, expired tokens
+- **Most Common Issues**:
+  1. **Audio cutting** - duplicate voice agents (auto-fixed by scripts as of Dec 2024)
+  2. Wrong mode (START instead of DEV)
+  3. Expired tokens (>6 hours)
+  4. Aggressive VAD settings (fixed Dec 2024)
 
 The voice system requires all components running:
 1. Letta server (port 8283)
 2. Livekit server (port 7880)
-3. Voice agent worker **in DEV mode** (not START)
+3. **Exactly ONE** voice agent worker **in DEV mode** (not START)
 4. Browser with microphone access and fresh token (<6 hours old)

@@ -59,20 +59,57 @@ ensure_http_server() {
 
 echo -e "${YELLOW}[1/7] Stopping existing processes...${NC}"
 
-# Kill voice agents
-if pgrep -f "letta_voice_agent.py" > /dev/null; then
-    echo "  Stopping voice agents..."
-    pkill -f "letta_voice_agent.py" || true
-    sleep 1
+# Use safe stopper to clean up PID/lock files
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ -f "$SCRIPT_DIR/stop_voice_agent_safe.sh" ]; then
+    echo "  Using safe stopper (cleans up PID and lock files)..."
+    "$SCRIPT_DIR/stop_voice_agent_safe.sh" 2>&1 | sed 's/^/  /'
 else
-    echo "  No voice agents running"
+    # Fallback to manual cleanup
+    AGENT_COUNT=$(ps aux | grep "letta_voice_agent.py" | grep -v grep | wc -l)
+
+    if [ "$AGENT_COUNT" -eq 0 ]; then
+        echo "  No voice agents running"
+    elif [ "$AGENT_COUNT" -eq 1 ]; then
+        echo "  Stopping 1 voice agent..."
+        pkill -f "letta_voice_agent.py" || true
+        sleep 1
+    else
+        echo -e "  ${RED}🚨 WARNING: $AGENT_COUNT duplicate voice agents detected!${NC}"
+        echo "  This causes audio cutting and conflicts. Killing all..."
+        pkill -f "letta_voice_agent.py" || true
+        sleep 2
+        REMAINING=$(ps aux | grep "letta_voice_agent.py" | grep -v grep | wc -l)
+        if [ "$REMAINING" -gt 0 ]; then
+            echo "  Force killing remaining processes..."
+            pkill -9 -f "letta_voice_agent.py" || true
+            sleep 1
+        fi
+        echo -e "  ${GREEN}✓ All $AGENT_COUNT duplicate agents removed${NC}"
+    fi
+
+    # Manual cleanup of PID and lock files
+    rm -f /tmp/letta_voice_agent.pid /tmp/letta_voice_agent.lock 2>/dev/null || true
 fi
 
-# Kill Livekit server
+# Kill Livekit server (force kill if stuck with stale rooms)
 if pgrep -f "livekit-server" > /dev/null; then
-    echo "  Stopping Livekit server..."
-    pkill -f "livekit-server" || true
-    sleep 1
+    # Check if Livekit is stuck with stale rooms
+    if grep -q "waiting for participants to exit" /tmp/livekit.log 2>/dev/null; then
+        echo -e "  ${YELLOW}⚠️  Livekit stuck with stale rooms - force killing...${NC}"
+        pkill -9 -f "livekit-server" || true
+        sleep 1
+    else
+        echo "  Stopping Livekit server..."
+        pkill -f "livekit-server" || true
+        sleep 2
+        # Verify it stopped
+        if pgrep -f "livekit-server" > /dev/null; then
+            echo "  Force killing Livekit..."
+            pkill -9 -f "livekit-server" || true
+            sleep 1
+        fi
+    fi
 else
     echo "  No Livekit server running"
 fi

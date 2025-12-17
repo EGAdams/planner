@@ -29,9 +29,11 @@ The voice agent has two modes that behave completely differently:
 
 ### Most Common Issues
 
-1. **Timeout errors** → Voice agent in START mode or duplicate processes
-2. **Agent doesn't respond** → Multiple voice agents running simultaneously
-3. **Connection fails** → Expired token (>6 hours old)
+1. **Voice cuts off intermittently** → Duplicate voice agents (auto-fixed by scripts as of Dec 2024)
+2. **"Waiting for agent to join..."** → Stale Livekit rooms (auto-fixed by restart script as of Dec 2024)
+3. **Timeout errors** → Voice agent in START mode or duplicate processes
+4. **Agent doesn't respond** → Multiple voice agents running simultaneously
+5. **Connection fails** → Expired token (>6 hours old)
 
 ## Quick Start
 
@@ -57,19 +59,26 @@ Use this skill when:
 
 ## Emergency Fixes
 
-### Duplicate Processes
+### Duplicate Processes (Auto-Fixed as of Dec 2024)
+
+**NEW**: Scripts now automatically detect and kill duplicate processes!
+
 ```bash
+# Check for duplicates (scripts do this automatically now)
 ps aux | grep "letta_voice_agent" | grep -v grep
 # Should see ONLY ONE with "dev"
 
-# If multiple or wrong mode:
-pkill -f "letta_voice_agent.py"
+# Start script auto-detects and fixes duplicates
 /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/start_voice_system.sh
+
+# Restart script reports and kills all duplicates
+/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh
 ```
 
-### System Restart
+### Manual Kill (if needed)
 ```bash
-/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh
+pkill -f "letta_voice_agent.py"
+/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/start_voice_system.sh
 ```
 
 ## System Architecture
@@ -91,8 +100,9 @@ Letta Server (8283) → OpenAI/Cartesia TTS → User Hears Response
 
 | Script | Purpose | When to Use |
 |--------|---------|-------------|
-| `start_voice_system.sh` | Smart startup, checks what's running | After reboot, not sure what's running |
-| `restart_voice_system.sh` | Nuclear restart, kills everything | When things are broken, duplicates exist |
+| `start_voice_system.sh` | Smart startup with **auto-duplicate detection**, checks what's running, skips if already running correctly | After reboot, not sure what's running |
+| `restart_voice_system.sh` | Nuclear restart with **duplicate detection** and **stale room auto-cleanup**, kills everything | When things are broken, audio cutting, "waiting for agent", duplicates exist |
+| `clean_livekit_rooms.sh` | **NEW (Dec 2024)**: Force kills Livekit to clear stale rooms with ghost participants | When "waiting for agent to join" never resolves |
 | `diagnose_voice_system.py` | Automated diagnostics | Check system health |
 | `generate_token.py` | Create connection token | Token expired, new session |
 
@@ -110,9 +120,26 @@ cd /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/agents
 This skill was created and refined based on real troubleshooting sessions that discovered:
 
 1. The critical difference between START and DEV modes
-2. How duplicate processes cause WebSocket timeouts
+2. How duplicate processes cause WebSocket timeouts **and audio cutting**
 3. Token expiration after ~6 hours
 4. The importance of idempotent startup scripts
 5. Common error patterns and their root causes
+6. **NEW (Dec 2024)**: Automatic duplicate detection to prevent audio cutting
+7. **NEW (Dec 2024)**: Improved VAD settings to reduce false triggers (fixed parameter names)
+8. **NEW (Dec 2024)**: Stale Livekit room detection and automatic force-kill cleanup
+9. **NEW (Dec 2024)**: Comprehensive duplicate prevention system with PID/lock files
+10. Scripts now intelligently handle duplicate agents and stale rooms without manual intervention
+
+### Duplicate Prevention System (Dec 2024)
+
+Complete protection against duplicate agents:
+- **PID file locking** (`/tmp/letta_voice_agent.pid`)
+- **Lock files during startup** (`/tmp/letta_voice_agent.lock`)
+- **Pre-start checks** (`check_agent_running.sh`)
+- **Safe starter wrapper** (`start_voice_agent_safe.sh`)
+- **Safe stopper with cleanup** (`stop_voice_agent_safe.sh`)
+- **Systemd service** (optional, production-grade)
+
+See `DUPLICATE_PREVENTION.md` for complete documentation.
 
 All troubleshooting knowledge is captured in SKILL.md and QUICK_REFERENCE.md.

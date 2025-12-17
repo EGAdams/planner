@@ -1,0 +1,51 @@
+[Unit]
+Description=Letta Voice Agent (with duplicate prevention)
+Documentation=https://github.com/letta-ai/letta
+After=network.target postgresql.service letta-server.service livekit.service
+Requires=livekit.service
+PartOf=letta-voice-system.target
+
+[Service]
+Type=simple
+User=adamsl
+Group=adamsl
+WorkingDirectory=/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents
+
+# Environment
+EnvironmentFile=/home/adamsl/ottomator-agents/livekit-agent/.env
+EnvironmentFile=-/home/adamsl/planner/.env
+
+# Prevent duplicates - systemd guarantees only one instance
+PIDFile=/tmp/letta_voice_agent.pid
+
+# Start command
+ExecStartPre=/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/check_agent_running.sh
+ExecStart=/home/adamsl/planner/.venv/bin/python3 letta_voice_agent.py dev
+
+# Stop command
+ExecStop=/bin/kill -TERM $MAINPID
+ExecStopPost=/bin/rm -f /tmp/letta_voice_agent.pid /tmp/letta_voice_agent.lock
+
+# Restart policy
+Restart=on-failure
+RestartSec=10s
+StartLimitInterval=60s
+StartLimitBurst=3
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Logging
+StandardOutput=append:/tmp/voice_agent.log
+StandardError=append:/tmp/voice_agent.log
+SyslogIdentifier=letta-voice-agent
+
+# Security (optional - uncomment for production)
+# PrivateTmp=yes
+# NoNewPrivileges=yes
+# ProtectSystem=strict
+# ProtectHome=read-only
+
+[Install]
+WantedBy=multi-user.target letta-voice-system.target

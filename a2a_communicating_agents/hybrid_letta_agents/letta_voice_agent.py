@@ -421,8 +421,14 @@ async def entrypoint(ctx: JobContext):
         # Text-to-Speech: Cartesia or OpenAI
         tts=tts,
 
-        # Voice Activity Detection: Silero
-        vad=silero.VAD.load(),
+        # Voice Activity Detection: Silero with custom settings
+        # Adjusted to reduce false positives and prevent cutting off during speech
+        vad=silero.VAD.load(
+            min_speech_duration=0.1,          # Require 100ms of speech before triggering (default: 0.05)
+            min_silence_duration=0.8,         # Wait 800ms of silence before stopping (default: 0.55)
+            prefix_padding_duration=0.6,      # Add 600ms padding before speech (default: 0.5)
+            activation_threshold=0.5,         # Voice detection sensitivity (default: 0.5)
+        ),
     )
 
     # Create assistant instance
