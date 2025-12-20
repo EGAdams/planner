@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Letta Voice Agent - Multi-Agent Selector</title>
+    <script type="module">
+        import { Room, RoomEvent, ConnectionState } from 'https://esm.sh/livekit-client@2.9.7';
+
+        // Configuration
+        const PROXY_URL = 'http://localhost:9000';
+        const LIVEKIT_URL = 'ws://localhost:7880';
+
+        // Token for dev mode (valid for 24 hours from 2025-12-19 22:56:26 UTC)
+        // NOTE: This token will expire. Regenerate with: ./update_voice_token.sh
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2MTg0OTg2LCJleHAiOjE3NjYyNzEzODZ9.Ec4P2rx6MdMth9J9nbnvUbhwUBRtqnao5NnjpiYPwb4';
+
+        let room;
+        let selectedAgent = null;
+        let sessionId = Math.random().toString(36).substring(7);  // Unique session ID
+        const status = document.getElementById('status');
+        const agentSelector = document.getElementById('agentSelector');
+        const agentInfo = document.getElementById('agentInfo');
+        const connectBtn = document.getElementById('connectBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const searchInput = document.getElementById('searchInput');
+        const agentList = document.getElementById('agentList');
+
+        // Generate a room name that includes the session ID
+        // This ensures each agent switch gets a clean room
+        function getRoomName() {
+            return `agent-${selectedAgent.id.substring(0, 8)}-${sessionId}`;
+        }
+
+        // Load agents on page load
+        window.addEventListener('DOMContentLoaded', loadAgents);
+
+        async function loadAgents() {
+            try {
+                status.textContent = 'Loading agents...';
+                status.className = '';
+
+                const response = await fetch(`${PROXY_URL}/api/v1/agents/`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch agents: ${response.statusText}`);
+                }
+
+                const agents = await response.json();
+                console.log(`Loaded ${agents.length} agents`);
+
+                // Store agents globally for filtering
+                window.allAgents = agents;
+
+                displayAgents(agents);
+                status.textContent = `Loaded ${agents.length} agents. Select one to begin.`;
+                status.className = 'info';
+
+            } catch (err) {
+                status.textContent = 'Error loading agents: ' + err.message;
+                status.className = 'error';
+                console.error('Error loading agents:', err);
+                agentList.innerHTML = '<div class="error">Failed to load agents. Make sure Letta server is running on port 8283.</div>';
+            }
+        }
+
+        function displayAgents(agents) {
+            agentList.innerHTML = '';
+
+            if (agents.length === 0) {
+                agentList.innerHTML = '<div class="info">No agents found.</div>';
+                return;
+            }
+
+            agents.forEach(agent => {
+                const agentCard = document.createElement('div');
+                agentCard.className = 'agent-card';
+                agentCard.onclick = () => selectAgent(agent);
+
+                const name = agent.name || 'Unnamed Agent';
+                const id = agent.id;
+                const created = agent.created_at ? new Date(agent.created_at).toLocaleDateString() : 'Unknown';
+
+                // Get model info if available
+                let modelInfo = '';
+                if (agent.llm_config && agent.llm_config.model) {
+                    modelInfo = `<div class="agent-model">Model: ${agent.llm_config.model}</div>`;
+                }
+
+                agentCard.innerHTML = `
+                    <div class="agent-name">${name}</div>
+                    <div class="agent-id">${id}</div>
+                    <div class="agent-created">Created: ${created}</div>
+                    ${modelInfo}
+                `;
+
+                agentList.appendChild(agentCard);
+            });
+        }
+
+        function selectAgent(agent) {
+            selectedAgent = agent;
+
+            // Highlight selected card
+            document.querySelectorAll('.agent-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.agent-card').classList.add('selected');
+
+            // Show agent info
+            agentInfo.style.display = 'block';
+            agentInfo.innerHTML = `
+                <h3>Selected Agent</h3>
+                <div><strong>Name:</strong> ${agent.name || 'Unnamed'}</div>
+                <div><strong>ID:</strong> ${agent.id}</div>
+                <div><strong>Created:</strong> ${agent.created_at ? new Date(agent.created_at).toLocaleString() : 'Unknown'}</div>
+                ${agent.llm_config ? `
+                    <div><strong>Model:</strong> ${agent.llm_config.model || 'Unknown'}</div>
+                    ${agent.llm_config.model_endpoint_type ? `<div><strong>Provider:</strong> ${agent.llm_config.model_endpoint_type}</div>` : ''}
+                ` : ''}
+                ${agent.embedding_config ? `<div><strong>Embeddings:</strong> ${agent.embedding_config.embedding_model || 'Unknown'}</div>` : ''}
+            `;
+
+            // If already connected, disconnect and reconnect with new agent in new room
+            if (room && room.state === 'connected') {
+                status.textContent = 'Switching agent...';
+                status.className = 'info';
+                console.log(`📤 Switching from old agent to ${agent.name}...`);
+                window.disconnect().then(() => {
+                    console.log('✅ Disconnected from old agent room, now connecting to new one...');
+                    setTimeout(() => window.connect(), 1000);  // Give backend time to clean up
+                });
+            } else {
+                connectBtn.disabled = false;
+                status.textContent = `Agent "${agent.name}" selected. Click Connect to start voice chat.`;
+                status.className = 'info';
+            }
+        }
+
+        window.connect = async function() {
+            if (!selectedAgent) {
+                status.textContent = 'Please select an agent first!';
+                status.className = 'error';
+                return;
+            }
+
+            try {
+                status.textContent = 'Connecting...';
+                status.className = '';
+                connectBtn.disabled = true;
+
+                // Create room with options
+                room = new Room({
+                    adaptiveStream: true,
+                    dynacast: true,
+                    disconnectOnPageLeave: true,
+                });
+
+                // Add event listeners
+                room.on(RoomEvent.SignalConnected, () => {
+                    console.log('✅ Signal connection established');
+                });
+
+                room.on(RoomEvent.Connected, () => {
+                    console.log('✅ Room connected successfully');
+                    status.textContent = 'Connected! Waiting for agent...';
+                    status.className = 'connected';
+                });
+
+                room.on(RoomEvent.Reconnecting, () => {
+                    console.log('🔄 Reconnecting...');
+                    status.textContent = 'Reconnecting...';
+                });
+
+                room.on(RoomEvent.Disconnected, (reason) => {
+                    console.log('❌ Disconnected:', reason);
+                    connectBtn.disabled = false;
+                    disconnectBtn.disabled = true;
+                });
+
+                room.on(RoomEvent.ConnectionStateChanged, (state) => {
+                    console.log('Connection state:', state);
+                });
+
+                room.on('participantConnected', (participant) => {
+                    console.log('👤 Participant connected:', participant.identity);
+                    status.textContent = `Agent "${selectedAgent.name}" connected! Start speaking...`;
+                    status.className = 'connected';
+                });
+
+                room.on('trackSubscribed', (track, publication, participant) => {
+                    console.log('🎵 Track subscribed:', track.kind, 'from', participant.identity);
+                    if (track.kind === 'audio') {
+                        const audioElement = track.attach();
+                        document.body.appendChild(audioElement);
+                        console.log('🔊 Audio element attached');
+                    }
+                });
+
+                room.on('trackUnsubscribed', (track) => {
+                    console.log('Track unsubscribed:', track.kind);
+                    track.detach();
+                });
+
+                // Send agent selection to voice system via data channel after connecting
+                room.on(RoomEvent.Connected, () => {
+                    const encoder = new TextEncoder();
+                    const data = encoder.encode(JSON.stringify({
+                        type: 'agent_selection',
+                        agent_id: selectedAgent.id,
+                        agent_name: selectedAgent.name
+                    }));
+                    room.localParticipant.publishData(data, { reliable: true });
+                    console.log('📤 Sent agent selection:', selectedAgent.id);
+                });
+
+                // Get the dynamic room name for this agent
+                const roomName = getRoomName();
+                console.log('🔗 Connecting to room:', roomName, 'on', LIVEKIT_URL);
+
+                // Connect with timeout
+                const connectPromise = room.connect(LIVEKIT_URL, TOKEN, roomName, {
+                    autoSubscribe: true,
+                });
+
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Connection timeout after 15s')), 15000)
+                );
+
+                await Promise.race([connectPromise, timeoutPromise]);
+
+                console.log('✅ Connected to room:', room.name);
+                console.log('🎤 Enabling microphone...');
+                await room.localParticipant.setMicrophoneEnabled(true);
+
+                // Check for existing participants
+                const existingParticipants = Array.from(room.remoteParticipants.values());
+                console.log('👥 Existing participants:', existingParticipants.length);
+
+                if (existingParticipants.length > 0) {
+                    status.textContent = `Agent "${selectedAgent.name}" connected! Start speaking...`;
+                    status.className = 'connected';
+                } else {
+                    status.textContent = 'Connected! Waiting for agent to join...';
+                    status.className = 'connected';
+                }
+
+                disconnectBtn.disabled = false;
+                console.log('✅ Setup complete - ready to talk');
+
+            } catch (err) {
+                status.textContent = 'Error: ' + err.message;
+                status.className = 'error';
+                connectBtn.disabled = false;
+                console.error('❌ Connection error:', err);
+            }
+        };
+
+        window.disconnect = async function() {
+            if (room) {
+                try {
+                    // Publish room cleanup message to notify backend
+                    const encoder = new TextEncoder();
+                    const cleanupData = encoder.encode(JSON.stringify({
+                        type: 'room_cleanup',
+                        timestamp: new Date().toISOString()
+                    }));
+                    await room.localParticipant.publishData(cleanupData, { reliable: true });
+                    console.log('📤 Sent room cleanup notification');
+                } catch (e) {
+                    console.error('Error sending cleanup notification:', e);
+                }
+
+                // Give backend a moment to process cleanup
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                await room.disconnect();
+                room = null;
+                status.textContent = 'Disconnected';
+                status.className = '';
+                connectBtn.disabled = selectedAgent ? false : true;
+                disconnectBtn.disabled = true;
+                console.log('Disconnected from room');
+            }
+        };
+
+        window.refreshAgents = function() {
+            loadAgents();
+        };
+
+        window.filterAgents = function() {
+            const searchTerm = searchInput.value.toLowerCase();
+            if (!window.allAgents) return;
+
+            const filtered = window.allAgents.filter(agent => {
+                const name = (agent.name || '').toLowerCase();
+                const id = (agent.id || '').toLowerCase();
+                return name.includes(searchTerm) || id.includes(searchTerm);
+            });
+
+            displayAgents(filtered);
+        };
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #status {
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-size: 0.95em;
+        }
+
+        #status.connected {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        #status.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        #status.info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #connectBtn {
+            background: #28a745;
+            color: white;
+        }
+
+        #connectBtn:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        #disconnectBtn {
+            background: #dc3545;
+            color: white;
+        }
+
+        #disconnectBtn:hover:not(:disabled) {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        #refreshBtn {
+            background: #17a2b8;
+            color: white;
+        }
+
+        #refreshBtn:hover {
+            background: #138496;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .agent-list-container {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .agent-list-container h2 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.3em;
+        }
+
+        #agentList {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .agent-card {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .agent-card:hover {
+            border-color: #667eea;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+
+        .agent-card.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .agent-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .agent-id {
+            font-size: 0.85em;
+            color: #666;
+            font-family: monospace;
+            margin-bottom: 5px;
+        }
+
+        .agent-created {
+            font-size: 0.85em;
+            color: #888;
+        }
+
+        .agent-model {
+            font-size: 0.85em;
+            color: #667eea;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        #agentInfo {
+            display: none;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        #agentInfo h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        #agentInfo > div {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        #agentInfo strong {
+            color: #333;
+        }
+
+        #agentInfo ul {
+            margin-top: 5px;
+            margin-left: 20px;
+        }
+
+        .instructions {
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+
+        .instructions h3 {
+            margin-bottom: 10px;
+            color: #856404;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎙️ Letta Voice Agent</h1>
+            <div class="subtitle">Multi-Agent Voice Chat System</div>
+        </header>
+
+        <main>
+            <div class="left-panel">
+                <div id="status">Loading...</div>
+
+                <div class="controls">
+                    <button id="connectBtn" onclick="connect()" disabled>🔗 Connect</button>
+                    <button id="disconnectBtn" onclick="disconnect()" disabled>⏹️ Disconnect</button>
+                    <button id="refreshBtn" onclick="refreshAgents()">🔄 Refresh Agents</button>
+                </div>
+
+                <div class="agent-list-container">
+                    <h2>Available Agents</h2>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search agents by name or ID..." oninput="filterAgents()">
+                    </div>
+                    <div id="agentList">
+                        <div class="info">Loading agents...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div id="agentInfo">
+                    <!-- Agent details will be shown here when selected -->
+                </div>
+
+                <div class="instructions">
+                    <h3>📋 Instructions</h3>
+                    <ol>
+                        <li>Make sure the voice system is running:<br>
+                            <code>./start_voice_system.sh</code>
+                        </li>
+                        <li>Select an agent from the list</li>
+                        <li>Click <strong>Connect</strong></li>
+                        <li>Allow microphone access when prompted</li>
+                        <li>Wait for the agent to join</li>
+                        <li>Start speaking!</li>
+                    </ol>
+                    <p style="margin-top: 15px;">
+                        <strong>Tip:</strong> Check the browser console (F12) for detailed logs.
+                    </p>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -7,6 +7,8 @@ import sys
 import time
 from pathlib import Path
 
+LETTA_VOICE_AGENT_EXE="letta_voice_agent_groq.py"
+
 def check_port(port: int) -> bool:
     """Check if a port is listening."""
     result = subprocess.run(
@@ -92,7 +94,7 @@ def main():
     os.chdir("/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents")
     os.execv(
         "/home/adamsl/planner/.venv/bin/python3",
-        ["/home/adamsl/planner/.venv/bin/python3", "letta_voice_agent.py", "start"]
+        ["/home/adamsl/planner/.venv/bin/python3", LETTA_VOICE_AGENT_EXE, "start"]
     )
 
 if __name__ == "__main__":

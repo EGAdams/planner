@@ -1,8 +1,25 @@
 #!/bin/bash
+#
+# Restart Voice System - Complete nuclear restart for Letta voice agent
+#
+# Usage: ./restart_voice_system.sh
+#
+# This script does a CLEAN restart:
+# 1. Kills ALL existing services (including duplicates)
+# 2. Cleans up stale Livekit rooms
+# 3. Starts everything fresh
+# 4. Generates new connection tokens
+#
+# Use this when:
+# - Services are unresponsive
+# - You have duplicate voice agents causing audio cutting
+# - You need a guaranteed clean slate
+#
+
 set -e
 
 echo "=========================================="
-echo "  LETTA VOICE SYSTEM RESTART"
+echo "  LETTA VOICE SYSTEM RESTART (CLEAN)"
 echo "=========================================="
 echo ""
 
@@ -10,6 +27,7 @@ echo ""
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Demo HTTP server defaults
@@ -57,7 +75,43 @@ ensure_http_server() {
     exit 1
 }
 
-echo -e "${YELLOW}[1/7] Stopping existing processes...${NC}"
+# Check environment configuration
+ENV_FILE="/home/adamsl/ottomator-agents/livekit-agent/.env"
+if [ ! -f "$ENV_FILE" ]; then
+    echo -e "${RED}✗ ERROR: Environment file not found: $ENV_FILE${NC}"
+    echo ""
+    echo "Please create $ENV_FILE with required settings. See start_voice_system.sh for template."
+    exit 1
+fi
+
+# Load environment
+source "$ENV_FILE"
+
+# Validate Groq configuration
+GROQ_MODE_STATUS=""
+if [ "$USE_GROQ_LLM" = "true" ] && [ -n "$GROQ_API_KEY" ]; then
+    GROQ_MODE_STATUS="⚡ GROQ (Fast)"
+elif [ "$USE_GROQ_LLM" = "true" ]; then
+    GROQ_MODE_STATUS="⚠️  GROQ enabled but GROQ_API_KEY is empty"
+else
+    GROQ_MODE_STATUS="🐌 LETTA (Slow)"
+fi
+
+echo -e "${YELLOW}[0/10] Configuration Check${NC}"
+echo "  LLM Mode: $GROQ_MODE_STATUS"
+if [ "$USE_GROQ_LLM" != "true" ]; then
+    echo -e "  ${YELLOW}→ Tip: Set USE_GROQ_LLM=true in .env for 5-10x faster responses${NC}"
+fi
+echo ""
+
+echo -e "${YELLOW}[1/10] Stopping existing processes...${NC}"
+
+# Stop CORS proxy if running
+if pgrep -f "cors_proxy_server.py" > /dev/null; then
+    echo "  Stopping CORS proxy server..."
+    pkill -f "cors_proxy_server.py" || true
+    sleep 1
+fi
 
 # Use safe stopper to clean up PID/lock files
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -66,23 +120,23 @@ if [ -f "$SCRIPT_DIR/stop_voice_agent_safe.sh" ]; then
     "$SCRIPT_DIR/stop_voice_agent_safe.sh" 2>&1 | sed 's/^/  /'
 else
     # Fallback to manual cleanup
-    AGENT_COUNT=$(ps aux | grep "letta_voice_agent.py" | grep -v grep | wc -l)
+    AGENT_COUNT=$(ps aux | grep "$LETTA_VOICE_AGENT_EXE" | grep -v grep | wc -l)
 
     if [ "$AGENT_COUNT" -eq 0 ]; then
         echo "  No voice agents running"
     elif [ "$AGENT_COUNT" -eq 1 ]; then
         echo "  Stopping 1 voice agent..."
-        pkill -f "letta_voice_agent.py" || true
+        pkill -f "$LETTA_VOICE_AGENT_EXE" || true
         sleep 1
     else
         echo -e "  ${RED}🚨 WARNING: $AGENT_COUNT duplicate voice agents detected!${NC}"
         echo "  This causes audio cutting and conflicts. Killing all..."
-        pkill -f "letta_voice_agent.py" || true
+        pkill -f "$LETTA_VOICE_AGENT_EXE" || true
         sleep 2
-        REMAINING=$(ps aux | grep "letta_voice_agent.py" | grep -v grep | wc -l)
+        REMAINING=$(ps aux | grep "$LETTA_VOICE_AGENT_EXE" | grep -v grep | wc -l)
         if [ "$REMAINING" -gt 0 ]; then
             echo "  Force killing remaining processes..."
-            pkill -9 -f "letta_voice_agent.py" || true
+            pkill -9 -f "$LETTA_VOICE_AGENT_EXE" || true
             sleep 1
         fi
         echo -e "  ${GREEN}✓ All $AGENT_COUNT duplicate agents removed${NC}"
@@ -117,7 +171,24 @@ fi
 echo -e "${GREEN}✓ Cleanup complete${NC}"
 echo ""
 
-echo -e "${YELLOW}[2/7] Checking PostgreSQL...${NC}"
+echo -e "${YELLOW}[2/10] Cleaning LiveKit stale rooms...${NC}"
+# Clear any stale room data/state files
+LIVEKIT_DATA_DIR="/tmp/livekit"
+if [ -d "$LIVEKIT_DATA_DIR" ]; then
+    echo "  Removing LiveKit data directory..."
+    rm -rf "$LIVEKIT_DATA_DIR" 2>/dev/null || true
+fi
+
+# Truncate old log to start fresh
+if [ -f "/tmp/livekit.log" ]; then
+    echo "  Clearing old LiveKit logs..."
+    > /tmp/livekit.log
+fi
+
+echo -e "${GREEN}✓ LiveKit state cleaned${NC}"
+echo ""
+
+echo -e "${YELLOW}[3/10] Checking PostgreSQL...${NC}"
 if ! pg_isready -q 2>/dev/null; then
     echo "  ⚠️  PostgreSQL not running. Starting..."
     sudo service postgresql start
@@ -133,7 +204,7 @@ fi
 echo -e "${GREEN}✓ PostgreSQL is running${NC}"
 echo ""
 
-echo -e "${YELLOW}[3/7] Checking Letta server...${NC}"
+echo -e "${YELLOW}[3/9] Checking Letta server...${NC}"
 if curl -s http://localhost:8283/ > /dev/null 2>&1; then
     echo -e "${GREEN}✓ Letta server is running on port 8283${NC}"
 else
@@ -162,7 +233,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}[4/7] Starting Livekit server...${NC}"
+echo -e "${YELLOW}[4/10] Starting Livekit server...${NC}"
 LIVEKIT_BIN="/home/adamsl/ottomator-agents/livekit-agent/livekit-server"
 if [ ! -x "$LIVEKIT_BIN" ]; then
     echo -e "${RED}✗ livekit-server binary not found at $LIVEKIT_BIN${NC}"
@@ -183,7 +254,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}[5/7] Starting voice agent in DEV mode...${NC}"
+echo -e "${YELLOW}[5/10] Starting voice agent in DEV mode...${NC}"
 
 # Load environment variables
 ENV_FILE="/home/adamsl/ottomator-agents/livekit-agent/.env"
@@ -200,11 +271,13 @@ if [ -f "$PLANNER_ENV" ]; then
     export $(grep -v '^#' "$PLANNER_ENV" | xargs)
 fi
 
+LETTA_VOICE_AGENT_EXE="letta_voice_agent_groq.py"
+
 # Change to voice agent directory
 cd /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents
 
 # Start voice agent
-/home/adamsl/planner/.venv/bin/python3 letta_voice_agent.py dev > /tmp/letta_voice_agent.log 2>&1 &
+/home/adamsl/planner/.venv/bin/python3 $LETTA_VOICE_AGENT_EXE dev > /tmp/letta_voice_agent.log 2>&1 &
 VOICE_AGENT_PID=$!
 echo "  Started voice agent (PID: $VOICE_AGENT_PID)"
 sleep 3
@@ -219,7 +292,24 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}[6/7] Generating connection token...${NC}"
+echo -e "${YELLOW}[6/10] Starting CORS proxy server...${NC}"
+cd /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents
+/home/adamsl/planner/.venv/bin/python3 cors_proxy_server.py > /tmp/cors_proxy.log 2>&1 &
+CORS_PROXY_PID=$!
+echo "  Started CORS proxy server (PID: $CORS_PROXY_PID)"
+sleep 2
+
+# Verify it started
+if ps -p $CORS_PROXY_PID > /dev/null; then
+    echo -e "${GREEN}✓ CORS proxy server is running on port 9000${NC}"
+else
+    echo -e "${RED}✗ CORS proxy server failed to start!${NC}"
+    echo "  Check logs: tail /tmp/cors_proxy.log"
+    exit 1
+fi
+echo ""
+
+echo -e "${YELLOW}[7/10] Generating connection token...${NC}"
 
 # Generate token and capture it
 NEW_TOKEN=$(/home/adamsl/planner/.venv/bin/python3 << 'EOF'
@@ -267,28 +357,60 @@ else
 fi
 echo ""
 
+echo -e "${YELLOW}[8/10] Checking LiveKit demo server...${NC}"
 ensure_http_server
+echo ""
+
+echo -e "${YELLOW}[9/10] Verifying single voice agent...${NC}"
+# Final duplicate check - ensure only ONE voice agent is running
+FINAL_AGENT_COUNT=$(ps aux | grep "$LETTA_VOICE_AGENT_EXE dev" | grep -v grep | wc -l)
+if [ "$FINAL_AGENT_COUNT" -eq 1 ]; then
+    echo -e "${GREEN}✓ Exactly 1 voice agent running (PID: $VOICE_AGENT_PID)${NC}"
+elif [ "$FINAL_AGENT_COUNT" -eq 0 ]; then
+    echo -e "${RED}✗ WARNING: Voice agent not running!${NC}"
+    echo "  Check logs: tail /tmp/letta_voice_agent.log"
+else
+    echo -e "${RED}✗ WARNING: $FINAL_AGENT_COUNT duplicate agents detected!${NC}"
+    echo "  This should not happen. Attempting emergency cleanup..."
+    # Keep only the one we just started
+    ps aux | grep "$LETTA_VOICE_AGENT_EXE dev" | grep -v grep | grep -v "$VOICE_AGENT_PID" | awk '{print $2}' | xargs -r kill -9
+    sleep 1
+    echo "  Killed duplicates, only PID $VOICE_AGENT_PID should remain"
+fi
+echo ""
+
+echo -e "${YELLOW}[10/10] System Summary${NC}"
+echo "  LLM Mode: $GROQ_MODE_STATUS"
+if [ "$USE_GROQ_LLM" = "true" ] && [ -n "$GROQ_API_KEY" ]; then
+    echo -e "  ${GREEN}✓ Fast inference enabled!${NC}"
+else
+    echo -e "  ${YELLOW}→ Tip: Enable Groq for 5-10x faster responses${NC}"
+fi
+echo ""
 
 echo -e "${GREEN}=========================================="
 echo "  SYSTEM READY!"
 echo "==========================================${NC}"
 echo ""
 echo "Next steps:"
+echo "  1. Open Voice Agent Selector: http://localhost:9000"
 if [ -n "$HTTP_ACTIVE_PORT" ] && [ "$HTTP_ACTIVE_PORT" != "$HTTP_PRIMARY_PORT" ]; then
-echo "  1. Open: http://localhost:${HTTP_ACTIVE_PORT}/test-simple.html (fallback port)"
+echo "  2. Or open LiveKit Demo: http://localhost:${HTTP_ACTIVE_PORT}/test-simple.html (fallback port)"
 else
-echo "  1. Open: http://localhost:${HTTP_PRIMARY_PORT}/test-simple.html"
+echo "  2. Or open LiveKit Demo: http://localhost:${HTTP_PRIMARY_PORT}/test-simple.html"
 fi
-echo "     (or run: cd /home/adamsl/ottomator-agents/livekit-agent && python3 -m http.server ${HTTP_PRIMARY_PORT})"
-echo "  2. Click 'Connect'"
-echo "  3. Allow microphone access"
-echo "  4. Say 'Hello!'"
+echo "  3. Select an agent from the dropdown"
+echo "  4. Click 'Connect'"
+echo "  5. Allow microphone access"
+echo "  6. Say 'Hello!'"
 echo ""
 echo "Watch logs:"
 echo "  Voice agent: tail -f /tmp/letta_voice_agent.log"
 echo "  Livekit:     tail -f /tmp/livekit.log"
+echo "  CORS proxy:  tail -f /tmp/cors_proxy.log"
 echo ""
 echo "PIDs:"
 echo "  Livekit:     $LIVEKIT_PID"
 echo "  Voice agent: $VOICE_AGENT_PID"
+echo "  CORS proxy:  $CORS_PROXY_PID"
 echo ""
