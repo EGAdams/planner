@@ -1,0 +1,1 @@
+{"rule":"COMMA_PARENTHESIS_WHITESPACE","sentence":"^\\QNo agents found.'; return; } agents.forEach(agent => { const agentCard = document.createElement('div'); agentCard.className = 'agent-card'; agentCard.onclick = () => selectAgent(agent); const name = agent.name || 'Unnamed Agent'; const id = agent.id; const created = agent.created_at ?\\E$"}

@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 
 # Load environment
 load_dotenv("/home/adamsl/planner/.env")
+load_dotenv("/home/adamsl/ottomator-agents/livekit-agent/.env")
 
 # Check if Groq is installed
 try:
@@ -43,9 +44,8 @@ except Exception as e:
 
 # Test models
 test_models = [
-    "llama-3.1-70b-versatile",  # Recommended: Good balance of speed/quality
+    "llama-3.3-70b-versatile",  # NEW: Current recommended model
     "llama-3.1-8b-instant",     # Fastest: Lower quality but extremely fast
-    "mixtral-8x7b-32768",       # Alternative: Good for longer context
 ]
 
 print("\n" + "="*60)

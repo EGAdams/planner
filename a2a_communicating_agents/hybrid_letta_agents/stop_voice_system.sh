@@ -16,9 +16,9 @@ pkill -f "http.server 8888" && echo "   ✅ Demo server stopped" || echo "   ℹ
 echo "2️⃣  Stopping CORS proxy..."
 pkill -f "cors_proxy_server.py" && echo "   ✅ CORS proxy stopped" || echo "   ℹ️  Not running"
 
-# Stop voice agent
+# Stop voice agent (both old and new versions)
 echo "3️⃣  Stopping voice agent..."
-pkill -f "letta_voice_agent.py" && echo "   ✅ Voice agent stopped" || echo "   ℹ️  Not running"
+pkill -f "letta_voice_agent" && echo "   ✅ Voice agent stopped" || echo "   ℹ️  Not running"
 
 # Stop LiveKit server
 echo "4️⃣  Stopping LiveKit server..."

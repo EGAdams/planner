@@ -150,6 +150,15 @@ class LettaVoiceAssistant(Agent):
         self.message_history = []
         self.allow_agent_switching = True
 
+        # Idle timeout configuration (disconnect only when room stays empty)
+        self.last_activity_time = time.time()
+        self.idle_timeout_seconds = _safe_int(
+            os.getenv("VOICE_IDLE_TIMEOUT_SECONDS"),
+            300,
+        )
+        self.idle_monitor_task = None
+        self.is_shutting_down = False
+
         # Initialize Groq client if available
         self.use_groq = USE_GROQ and GROQ_AVAILABLE
         if self.use_groq:
@@ -164,11 +173,68 @@ class LettaVoiceAssistant(Agent):
             self.groq_client = None
             logger.info("🐌 Letta mode (slower, full orchestration)")
 
+    def _update_activity_time(self):
+        """Update the last activity timestamp."""
+        self.last_activity_time = time.time()
+        logger.debug(f"⏰ Activity updated at {self.last_activity_time}")
+
+    async def _start_idle_monitor(self):
+        """Start background task to monitor idle time and disconnect after timeout."""
+        if self.idle_monitor_task is not None:
+            return  # Already running
+        if self.idle_timeout_seconds <= 0:
+            logger.info("⏰ Idle monitor disabled (VOICE_IDLE_TIMEOUT_SECONDS <= 0)")
+            return
+
+        async def monitor_idle():
+            while not self.is_shutting_down:
+                await asyncio.sleep(1)  # Check every second
+                participant_count = len(self.ctx.room.remote_participants or {})
+                if participant_count > 0:
+                    # Keep session alive while a user is connected.
+                    self.last_activity_time = time.time()
+                    continue
+
+                idle_time = time.time() - self.last_activity_time
+                if idle_time > self.idle_timeout_seconds:
+                    logger.warning(
+                        "⏱️  Idle timeout reached with no remote participants "
+                        f"({idle_time:.1f}s > {self.idle_timeout_seconds}s)"
+                    )
+                    logger.info("🛑 Shutting down agent due to inactivity...")
+
+                    # Set shutdown flag
+                    self.is_shutting_down = True
+
+                    # Notify user
+                    try:
+                        await self._publish_transcript(
+                            "system",
+                            "Session ended due to inactivity. Goodbye!"
+                        )
+                    except Exception as e:
+                        logger.error(f"Error publishing shutdown message: {e}")
+
+                    # Disconnect from room
+                    try:
+                        await self.ctx.room.disconnect()
+                        logger.info("✅ Agent disconnected successfully")
+                    except Exception as e:
+                        logger.error(f"Error disconnecting: {e}")
+
+                    break
+
+        self.idle_monitor_task = asyncio.create_task(monitor_idle())
+        logger.info(f"⏰ Idle monitor started (timeout: {self.idle_timeout_seconds}s)")
+
     async def llm_node(self, chat_ctx, tools, model_settings):
         """
         Override LLM node to route through Groq (fast) or Letta (full features).
         """
         try:
+            # Update activity timestamp on every user interaction
+            self._update_activity_time()
+
             # TIMING: Start pipeline measurement
             pipeline_start = time.time()
 
@@ -351,6 +417,9 @@ class LettaVoiceAssistant(Agent):
 
     async def handle_text_message(self, message: str):
         """Handle text-only messages (no voice) from client"""
+        # Update activity timestamp
+        self._update_activity_time()
+
         logger.info(f"💬 Text message: {message}")
         await self._publish_transcript("user", message)
 
@@ -578,6 +647,9 @@ async def entrypoint(ctx: JobContext):
         agent=assistant,
         room_output_options=RoomOutputOptions(transcription_enabled=True),
     )
+
+    # Start idle timeout monitor
+    await assistant._start_idle_monitor()
 
     logger.info("✅ Voice agent ready and listening")
 

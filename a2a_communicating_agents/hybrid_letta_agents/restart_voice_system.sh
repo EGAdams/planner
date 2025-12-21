@@ -146,24 +146,18 @@ else
     rm -f /tmp/letta_voice_agent.pid /tmp/letta_voice_agent.lock 2>/dev/null || true
 fi
 
-# Kill Livekit server (force kill if stuck with stale rooms)
+# ALWAYS kill and restart Livekit server fresh (prevents room state issues)
+echo "  Stopping Livekit server (fresh restart)..."
 if pgrep -f "livekit-server" > /dev/null; then
-    # Check if Livekit is stuck with stale rooms
-    if grep -q "waiting for participants to exit" /tmp/livekit.log 2>/dev/null; then
-        echo -e "  ${YELLOW}⚠️  Livekit stuck with stale rooms - force killing...${NC}"
+    pkill -f "livekit-server" || true
+    sleep 2
+    # Force kill if still running
+    if pgrep -f "livekit-server" > /dev/null; then
+        echo "  Force killing Livekit..."
         pkill -9 -f "livekit-server" || true
         sleep 1
-    else
-        echo "  Stopping Livekit server..."
-        pkill -f "livekit-server" || true
-        sleep 2
-        # Verify it stopped
-        if pgrep -f "livekit-server" > /dev/null; then
-            echo "  Force killing Livekit..."
-            pkill -9 -f "livekit-server" || true
-            sleep 1
-        fi
     fi
+    echo "  ✅ Livekit stopped"
 else
     echo "  No Livekit server running"
 fi
@@ -233,20 +227,25 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}[4/10] Starting Livekit server...${NC}"
+echo -e "${YELLOW}[4/10] Starting fresh Livekit server...${NC}"
 LIVEKIT_BIN="/home/adamsl/ottomator-agents/livekit-agent/livekit-server"
 if [ ! -x "$LIVEKIT_BIN" ]; then
     echo -e "${RED}✗ livekit-server binary not found at $LIVEKIT_BIN${NC}"
     exit 1
 fi
+
+# Start LiveKit fresh
 nohup "$LIVEKIT_BIN" --dev --bind 0.0.0.0 > /tmp/livekit.log 2>&1 &
 LIVEKIT_PID=$!
 echo "  Started Livekit server (PID: $LIVEKIT_PID)"
-sleep 2
+
+# Wait for LiveKit to be fully ready (prevents race conditions with agent registration)
+echo "  Waiting for LiveKit to be ready..."
+sleep 3
 
 # Verify it started
 if ps -p $LIVEKIT_PID > /dev/null; then
-    echo -e "${GREEN}✓ Livekit server is running${NC}"
+    echo -e "${GREEN}✓ Livekit server is running and ready${NC}"
 else
     echo -e "${RED}✗ Livekit server failed to start!${NC}"
     echo "  Check logs: tail /tmp/livekit.log"
@@ -280,11 +279,20 @@ cd /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents
 /home/adamsl/planner/.venv/bin/python3 $LETTA_VOICE_AGENT_EXE dev > /tmp/letta_voice_agent.log 2>&1 &
 VOICE_AGENT_PID=$!
 echo "  Started voice agent (PID: $VOICE_AGENT_PID)"
-sleep 3
+
+# Wait for agent to register with LiveKit (prevents race conditions)
+echo "  Waiting for agent to register with LiveKit..."
+sleep 5
 
 # Verify it started
 if ps -p $VOICE_AGENT_PID > /dev/null; then
-    echo -e "${GREEN}✓ Voice agent is running in DEV mode${NC}"
+    # Check if agent registered successfully
+    if grep -q "registered worker" /tmp/letta_voice_agent.log 2>/dev/null; then
+        echo -e "${GREEN}✓ Voice agent registered with LiveKit${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Voice agent running but registration not confirmed${NC}"
+        echo "  Check logs if issues occur: tail /tmp/letta_voice_agent.log"
+    fi
 else
     echo -e "${RED}✗ Voice agent failed to start!${NC}"
     echo "  Check logs: tail /tmp/letta_voice_agent.log"

@@ -112,10 +112,15 @@ if ! curl -s http://localhost:8283/ > /dev/null 2>&1; then
 fi
 echo "   ✅ Letta server ready on port 8283"
 
-# Start LiveKit server
-echo "3️⃣  Starting LiveKit server..."
+# Start LiveKit server (ALWAYS fresh restart to prevent room state issues)
+echo "3️⃣  Starting fresh LiveKit server..."
 pkill -f "livekit-server" 2>/dev/null || true
-sleep 1
+sleep 2
+# Force kill if still running
+if pgrep -f "livekit-server" > /dev/null; then
+    pkill -9 -f "livekit-server" 2>/dev/null || true
+    sleep 1
+fi
 
 # Clean up stale LiveKit rooms and state
 echo "   🧹 Cleaning LiveKit stale rooms..."
@@ -131,8 +136,10 @@ fi
 cd "$LIVEKIT_DIR"
 nohup ./livekit-server --dev --bind 0.0.0.0 > "$LOG_DIR/livekit.log" 2>&1 &
 LIVEKIT_PID=$!
-echo "   ✅ LiveKit server started (PID: $LIVEKIT_PID) on port 7880"
-sleep 2
+echo "   LiveKit server started (PID: $LIVEKIT_PID)"
+echo "   Waiting for LiveKit to be ready..."
+sleep 3
+echo "   ✅ LiveKit server ready on port 7880"
 
 # Start Voice Agent
 echo "4️⃣  Checking Letta voice agent..."
@@ -144,9 +151,9 @@ if [ "$AGENT_COUNT" -eq 0 ]; then
     echo "   ℹ️  No voice agent running. Starting new agent..."
 elif [ "$AGENT_COUNT" -eq 1 ]; then
     # Check if the single agent is in DEV mode
-    if ps aux | grep "letta_voice_agent.py dev" | grep -v grep > /dev/null; then
+    if ps aux | grep "$LETTA_VOICE_AGENT_EXE dev" | grep -v grep > /dev/null; then
         echo "   ✅ Voice agent already running in DEV mode"
-        VOICE_PID=$(ps aux | grep "letta_voice_agent.py dev" | grep -v grep | awk '{print $2}')
+        VOICE_PID=$(ps aux | grep "$LETTA_VOICE_AGENT_EXE dev" | grep -v grep | awk '{print $2}')
         echo "   ℹ️  Skipping start (existing PID: $VOICE_PID)"
         # Jump to next section
         echo ""
@@ -218,13 +225,23 @@ echo "   ℹ️  Using safe starter (prevents race conditions)..."
 if "$PROJECT_DIR/start_voice_agent_safe.sh" > /tmp/voice_agent_start.log 2>&1; then
     # Get PID from PID file
     VOICE_PID=$(cat /tmp/letta_voice_agent.pid 2>/dev/null || echo "unknown")
-    echo "   ✅ Voice agent started (PID: $VOICE_PID)"
+    echo "   Voice agent started (PID: $VOICE_PID)"
+
+    # Wait for agent to register with LiveKit
+    echo "   Waiting for agent to register with LiveKit..."
+    sleep 5
+
+    # Verify registration
+    if grep -q "registered worker" "$LOG_DIR/letta_voice_agent.log" 2>/dev/null; then
+        echo "   ✅ Voice agent registered with LiveKit"
+    else
+        echo "   ⚠️  Voice agent running but registration not confirmed"
+    fi
 else
     echo "   ❌ Failed to start voice agent"
     echo "   Check logs: tail /tmp/voice_agent_start.log"
     exit 1
 fi
-sleep 3
 
 # Start CORS proxy server
 echo "5️⃣  Starting CORS proxy server..."
