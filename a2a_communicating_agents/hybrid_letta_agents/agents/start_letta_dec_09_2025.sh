@@ -23,7 +23,7 @@ if [ -z "$EXA_API_KEY" ]; then
     echo "ERROR: EXA_API_KEY not set in environment"
     exit 1
 fi
-echo "EXA_API_KEY: loaded from environment"
+echo "EXA_API_KEY:    loaded from environment"
 
 # Start the server
 exec letta server

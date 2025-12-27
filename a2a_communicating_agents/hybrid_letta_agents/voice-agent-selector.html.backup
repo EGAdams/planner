@@ -9,13 +9,18 @@
         const PROXY_URL = 'http://localhost:9000';
         const LIVEKIT_URL = 'ws://localhost:7880';
 
-        // Token for dev mode (valid for 24 hours from 2025-12-20 00:35:07 UTC)
+        // Token for dev mode (valid for 24 hours from 2025-12-27 00:07:03 UTC)
         // NOTE: This token will expire. Regenerate with: ./update_voice_token.sh
-        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2MTkwOTA3LCJleHAiOjE3NjYyNzczMDd9.br6Uvum-Gw2mqP3PxYMSopRx_RYbBPHWCEFzTJlDlOM';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2Nzk0MDIzLCJleHAiOjE3NjY4ODA0MjN9.TSbGBZjCaq4_uys9gB-AekS4cmYPtFO8EewTDiyrw8w';
 
         let room;
         let selectedAgent = null;
         let sessionId = Math.random().toString(36).substring(7);  // Unique session ID
+        let connectionRetries = 0;
+        const MAX_RETRIES = 3;
+        const AGENT_JOIN_TIMEOUT = 15000;  // 15 seconds to wait for agent
+        let agentJoinTimer = null;
+
         const status = document.getElementById('status');
         const agentSelector = document.getElementById('agentSelector');
         const agentInfo = document.getElementById('agentInfo');
@@ -29,6 +34,46 @@
         // This ensures each agent switch gets a clean room
         function getRoomName() {
             return `agent-${selectedAgent.id.substring(0, 8)}-${sessionId}`;
+        }
+
+        // Check microphone availability before connecting
+        async function checkMicrophoneAvailability() {
+            try {
+                console.log('🎤 Checking microphone availability...');
+
+                // Check if mediaDevices API is available
+                if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                    throw new Error('Media devices API not available in this browser');
+                }
+
+                // Enumerate devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioInputs = devices.filter(device => device.kind === 'audioinput');
+
+                if (audioInputs.length === 0) {
+                    throw new Error('No microphone devices found. Please connect a microphone and try again.');
+                }
+
+                console.log(`✅ Found ${audioInputs.length} microphone device(s):`);
+                audioInputs.forEach((device, idx) => {
+                    console.log(`  ${idx + 1}. ${device.label || 'Unnamed microphone'} (${device.deviceId})`);
+                });
+
+                // Try to get user media to ensure permissions
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    // Stop the stream immediately - we just needed to check permissions
+                    stream.getTracks().forEach(track => track.stop());
+                    console.log('✅ Microphone permissions granted');
+                } catch (permErr) {
+                    throw new Error(`Microphone permission denied: ${permErr.message}`);
+                }
+
+                return true;
+            } catch (err) {
+                console.error('❌ Microphone check failed:', err);
+                throw err;
+            }
         }
 
         // Load agents on page load
@@ -148,9 +193,14 @@
             }
 
             try {
-                status.textContent = 'Connecting...';
+                status.textContent = 'Checking microphone...';
                 status.className = '';
                 connectBtn.disabled = true;
+
+                // Check microphone availability BEFORE connecting
+                await checkMicrophoneAvailability();
+
+                status.textContent = 'Connecting...';
 
                 // Create room with options
                 room = new Room({
@@ -187,6 +237,16 @@
 
                 room.on('participantConnected', (participant) => {
                     console.log('👤 Participant connected:', participant.identity);
+
+                    // Clear the agent join timeout timer
+                    if (agentJoinTimer) {
+                        clearTimeout(agentJoinTimer);
+                        agentJoinTimer = null;
+                    }
+
+                    // Reset retry counter on successful connection
+                    connectionRetries = 0;
+
                     status.textContent = `Agent "${selectedAgent.name}" connected! Start speaking...`;
                     status.className = 'connected';
                 });
@@ -234,18 +294,76 @@
 
                 console.log('✅ Connected to room:', room.name);
                 console.log('🎤 Enabling microphone...');
-                await room.localParticipant.setMicrophoneEnabled(true);
+
+                // Enable microphone with explicit error handling
+                try {
+                    await room.localParticipant.setMicrophoneEnabled(true);
+                    console.log('✅ Microphone enabled successfully');
+                } catch (micErr) {
+                    console.error('❌ Failed to enable microphone:', micErr);
+                    throw new Error(`Microphone error: ${micErr.message}`);
+                }
 
                 // Check for existing participants
                 const existingParticipants = Array.from(room.remoteParticipants.values());
                 console.log('👥 Existing participants:', existingParticipants.length);
 
                 if (existingParticipants.length > 0) {
+                    // Agent already in room
                     status.textContent = `Agent "${selectedAgent.name}" connected! Start speaking...`;
                     status.className = 'connected';
+                    connectionRetries = 0;  // Reset on success
                 } else {
+                    // Waiting for agent to join
                     status.textContent = 'Connected! Waiting for agent to join...';
                     status.className = 'connected';
+
+                    // *** AUTO-RECOVERY: Set timeout for agent join ***
+                    console.log(`⏰ Starting ${AGENT_JOIN_TIMEOUT/1000}s timeout for agent to join...`);
+                    agentJoinTimer = setTimeout(async () => {
+                        console.error('⏱️ Agent join timeout! No agent joined the room.');
+
+                        if (connectionRetries < MAX_RETRIES) {
+                            connectionRetries++;
+                            const backoffDelay = 1000 * connectionRetries; // Exponential backoff: 1s, 2s, 3s
+
+                            status.textContent = `Agent didn't join. Retrying (${connectionRetries}/${MAX_RETRIES}) in ${backoffDelay/1000}s...`;
+                            status.className = 'error';
+
+                            console.log(`🔄 Retry ${connectionRetries}/${MAX_RETRIES} after ${backoffDelay}ms delay...`);
+
+                            // Disconnect and reconnect with fresh room
+                            await window.disconnect();
+
+                            // Generate new session ID for completely fresh room
+                            sessionId = Math.random().toString(36).substring(7);
+                            console.log(`🆕 Generated new session ID: ${sessionId}`);
+
+                            setTimeout(() => {
+                                console.log('🔄 Reconnecting with fresh room...');
+                                window.connect();
+                            }, backoffDelay);
+
+                        } else {
+                            // Max retries exceeded
+                            status.textContent = `Failed to connect after ${MAX_RETRIES} attempts. Please check voice agent logs and try again.`;
+                            status.className = 'error';
+                            console.error('❌ Max retries exceeded. Voice agent may not be running.');
+
+                            // Disconnect
+                            await window.disconnect();
+
+                            // Provide troubleshooting guidance
+                            alert(
+                                'Voice agent failed to join after multiple attempts.\n\n' +
+                                'Troubleshooting steps:\n' +
+                                '1. Check that voice agent is running: ps aux | grep letta_voice_agent\n' +
+                                '2. Check voice agent logs: tail -f /tmp/letta_voice_agent.log\n' +
+                                '3. Restart the voice system: ./restart_voice_system.sh\n' +
+                                '4. Check LiveKit server logs: tail -f /tmp/livekit.log'
+                            );
+                        }
+                    }, AGENT_JOIN_TIMEOUT);
                 }
 
                 disconnectBtn.disabled = false;
@@ -260,6 +378,13 @@
         };
 
         window.disconnect = async function() {
+            // Clear any pending agent join timeout
+            if (agentJoinTimer) {
+                clearTimeout(agentJoinTimer);
+                agentJoinTimer = null;
+                console.log('⏰ Cleared agent join timeout');
+            }
+
             if (room) {
                 try {
                     // Publish room cleanup message to notify backend
@@ -592,7 +717,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎙️ Letta Voice Agent</h1>
+            <h1>Letta Voice Agent</h1>
             <div class="subtitle">Multi-Agent Voice Chat System</div>
         </header>
 
@@ -601,9 +726,9 @@
                 <div id="status">Loading...</div>
 
                 <div class="controls">
-                    <button id="connectBtn" onclick="connect()" disabled>🔗 Connect</button>
-                    <button id="disconnectBtn" onclick="disconnect()" disabled>⏹️ Disconnect</button>
-                    <button id="refreshBtn" onclick="refreshAgents()">🔄 Refresh Agents</button>
+                    <button id="connectBtn" onclick="connect()" disabled>Connect</button>
+                    <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+                    <button id="refreshBtn" onclick="refreshAgents()">Refresh Agents</button>
                 </div>
 
                 <div class="agent-list-container">
@@ -623,7 +748,7 @@
                 </div>
 
                 <div class="instructions">
-                    <h3>📋 Instructions</h3>
+                    <h3>Instructions</h3>
                     <ol>
                         <li>Make sure the voice system is running:<br>
                             <code>./start_voice_system.sh</code>

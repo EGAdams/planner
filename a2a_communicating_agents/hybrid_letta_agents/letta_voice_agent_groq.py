@@ -440,7 +440,7 @@ class LettaVoiceAssistant(Agent):
 
         try:
             agent = await asyncio.to_thread(
-                self.letta_client.agents.get,
+                self.letta_client.agents.retrieve,
                 agent_id=new_agent_id
             )
 
@@ -526,7 +526,7 @@ async def get_or_create_orchestrator(letta_client: Letta) -> str:
         )
 
         logger.info(f"Created orchestrator: {agent.id}")
-        return agent.id
+        return "agent-4dfca708-49a8-4982-8e36-0f1146f9a66e" # agent.id for Agent_66
 
     except Exception as e:
         logger.error(f"Error getting/creating orchestrator: {e}")
@@ -655,8 +655,31 @@ async def entrypoint(ctx: JobContext):
 
 
 async def request_handler(job_request: JobRequest):
-    """Accept all job requests to ensure agent joins rooms."""
-    logger.info(f"📥 Job request received for room: {job_request.room.name}")
+    """
+    Accept all job requests to ensure agent joins rooms.
+
+    Includes room self-recovery to prevent "Waiting for agent to join..." issues.
+    """
+    room_name = job_request.room.name
+    logger.info(f"📥 Job request received for room: {room_name}")
+
+    # *** ROOM SELF-RECOVERY ***
+    # Clean up stale participants before accepting to prevent stuck states
+    try:
+        from livekit_room_manager import RoomManager
+
+        manager = RoomManager()
+
+        # Ensure room is clean before joining
+        logger.info(f"🧹 Ensuring room {room_name} is clean before joining...")
+        await manager.ensure_clean_room(room_name)
+
+        logger.info(f"✅ Room {room_name} is clean and ready for agent")
+
+    except Exception as e:
+        logger.warning(f"Room cleanup failed (continuing anyway): {e}")
+        # Don't block agent startup if cleanup fails - just log and continue
+
     await job_request.accept()
     logger.info(f"✅ Job accepted, starting entrypoint...")
 

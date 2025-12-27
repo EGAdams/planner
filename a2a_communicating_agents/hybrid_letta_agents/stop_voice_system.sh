@@ -16,12 +16,16 @@ pkill -f "http.server 8888" && echo "   ✅ Demo server stopped" || echo "   ℹ
 echo "2️⃣  Stopping CORS proxy..."
 pkill -f "cors_proxy_server.py" && echo "   ✅ CORS proxy stopped" || echo "   ℹ️  Not running"
 
+# Stop room health monitor
+echo "3️⃣  Stopping room health monitor..."
+pkill -f "room_health_monitor.py" && echo "   ✅ Room health monitor stopped" || echo "   ℹ️  Not running"
+
 # Stop voice agent (both old and new versions)
-echo "3️⃣  Stopping voice agent..."
+echo "4️⃣  Stopping voice agent..."
 pkill -f "letta_voice_agent" && echo "   ✅ Voice agent stopped" || echo "   ℹ️  Not running"
 
 # Stop LiveKit server
-echo "4️⃣  Stopping LiveKit server..."
+echo "5️⃣  Stopping LiveKit server..."
 pkill -f "livekit-server" && echo "   ✅ LiveKit server stopped" || echo "   ℹ️  Not running"
 
 # Optional: Stop Letta server (commented out - you might want to keep it running)

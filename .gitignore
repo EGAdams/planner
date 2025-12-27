@@ -38,3 +38,15 @@ livekit-venv/*
 a2a_communicating_agents/hybrid_letta_agents/venv/*
 logs/letta.log
 logs/letta.log
+a2a_communicating_agents/hybrid_letta_agents/.claude-collective/node_modules/*
+a2a_communicating_agents/hybrid_letta_agents/.claude-collective/metrics/*
+a2a_communicating_agents/hybrid_letta_agents/tests/voice_test_logs_*
+nonprofit_finance_db/.claude-collective/metrics/*
+.claude-collective/metrics/*
+a2a_communicating_agents/hybrid_letta_agents/=1.0.7
+.claude-collective/metrics/collective-metrics*
+/home/adamsl/planner/logs/*
+logs/dashboard.log
+logs/a2a_system.pids
+logs/dashboard_agent.log
+nonprofit_finance_db/.claude-collective/metrics/collective-metrics.log

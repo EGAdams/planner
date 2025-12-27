@@ -56,7 +56,7 @@ source "$ENV_FILE"
 # Start voice agent
 cd "$PROJECT_DIR"
 echo "Starting voice agent in DEV mode..."
-nohup "$VENV_DIR/bin/python3" letta_voice_agent.py dev > "$LOG_FILE" 2>&1 &
+nohup "$VENV_DIR/bin/python3" letta_voice_agent_optimized.py dev > "$LOG_FILE" 2>&1 &
 AGENT_PID=$!
 
 # Save PID

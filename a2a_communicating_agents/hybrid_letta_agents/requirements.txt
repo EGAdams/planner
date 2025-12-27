@@ -4,5 +4,11 @@ pytest>=8.0.0
 # Voice utilities - OpenAI TTS
 openai>=1.0.0
 
+# Environment helpers
+python-dotenv>=1.0.1
+
 # Letta orchestration
 letta-client>=0.5.0
+
+# LiveKit room management (for RoomManager)
+livekit-api>=1.0.7
