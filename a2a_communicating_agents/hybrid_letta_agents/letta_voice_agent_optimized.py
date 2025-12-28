@@ -68,6 +68,9 @@ ALLOWED_ORCHESTRATOR_MODELS = {"gpt-5-mini", "gpt-4o-mini"}
 # Hybrid mode configuration (environment variable)
 USE_HYBRID_STREAMING = os.getenv("USE_HYBRID_STREAMING", "true").lower() == "true"
 
+# Primary Letta agent enforced for all voice sessions
+PRIMARY_AGENT_NAME = os.getenv("VOICE_PRIMARY_AGENT_NAME", "Agent_66")
+
 # Persistent async HTTP client for connection pooling
 HTTP_CLIENT = httpx.AsyncClient(
     timeout=httpx.Timeout(30.0),
@@ -217,6 +220,7 @@ class LettaVoiceAssistantOptimized(Agent):
         self.agent_id = agent_id
         self.message_history = []
         self.allow_agent_switching = True
+        self.primary_agent_name = PRIMARY_AGENT_NAME
 
         # Circuit breaker for Letta server
         self.letta_circuit_breaker = CircuitBreaker(failure_threshold=3, timeout_seconds=30)
@@ -654,15 +658,36 @@ class LettaVoiceAssistantOptimized(Agent):
                 logger.error(f"Agent {new_agent_id} not found")
                 return False
 
+            agent_display_name = getattr(agent, "name", None)
+
+            if agent_display_name != self.primary_agent_name:
+                requested_name = agent_name or agent_display_name or new_agent_id
+                warning_msg = (
+                    f"This voice assistant is locked to {self.primary_agent_name}. "
+                    f"Ignoring request for {requested_name}."
+                )
+                logger.warning(
+                    "Rejected agent switch to %s (%s); enforcing %s",
+                    requested_name,
+                    new_agent_id,
+                    self.primary_agent_name,
+                )
+                await self._publish_transcript("system", warning_msg)
+                try:
+                    await self._agent_session.say(warning_msg, allow_interruptions=True)
+                except (RuntimeError, AttributeError) as e:
+                    logger.warning(f"Could not voice lock reminder: {e}")
+                return False
+
             # Switch to new agent
             old_agent_id = self.agent_id
             self.agent_id = new_agent_id
             self.message_history = []  # Clear history for new agent
 
-            logger.info(f"✅ Switched from agent {old_agent_id} to {new_agent_id} ({agent_name or 'unnamed'})")
+            logger.info(f"✅ Switched from agent {old_agent_id} to {new_agent_id} ({agent_display_name or 'unnamed'})")
 
             # Notify user via voice
-            switch_message = f"Switched to agent {agent_name or new_agent_id}. How can I help you?"
+            switch_message = f"Switched to agent {agent_display_name or new_agent_id}. How can I help you?"
             await self._publish_transcript("system", switch_message)
 
             try:
@@ -686,7 +711,7 @@ async def get_or_create_orchestrator(letta_client: AsyncLetta) -> str:
     Returns:
         Agent ID
     """
-    agent_name = "Agent_66"
+    agent_name = PRIMARY_AGENT_NAME
     llm_endpoint = os.getenv("LETTA_ORCHESTRATOR_ENDPOINT_TYPE", "openai")
     llm_model = _normalize_model_name(os.getenv("LETTA_ORCHESTRATOR_MODEL", "gpt-5-mini"), llm_endpoint)
 
@@ -709,13 +734,13 @@ async def get_or_create_orchestrator(letta_client: AsyncLetta) -> str:
     embedding_dim = _safe_int(os.getenv("LETTA_EMBEDDING_DIM"), 1536)
 
     try:
-        # Try to find existing Agent_66 (hardcoded, no updates)
+        # Try to find existing primary agent (hardcoded, no updates)
         agents_list = await letta_client.agents.list()
         agents = list(agents_list) if agents_list else []
 
         logger.info(f"🔍 Retrieved {len(agents)} agents from Letta")
 
-        # Find Agent_66 and return immediately (no config updates)
+        # Find Agent_66 (primary agent) and return immediately (no config updates)
         for agent in agents:
             if hasattr(agent, 'name') and agent.name == agent_name:
                 logger.info(f"✅ Found existing {agent_name}: {agent.id}")
@@ -797,7 +822,7 @@ async def entrypoint(ctx: JobContext):
         if not agent_id:
             logger.error("❌ CRITICAL: get_or_create_orchestrator returned None/empty agent_id")
             return
-        logger.info(f"✅ Using Agent_66 with ID: {agent_id}")
+        logger.info(f"✅ Using {PRIMARY_AGENT_NAME} with ID: {agent_id}")
     except Exception as e:
         logger.error(f"Failed to initialize Letta orchestrator: {e}")
         import traceback

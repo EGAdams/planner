@@ -9,11 +9,15 @@
         const PROXY_URL = 'http://localhost:9000';
         const LIVEKIT_URL = 'ws://localhost:7880';
 
-        // Token for dev mode (valid for 24 hours from 2025-12-27 02:18:57 UTC)
+        // Token for dev mode (valid for 24 hours from 2025-12-28 02:20:40 UTC)
         // NOTE: This token will expire. Regenerate with: ./update_voice_token.sh
-        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2ODAxOTM3LCJleHAiOjE3NjY4ODgzMzd9.0LlIcOjqsMVbifgGaY5cxA5Uz-YVTYhXXC4asJvw8vI';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2ODg4NDQwLCJleHAiOjE3NjY5NzQ4NDB9.Fa-yJnz8rmWfRHZjeBYLDIF1l2hVPY20gXZBFqERJLs';
+        const PRIMARY_AGENT_NAME = 'Agent_66';
+        const PRIMARY_AGENT_WARNING = `Only ${PRIMARY_AGENT_NAME} is supported for LiveKit voice sessions.`;
 
         let room;
+        let primaryAgentRecord = null;
+        let primaryAgentCardElement = null;
         let selectedAgent = null;
         let sessionId = Math.random().toString(36).substring(7);  // Unique session ID
         let connectionRetries = 0;
@@ -120,14 +124,19 @@
                 return;
             }
 
+            let localPrimaryAgent = null;
+            let localPrimaryCard = null;
+
             agents.forEach(agent => {
                 const agentCard = document.createElement('div');
                 agentCard.className = 'agent-card';
-                agentCard.onclick = () => selectAgent(agent);
+                agentCard.dataset.agentId = agent.id;
+                agentCard.dataset.agentName = agent.name || 'Unnamed Agent';
 
                 const name = agent.name || 'Unnamed Agent';
                 const id = agent.id;
                 const created = agent.created_at ? new Date(agent.created_at).toLocaleDateString() : 'Unknown';
+                const isPrimaryAgent = name === PRIMARY_AGENT_NAME;
 
                 // Get model info if available
                 let modelInfo = '';
@@ -142,18 +151,63 @@
                     ${modelInfo}
                 `;
 
+                if (isPrimaryAgent) {
+                    agentCard.innerHTML += `<div class="agent-lock-pill">Locked voice agent</div>`;
+                }
+
+                if (isPrimaryAgent) {
+                    agentCard.classList.add('primary-agent');
+                    agentCard.onclick = () => selectAgent(agent, agentCard);
+                    localPrimaryAgent = agent;
+                    localPrimaryCard = agentCard;
+                } else {
+                    agentCard.classList.add('disabled');
+                    agentCard.title = PRIMARY_AGENT_WARNING;
+                    agentCard.onclick = () => {
+                        status.textContent = PRIMARY_AGENT_WARNING;
+                        status.className = 'warning';
+                        if (primaryAgentRecord && primaryAgentCardElement) {
+                            selectAgent(primaryAgentRecord, primaryAgentCardElement);
+                        } else if (localPrimaryAgent && localPrimaryCard) {
+                            selectAgent(localPrimaryAgent, localPrimaryCard);
+                        }
+                    };
+                }
+
                 agentList.appendChild(agentCard);
             });
+
+            if (localPrimaryAgent) {
+                primaryAgentRecord = localPrimaryAgent;
+                primaryAgentCardElement = localPrimaryCard;
+            }
+
+            if (!primaryAgentRecord) {
+                status.textContent = `${PRIMARY_AGENT_NAME} not found. Please recreate it via the Letta CLI before connecting.`;
+                status.className = 'error';
+                connectBtn.disabled = true;
+                return;
+            }
+
+            const primaryAlreadySelected = selectedAgent && selectedAgent.id === primaryAgentRecord.id;
+            if (!primaryAlreadySelected) {
+                selectAgent(primaryAgentRecord, primaryAgentCardElement);
+                status.textContent = `${PRIMARY_AGENT_NAME} locked in. Click Connect to start voice chat.`;
+                status.className = 'info';
+            }
         }
 
-        function selectAgent(agent) {
+        function selectAgent(agent, cardElement = null) {
             selectedAgent = agent;
 
             // Highlight selected card
             document.querySelectorAll('.agent-card').forEach(card => {
                 card.classList.remove('selected');
             });
-            event.target.closest('.agent-card').classList.add('selected');
+            const highlightCard = cardElement || document.querySelector(`.agent-card[data-agent-id="${agent.id}"]`);
+            if (highlightCard) {
+                highlightCard.classList.add('selected');
+            }
 
             // Show agent info
             agentInfo.style.display = 'block';
@@ -423,11 +477,16 @@
             const searchTerm = searchInput.value.toLowerCase();
             if (!window.allAgents) return;
 
-            const filtered = window.allAgents.filter(agent => {
+            let filtered = window.allAgents.filter(agent => {
                 const name = (agent.name || '').toLowerCase();
                 const id = (agent.id || '').toLowerCase();
                 return name.includes(searchTerm) || id.includes(searchTerm);
             });
+
+            const primaryAgent = window.allAgents.find(agent => (agent.name || '') === PRIMARY_AGENT_NAME);
+            if (primaryAgent && !filtered.some(agent => agent.id === primaryAgent.id)) {
+                filtered = [primaryAgent, ...filtered];
+            }
 
             displayAgents(filtered);
         };
@@ -512,6 +571,11 @@
         #status.info {
             background: #d1ecf1;
             border-left-color: #17a2b8;
+        }
+
+        #status.warning {
+            background: #fff3cd;
+            border-left-color: #ff9800;
         }
 
         .controls {
@@ -615,6 +679,17 @@
             background: white;
         }
 
+        .agent-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .agent-card.disabled:hover {
+            border-color: #e0e0e0;
+            transform: none;
+            box-shadow: none;
+        }
+
         .agent-card:hover {
             border-color: #667eea;
             transform: translateX(5px);
@@ -651,6 +726,18 @@
             color: #667eea;
             margin-top: 5px;
             font-style: italic;
+        }
+
+        .agent-lock-pill {
+            display: inline-block;
+            padding: 2px 8px;
+            background: #667eea;
+            color: white;
+            border-radius: 999px;
+            font-size: 0.75em;
+            margin-top: 8px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
         }
 
         #agentInfo {

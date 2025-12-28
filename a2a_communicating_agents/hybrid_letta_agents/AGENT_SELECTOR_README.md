@@ -4,14 +4,15 @@
 
 The Letta Voice Agent Selector provides a browser-based interface to select and communicate with any Letta agent via voice. You can switch between agents dynamically during a voice session.
 
+> **Important (Dec 27, 2025):** The production/debug selectors are now **locked to `Agent_66`** to prevent the UI from drifting to LiveKit-only agents. Other cards remain visible for reference, but they are disabled and the backend rejects non-`Agent_66` switches to guarantee the Letta orchestrator stays in control.
+
 ## Features
 
 - Browse all available Letta agents (182+ agents)
 - Search agents by name or ID
 - View agent details (memory blocks, model config, creation date)
-- Connect to any agent via voice
-- Switch agents during an active voice session
-- Beautiful, responsive UI with real-time status updates
+- Connect to the locked `Agent_66` voice orchestrator (other agents are view-only)
+- Real-time status updates with enforced Agent_66 lock pill on the UI
 
 ## Quick Start
 
@@ -50,6 +51,14 @@ http://localhost:8888/voice-agent-selector.html
 2. Allow microphone access when prompted
 3. Wait for "Agent connected! Start speaking..."
 4. Start talking to your agent!
+
+## Agent Lock Enforcement (Dec 27, 2025)
+
+**Symptom:** Browser sessions at `localhost:9000/debug` occasionally latched onto the generic LiveKit worker instead of the Letta orchestrator, producing bland responses and bypassing `Agent_66`.
+
+**Detection:** LiveKit logs lacked `🔄 Agent selection request: Agent_66` entries while the UI still showed a successful connection. Manual debugging confirmed the selector let users pick non-Letta agents, which the backend dutifully switched to.
+
+**Automated Fix:** Both selector pages now auto-select and highlight `Agent_66`, disable every other card, and resend the primary agent ID after each reconnect. The backend (`letta_voice_agent_optimized.py`) cross-checks every `agent_selection` payload and refuses to switch if the target’s name is not `Agent_66`, voicing a lock warning instead. Together these changes guarantee every room stays on the intended Letta agent without manual babysitting.
 
 ## How It Works
 
@@ -90,6 +99,8 @@ Browser                 Livekit Room              Voice Agent Worker         Let
 6. **Confirmation**: Agent speaks "Switched to agent [name]. How can I help you?"
 
 ### Dynamic Agent Switching
+
+> ⚠️ Production/debug builds now block manual switching and always revert to `Agent_66`. The steps below describe the legacy free-for-all selector and remain here for historical context.
 
 You can switch agents during an active voice session:
 
