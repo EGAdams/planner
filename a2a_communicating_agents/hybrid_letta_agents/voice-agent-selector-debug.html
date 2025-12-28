@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Letta Voice Agent - Multi-Agent Selector</title>
+    <title>Letta Voice Agent - Multi-Agent Selector (DEBUG VERSION)</title>
     <script type="module">
-        import { Room, RoomEvent, ConnectionState } from 'https://esm.sh/livekit-client@2.9.7';
+        import { Room, RoomEvent, ConnectionState, Track } from 'https://esm.sh/livekit-client@2.9.7';
 
         // Configuration
         const PROXY_URL = 'http://localhost:9000';
@@ -21,6 +21,10 @@
         const AGENT_JOIN_TIMEOUT = 15000;  // 15 seconds to wait for agent
         let agentJoinTimer = null;
 
+        // DEBUG: Audio monitoring
+        let audioLevelInterval = null;
+        let audioTrackPublished = false;
+
         const status = document.getElementById('status');
         const agentSelector = document.getElementById('agentSelector');
         const agentInfo = document.getElementById('agentInfo');
@@ -29,6 +33,40 @@
         const refreshBtn = document.getElementById('refreshBtn');
         const searchInput = document.getElementById('searchInput');
         const agentList = document.getElementById('agentList');
+        const debugLog = document.getElementById('debugLog');
+        const micStatus = document.getElementById('micStatus');
+        const audioLevel = document.getElementById('audioLevel');
+
+        // DEBUG: Logging with visual feedback
+        function debugInfo(message, emoji = '📝') {
+            console.log(message);
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry log-info';
+            entry.textContent = `[${time}] ${emoji} ${message}`;
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
+        function debugError(message, emoji = '❌') {
+            console.error(message);
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry log-error';
+            entry.textContent = `[${time}] ${emoji} ${message}`;
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
+        function debugSuccess(message, emoji = '✅') {
+            console.log(message);
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry log-success';
+            entry.textContent = `[${time}] ${emoji} ${message}`;
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
 
         // Generate a room name that includes the session ID
         // This ensures each agent switch gets a clean room
@@ -39,7 +77,7 @@
         // Check microphone availability before connecting
         async function checkMicrophoneAvailability() {
             try {
-                console.log('🎤 Checking microphone availability...');
+                debugInfo('Checking microphone availability...', '🎤');
 
                 // Check if mediaDevices API is available
                 if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -54,9 +92,9 @@
                     throw new Error('No microphone devices found. Please connect a microphone and try again.');
                 }
 
-                console.log(`✅ Found ${audioInputs.length} microphone device(s):`);
+                debugSuccess(`Found ${audioInputs.length} microphone device(s):`);
                 audioInputs.forEach((device, idx) => {
-                    console.log(`  ${idx + 1}. ${device.label || 'Unnamed microphone'} (${device.deviceId})`);
+                    debugInfo(`  ${idx + 1}. ${device.label || 'Unnamed microphone'} (${device.deviceId.substring(0, 20)}...)`);
                 });
 
                 // Try to get user media to ensure permissions
@@ -64,25 +102,74 @@
                     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     // Stop the stream immediately - we just needed to check permissions
                     stream.getTracks().forEach(track => track.stop());
-                    console.log('✅ Microphone permissions granted');
+                    debugSuccess('Microphone permissions granted');
+                    micStatus.textContent = 'Permission granted';
+                    micStatus.className = 'indicator success';
                 } catch (permErr) {
                     throw new Error(`Microphone permission denied: ${permErr.message}`);
                 }
 
                 return true;
             } catch (err) {
-                console.error('❌ Microphone check failed:', err);
+                debugError(`Microphone check failed: ${err.message}`);
+                micStatus.textContent = 'ERROR';
+                micStatus.className = 'indicator error';
                 throw err;
             }
         }
 
+        // Monitor audio levels
+        function startAudioLevelMonitoring() {
+            if (audioLevelInterval) {
+                clearInterval(audioLevelInterval);
+            }
+
+            audioLevelInterval = setInterval(() => {
+                if (!room || !room.localParticipant) {
+                    return;
+                }
+
+                const audioTrack = room.localParticipant.getTrackPublication(Track.Source.Microphone);
+                if (audioTrack && audioTrack.track) {
+                    // Track exists and is publishing
+                    if (!audioTrackPublished) {
+                        audioTrackPublished = true;
+                        debugSuccess('Audio track is PUBLISHING to LiveKit', '🎙️');
+                    }
+                    micStatus.textContent = 'ACTIVE';
+                    micStatus.className = 'indicator success pulse';
+                } else {
+                    if (audioTrackPublished) {
+                        audioTrackPublished = false;
+                        debugError('Audio track STOPPED publishing', '🔇');
+                    }
+                    micStatus.textContent = 'Not publishing';
+                    micStatus.className = 'indicator warning';
+                }
+            }, 500);
+        }
+
+        function stopAudioLevelMonitoring() {
+            if (audioLevelInterval) {
+                clearInterval(audioLevelInterval);
+                audioLevelInterval = null;
+            }
+            audioTrackPublished = false;
+            micStatus.textContent = 'Disconnected';
+            micStatus.className = 'indicator';
+        }
+
         // Load agents on page load
-        window.addEventListener('DOMContentLoaded', loadAgents);
+        window.addEventListener('DOMContentLoaded', () => {
+            debugInfo('Page loaded, initializing...', '🚀');
+            loadAgents();
+        });
 
         async function loadAgents() {
             try {
                 status.textContent = 'Loading agents...';
                 status.className = '';
+                debugInfo('Fetching agents from Letta server...', '🔄');
 
                 const response = await fetch(`${PROXY_URL}/api/v1/agents/`, {
                     method: 'GET',
@@ -95,7 +182,7 @@
                 }
 
                 const agents = await response.json();
-                console.log(`Loaded ${agents.length} agents`);
+                debugSuccess(`Loaded ${agents.length} agents from Letta server`);
 
                 // Store agents globally for filtering
                 window.allAgents = agents;
@@ -107,7 +194,7 @@
             } catch (err) {
                 status.textContent = 'Error loading agents: ' + err.message;
                 status.className = 'error';
-                console.error('Error loading agents:', err);
+                debugError(`Error loading agents: ${err.message}`);
                 agentList.innerHTML = '<div class="error">Failed to load agents. Make sure Letta server is running on port 8283.</div>';
             }
         }
@@ -148,6 +235,7 @@
 
         function selectAgent(agent) {
             selectedAgent = agent;
+            debugInfo(`Agent selected: ${agent.name} (${agent.id})`, '👤');
 
             // Highlight selected card
             document.querySelectorAll('.agent-card').forEach(card => {
@@ -173,9 +261,9 @@
             if (room && room.state === 'connected') {
                 status.textContent = 'Switching agent...';
                 status.className = 'info';
-                console.log(`📤 Switching from old agent to ${agent.name}...`);
+                debugInfo(`Switching from old agent to ${agent.name}...`, '🔄');
                 window.disconnect().then(() => {
-                    console.log('✅ Disconnected from old agent room, now connecting to new one...');
+                    debugInfo('Disconnected from old agent room, now connecting to new one...', '✅');
                     setTimeout(() => window.connect(), 1000);  // Give backend time to clean up
                 });
             } else {
@@ -189,6 +277,7 @@
             if (!selectedAgent) {
                 status.textContent = 'Please select an agent first!';
                 status.className = 'error';
+                debugError('No agent selected!');
                 return;
             }
 
@@ -201,6 +290,7 @@
                 await checkMicrophoneAvailability();
 
                 status.textContent = 'Connecting...';
+                debugInfo('Creating LiveKit room...', '🔗');
 
                 // Create room with options
                 room = new Room({
@@ -211,32 +301,45 @@
 
                 // Add event listeners
                 room.on(RoomEvent.SignalConnected, () => {
-                    console.log('✅ Signal connection established');
+                    debugSuccess('Signal connection established');
                 });
 
                 room.on(RoomEvent.Connected, () => {
-                    console.log('✅ Room connected successfully');
+                    debugSuccess('Room connected successfully');
                     status.textContent = 'Connected! Waiting for agent...';
                     status.className = 'connected';
                 });
 
                 room.on(RoomEvent.Reconnecting, () => {
-                    console.log('🔄 Reconnecting...');
+                    debugInfo('Reconnecting...', '🔄');
                     status.textContent = 'Reconnecting...';
                 });
 
                 room.on(RoomEvent.Disconnected, (reason) => {
-                    console.log('❌ Disconnected:', reason);
+                    debugError(`Disconnected: ${reason}`);
                     connectBtn.disabled = false;
                     disconnectBtn.disabled = true;
+                    stopAudioLevelMonitoring();
                 });
 
                 room.on(RoomEvent.ConnectionStateChanged, (state) => {
-                    console.log('Connection state:', state);
+                    debugInfo(`Connection state: ${state}`, '🔌');
+                });
+
+                // Track when local tracks are published
+                room.on(RoomEvent.LocalTrackPublished, (publication) => {
+                    debugSuccess(`Local track published: ${publication.kind} (${publication.source})`, '📤');
+                    if (publication.kind === 'audio') {
+                        debugSuccess('AUDIO TRACK IS NOW PUBLISHING TO LIVEKIT!', '🎙️');
+                    }
+                });
+
+                room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
+                    debugError(`Local track unpublished: ${publication.kind}`, '📥');
                 });
 
                 room.on('participantConnected', (participant) => {
-                    console.log('👤 Participant connected:', participant.identity);
+                    debugSuccess(`Participant connected: ${participant.identity}`, '👤');
 
                     // Clear the agent join timeout timer
                     if (agentJoinTimer) {
@@ -252,17 +355,31 @@
                 });
 
                 room.on('trackSubscribed', (track, publication, participant) => {
-                    console.log('🎵 Track subscribed:', track.kind, 'from', participant.identity);
+                    debugSuccess(`Track subscribed: ${track.kind} from ${participant.identity}`, '🎵');
                     if (track.kind === 'audio') {
                         const audioElement = track.attach();
                         document.body.appendChild(audioElement);
-                        console.log('🔊 Audio element attached');
+                        debugSuccess('Audio element attached - you should hear responses now!', '🔊');
                     }
                 });
 
                 room.on('trackUnsubscribed', (track) => {
-                    console.log('Track unsubscribed:', track.kind);
+                    debugInfo(`Track unsubscribed: ${track.kind}`, '📥');
                     track.detach();
+                });
+
+                // Listen for data messages from agent
+                room.on('dataReceived', (payload, participant) => {
+                    try {
+                        const data = JSON.parse(new TextDecoder().decode(payload));
+                        if (data.type === 'transcript') {
+                            debugInfo(`${data.role}: ${data.text}`, data.role === 'user' ? '🗣️' : '🤖');
+                        } else if (data.type === 'status_update') {
+                            debugInfo(`Status: ${data.stage} - ${data.detail}`, '📊');
+                        }
+                    } catch (e) {
+                        // Not JSON, ignore
+                    }
                 });
 
                 // Send agent selection to voice system via data channel after connecting
@@ -274,15 +391,15 @@
                         agent_name: selectedAgent.name
                     }));
                     room.localParticipant.publishData(data, { reliable: true });
-                    console.log('📤 Sent agent selection:', selectedAgent.id);
+                    debugInfo(`Sent agent selection: ${selectedAgent.id}`, '📤');
                 });
 
                 // CRITICAL FIX: Use "test-room" to match the JWT token
                 // The token is hardcoded to allow "test-room" only
                 // Dynamic room names were causing browser and agent to join different rooms!
                 const roomName = 'test-room';
-                console.log('🔗 Connecting to room:', roomName, 'on', LIVEKIT_URL);
-                console.log('⚠️  Using fixed room name "test-room" to match JWT token');
+                debugInfo(`Connecting to room: ${roomName} on ${LIVEKIT_URL}`, '🔗');
+                debugInfo('⚠️  Using fixed room name "test-room" to match JWT token', '🔑');
 
                 // Connect with timeout
                 const connectPromise = room.connect(LIVEKIT_URL, TOKEN, {
@@ -295,55 +412,92 @@
 
                 await Promise.race([connectPromise, timeoutPromise]);
 
-                console.log('✅ Connected to room:', room.name);
-                console.log('🎤 Enabling microphone...');
+                debugSuccess(`Connected to room: ${room.name}`, '🎉');
+
+                // Request agent dispatch
+                debugInfo('Requesting agent dispatch to room...', '📡');
+                try {
+                    const dispatchResponse = await fetch(`${PROXY_URL}/api/dispatch-agent`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ room: roomName })
+                    });
+
+                    const dispatchData = await dispatchResponse.json();
+                    if (dispatchData.success) {
+                        debugSuccess(`Agent dispatch requested: ${dispatchData.message}`, '✅');
+                    } else {
+                        debugError(`Dispatch warning: ${dispatchData.error || dispatchData.message}`, '⚠️');
+                    }
+                } catch (dispatchErr) {
+                    debugError(`Failed to request agent dispatch: ${dispatchErr.message}`, '❌');
+                    // Continue anyway - agent might auto-join
+                }
+
+                debugInfo('Enabling microphone...', '🎤');
 
                 // Enable microphone with explicit error handling
                 try {
                     await room.localParticipant.setMicrophoneEnabled(true);
-                    console.log('✅ Microphone enabled successfully');
+                    debugSuccess('Microphone enabled successfully!', '✅');
+
+                    // Start monitoring audio levels
+                    startAudioLevelMonitoring();
                 } catch (micErr) {
-                    console.error('❌ Failed to enable microphone:', micErr);
+                    debugError(`Failed to enable microphone: ${micErr.message}`);
                     throw new Error(`Microphone error: ${micErr.message}`);
                 }
 
                 // Check for existing participants
                 const existingParticipants = Array.from(room.remoteParticipants.values());
-                console.log('👥 Existing participants:', existingParticipants.length);
+                debugInfo(`Existing participants in room: ${existingParticipants.length}`, '👥');
 
                 if (existingParticipants.length > 0) {
-                    // Agent already in room
+                    // Agent already in room - manually trigger participant connected logic
+                    existingParticipants.forEach(participant => {
+                        debugSuccess(`Existing participant detected: ${participant.identity}`, '👤');
+                    });
+
+                    // Clear the agent join timeout timer (same as participantConnected event)
+                    if (agentJoinTimer) {
+                        clearTimeout(agentJoinTimer);
+                        agentJoinTimer = null;
+                    }
+
+                    // Reset retry counter on successful connection
+                    connectionRetries = 0;
+
                     status.textContent = `Agent "${selectedAgent.name}" connected! Start speaking...`;
                     status.className = 'connected';
-                    connectionRetries = 0;  // Reset on success
+                    debugSuccess('Agent is already in the room!', '🎉');
                 } else {
                     // Waiting for agent to join
                     status.textContent = 'Connected! Waiting for agent to join...';
                     status.className = 'connected';
+                    debugInfo(`Waiting ${AGENT_JOIN_TIMEOUT/1000}s for agent to join...`, '⏰');
 
-                    // *** AUTO-RECOVERY: Set timeout for agent join ***
-                    console.log(`⏰ Starting ${AGENT_JOIN_TIMEOUT/1000}s timeout for agent to join...`);
+                    // Set timeout for agent join
                     agentJoinTimer = setTimeout(async () => {
-                        console.error('⏱️ Agent join timeout! No agent joined the room.');
+                        debugError('Agent join timeout! No agent joined the room.', '⏱️');
 
                         if (connectionRetries < MAX_RETRIES) {
                             connectionRetries++;
-                            const backoffDelay = 1000 * connectionRetries; // Exponential backoff: 1s, 2s, 3s
+                            const backoffDelay = 1000 * connectionRetries;
 
                             status.textContent = `Agent didn't join. Retrying (${connectionRetries}/${MAX_RETRIES}) in ${backoffDelay/1000}s...`;
                             status.className = 'error';
 
-                            console.log(`🔄 Retry ${connectionRetries}/${MAX_RETRIES} after ${backoffDelay}ms delay...`);
+                            debugInfo(`Retry ${connectionRetries}/${MAX_RETRIES} after ${backoffDelay}ms delay...`, '🔄');
 
                             // Disconnect and reconnect with fresh room
                             await window.disconnect();
 
                             // Generate new session ID for completely fresh room
                             sessionId = Math.random().toString(36).substring(7);
-                            console.log(`🆕 Generated new session ID: ${sessionId}`);
+                            debugInfo(`Generated new session ID: ${sessionId}`, '🆕');
 
                             setTimeout(() => {
-                                console.log('🔄 Reconnecting with fresh room...');
+                                debugInfo('Reconnecting with fresh room...', '🔄');
                                 window.connect();
                             }, backoffDelay);
 
@@ -351,7 +505,7 @@
                             // Max retries exceeded
                             status.textContent = `Failed to connect after ${MAX_RETRIES} attempts. Please check voice agent logs and try again.`;
                             status.className = 'error';
-                            console.error('❌ Max retries exceeded. Voice agent may not be running.');
+                            debugError('Max retries exceeded. Voice agent may not be running.');
 
                             // Disconnect
                             await window.disconnect();
@@ -370,13 +524,14 @@
                 }
 
                 disconnectBtn.disabled = false;
-                console.log('✅ Setup complete - ready to talk');
+                debugSuccess('Setup complete - ready to talk!', '✅');
 
             } catch (err) {
                 status.textContent = 'Error: ' + err.message;
                 status.className = 'error';
                 connectBtn.disabled = false;
-                console.error('❌ Connection error:', err);
+                debugError(`Connection error: ${err.message}`);
+                stopAudioLevelMonitoring();
             }
         };
 
@@ -385,8 +540,10 @@
             if (agentJoinTimer) {
                 clearTimeout(agentJoinTimer);
                 agentJoinTimer = null;
-                console.log('⏰ Cleared agent join timeout');
+                debugInfo('Cleared agent join timeout', '⏰');
             }
+
+            stopAudioLevelMonitoring();
 
             if (room) {
                 try {
@@ -397,9 +554,9 @@
                         timestamp: new Date().toISOString()
                     }));
                     await room.localParticipant.publishData(cleanupData, { reliable: true });
-                    console.log('📤 Sent room cleanup notification');
+                    debugInfo('Sent room cleanup notification', '📤');
                 } catch (e) {
-                    console.error('Error sending cleanup notification:', e);
+                    debugError(`Error sending cleanup notification: ${e.message}`);
                 }
 
                 // Give backend a moment to process cleanup
@@ -411,11 +568,12 @@
                 status.className = '';
                 connectBtn.disabled = selectedAgent ? false : true;
                 disconnectBtn.disabled = true;
-                console.log('Disconnected from room');
+                debugInfo('Disconnected from room', '👋');
             }
         };
 
         window.refreshAgents = function() {
+            debugInfo('Refreshing agents list...', '🔄');
             loadAgents();
         };
 
@@ -430,6 +588,11 @@
             });
 
             displayAgents(filtered);
+        };
+
+        window.clearDebugLog = function() {
+            debugLog.innerHTML = '';
+            debugInfo('Debug log cleared', '🧹');
         };
     </script>
     <style>
@@ -447,7 +610,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -472,20 +635,24 @@
             font-size: 1.1em;
         }
 
+        .debug-badge {
+            background: #ff6b6b;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
         main {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1.5fr 1fr 1.5fr;
             gap: 20px;
             padding: 20px;
         }
 
-        .left-panel {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .right-panel {
+        .left-panel, .right-panel, .debug-panel {
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -557,12 +724,12 @@
             box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
         }
 
-        #refreshBtn {
+        #refreshBtn, #clearLogBtn {
             background: #17a2b8;
             color: white;
         }
 
-        #refreshBtn:hover {
+        #refreshBtn:hover, #clearLogBtn:hover {
             background: #138496;
         }
 
@@ -590,7 +757,7 @@
             border: 2px solid #e0e0e0;
             border-radius: 8px;
             padding: 15px;
-            max-height: 500px;
+            max-height: 400px;
             overflow-y: auto;
         }
 
@@ -675,9 +842,107 @@
             color: #333;
         }
 
-        #agentInfo ul {
-            margin-top: 5px;
-            margin-left: 20px;
+        /* Debug panel styles */
+        .debug-panel {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 15px;
+            color: #d4d4d4;
+        }
+
+        .debug-panel h2 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .indicator-box {
+            flex: 1;
+            min-width: 120px;
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 6px;
+            border: 2px solid #3e3e3e;
+        }
+
+        .indicator-box label {
+            display: block;
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .indicator {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+            background: #444;
+            color: #999;
+        }
+
+        .indicator.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .indicator.error {
+            background: #dc3545;
+            color: white;
+        }
+
+        .indicator.warning {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .indicator.pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        #debugLog {
+            background: #1e1e1e;
+            border: 1px solid #3e3e3e;
+            border-radius: 6px;
+            padding: 10px;
+            height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+        }
+
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #2d2d2d;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-info {
+            color: #d4d4d4;
+        }
+
+        .log-success {
+            color: #4ec9b0;
+        }
+
+        .log-error {
+            color: #f48771;
         }
 
         .instructions {
@@ -710,7 +975,7 @@
             font-size: 0.9em;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 1200px) {
             main {
                 grid-template-columns: 1fr;
             }
@@ -720,8 +985,9 @@
 <body>
     <div class="container">
         <header>
-            <h1>Letta Voice Agent</h1>
+            <h1>Letta Voice Agent - DEBUG VERSION</h1>
             <div class="subtitle">Multi-Agent Voice Chat System</div>
+            <div class="debug-badge">COMPREHENSIVE DEBUGGING ENABLED</div>
         </header>
 
         <main>
@@ -743,13 +1009,13 @@
                         <div class="info">Loading agents...</div>
                     </div>
                 </div>
-            </div>
 
-            <div class="right-panel">
                 <div id="agentInfo">
                     <!-- Agent details will be shown here when selected -->
                 </div>
+            </div>
 
+            <div class="right-panel">
                 <div class="instructions">
                     <h3>Instructions</h3>
                     <ol>
@@ -763,9 +1029,30 @@
                         <li>Start speaking!</li>
                     </ol>
                     <p style="margin-top: 15px;">
-                        <strong>Tip:</strong> Check the browser console (F12) for detailed logs.
+                        <strong>DEBUG MODE:</strong> Watch the debug panel on the right for detailed logging of all events.
                     </p>
                 </div>
+            </div>
+
+            <div class="debug-panel">
+                <h2>Debug Console</h2>
+
+                <div class="status-indicators">
+                    <div class="indicator-box">
+                        <label>Microphone Status</label>
+                        <span id="micStatus" class="indicator">Disconnected</span>
+                    </div>
+                    <div class="indicator-box">
+                        <label>Audio Level</label>
+                        <span id="audioLevel" class="indicator">-</span>
+                    </div>
+                </div>
+
+                <div class="controls" style="margin-bottom: 15px;">
+                    <button id="clearLogBtn" onclick="clearDebugLog()">Clear Log</button>
+                </div>
+
+                <div id="debugLog"></div>
             </div>
         </main>
     </div>

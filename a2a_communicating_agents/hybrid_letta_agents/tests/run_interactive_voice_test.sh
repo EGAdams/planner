@@ -7,6 +7,16 @@ set -e
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
 
+# Determine the correct Python to use
+# Priority: 1) Virtual env at /home/adamsl/planner/.venv, 2) System python3
+if [ -f "/home/adamsl/planner/.venv/bin/python3" ]; then
+    PYTHON="/home/adamsl/planner/.venv/bin/python3"
+    echo "ℹ️  Using virtual environment: /home/adamsl/planner/.venv"
+else
+    PYTHON="python3"
+    echo "⚠️  Virtual environment not found, using system python3"
+fi
+
 echo "========================================"
 echo "Interactive Voice Test - Manual Control"
 echo "========================================"
@@ -19,7 +29,7 @@ if ! curl -s http://localhost:9000 > /dev/null 2>&1; then
     echo ""
     echo "Starting HTTP server in background..."
     cd "$PROJECT_DIR"
-    python3 -m http.server 9000 > /tmp/voice_test_http_server.log 2>&1 &
+    $PYTHON -m http.server 9000 > /tmp/voice_test_http_server.log 2>&1 &
     SERVER_PID=$!
     echo "    HTTP server started (PID: $SERVER_PID)"
     sleep 2
@@ -32,7 +42,7 @@ fi
 echo ""
 echo "[2/4] Checking Letta server..."
 if curl -s http://localhost:8283/api/v1/agents/ > /dev/null 2>&1; then
-    agent_count=$(curl -s http://localhost:8283/api/v1/agents/ | python3 -c "import sys, json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "?")
+    agent_count=$(curl -s http://localhost:8283/api/v1/agents/ | $PYTHON -c "import sys, json; print(len(json.load(sys.stdin)))" 2>/dev/null || echo "?")
     echo "✅ Letta server running on port 8283 ($agent_count agents)"
 else
     echo "⚠️  WARNING: Letta server not responding on port 8283"
@@ -68,20 +78,33 @@ echo ""
 # Determine which device mode to use
 # Default to fake device (safer for headless/CI)
 DEVICE_ARG="--fake-device"
+MODE_ARG="--non-interactive"
 
-# Check if real device requested via first argument
-if [ "$1" = "--real-device" ]; then
-    DEVICE_ARG="--real-device"
-    echo "⚠️  Using REAL microphone device (make sure it's connected)"
-else
+# Check arguments
+for arg in "$@"; do
+    if [ "$arg" = "--real-device" ]; then
+        DEVICE_ARG="--real-device"
+        echo "⚠️  Using REAL microphone device (make sure it's connected)"
+    elif [ "$arg" = "--interactive" ]; then
+        MODE_ARG=""
+        echo "ℹ️  Running in INTERACTIVE mode (will wait for user input)"
+    fi
+done
+
+# Default messages
+if [ "$DEVICE_ARG" = "--fake-device" ]; then
     echo "ℹ️  Using FAKE audio device (pass --real-device to use real mic)"
+fi
+
+if [ "$MODE_ARG" = "--non-interactive" ]; then
+    echo "ℹ️  Running in NON-INTERACTIVE mode (auto-continue, pass --interactive to wait for input)"
 fi
 
 echo ""
 
 # Run the test
 cd "$SCRIPT_DIR"
-python3 test_interactive_voice_manual.py $DEVICE_ARG
+$PYTHON test_interactive_voice_manual.py $DEVICE_ARG $MODE_ARG
 
 TEST_EXIT_CODE=$?
 

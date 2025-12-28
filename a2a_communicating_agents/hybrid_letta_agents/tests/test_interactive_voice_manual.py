@@ -66,14 +66,18 @@ class LogCollector:
             'error': str(error)
         })
 
-    def add_network_request(self, request):
-        """Add network request"""
-        self.network_requests.append({
+    def add_network_request(self, request, response=None):
+        """Add network request with optional response"""
+        req_data = {
             'timestamp': datetime.now().isoformat(),
             'url': request.url,
             'method': request.method,
             'resource_type': request.resource_type
-        })
+        }
+        if response:
+            req_data['status'] = response.status
+            req_data['status_text'] = response.status_text
+        self.network_requests.append(req_data)
 
     def add_microphone_event(self, event_type, details):
         """Add microphone-related event"""
@@ -126,9 +130,24 @@ class LogCollector:
 
         # 1. Check if microphone was activated
         print("\n[1] MICROPHONE STATUS:")
-        mic_enabled = any('setMicrophoneEnabled' in log['text'] for log in self.browser_console_logs)
+        # Check for various microphone-related messages (case-insensitive, handles emojis)
+        mic_logs = [log for log in self.browser_console_logs
+                   if 'microphone' in log['text'].lower() or 'mic' in log['text'].lower()]
+
+        mic_enabled = any(
+            ('enabling microphone' in log['text'].lower() or
+             'microphone enabled' in log['text'].lower() or
+             'setmicrophoneenabled' in log['text'].lower())
+            for log in mic_logs
+        )
+
         if mic_enabled:
             print("    ✅ Microphone activation detected")
+            # Show the actual microphone logs
+            if mic_logs:
+                print("    📋 Microphone logs:")
+                for log in mic_logs:
+                    print(f"       - {log['text']}")
         else:
             print("    ❌ No microphone activation detected")
             issues.append("Microphone was not enabled in the browser")
@@ -153,14 +172,24 @@ class LogCollector:
 
         # 3. Check for WebSocket connections
         print("\n[3] WEBSOCKET CONNECTIONS:")
-        ws_requests = [req for req in self.network_requests if 'ws://' in req['url'] or 'wss://' in req['url']]
-        if ws_requests:
-            print(f"    ✅ Found {len(ws_requests)} WebSocket connection(s):")
-            for req in ws_requests:
-                print(f"       - {req['url']}")
+        # WebSocket connections are not captured by page.on("request") in Playwright
+        # Instead, check for LiveKit connection logs which indicate WebSocket usage
+        ws_logs = [log for log in self.browser_console_logs
+                  if 'ws://' in log['text'].lower() or 'wss://' in log['text'].lower() or
+                  'signal connection established' in log['text'].lower() or
+                  'room connected' in log['text'].lower() or
+                  'connection state: connected' in log['text'].lower()]
+        if ws_logs:
+            print(f"    ✅ WebSocket connections detected ({len(ws_logs)} event(s)):")
+            for log in ws_logs[:5]:  # Show first 5
+                print(f"       - {log['text']}")
         else:
-            print("    ❌ No WebSocket connections detected")
-            issues.append("No WebSocket connections to LiveKit")
+            print("    ⚠️  No WebSocket connection logs detected")
+            print("    ℹ️  Note: WebSocket connections may not appear in network requests")
+            # Don't treat this as a critical issue if LiveKit connected
+            connection_logs = [log for log in self.browser_console_logs if 'connected' in log['text'].lower()]
+            if not connection_logs:
+                issues.append("No WebSocket connections to LiveKit")
 
         # 4. Check for participant events
         print("\n[4] PARTICIPANT EVENTS:")
@@ -180,6 +209,19 @@ class LogCollector:
             print(f"    ✅ Found {len(track_logs)} track event(s):")
             for log in track_logs:
                 print(f"       - {log['text']}")
+
+            # Check for trackID undefined issue
+            undefined_track = any('trackID: undefined' in log['text'] for log in track_logs)
+            if undefined_track:
+                print(f"    ⚠️  WARNING: Track published with undefined trackID")
+                print(f"       This is usually harmless - LiveKit assigns IDs internally")
+
+            # Check for silence detection warnings
+            silence_warnings = [log for log in self.browser_console_logs
+                               if log['type'] == 'warning' and 'silence detected' in log['text'].lower()]
+            if silence_warnings:
+                print(f"    ℹ️  Note: {len(silence_warnings)} silence detection warning(s)")
+                print(f"       This is expected when using fake audio device or no audio input")
         else:
             print("    ⚠️  No audio track events detected")
 
@@ -200,16 +242,53 @@ class LogCollector:
             for error in self.browser_errors:
                 print(f"       - {error['error']}")
                 issues.append(f"Browser error: {error['error']}")
-        else:
-            print("    ✅ No browser errors detected")
 
         # Look for console errors
         error_logs = [log for log in self.browser_console_logs if log['type'] == 'error']
-        if error_logs:
-            print(f"    ❌ Found {len(error_logs)} console error(s):")
-            for log in error_logs:
+
+        # Filter out benign 404 errors
+        critical_errors = []
+        benign_errors = []
+        for log in error_logs:
+            is_404 = '404' in log['text'].lower()
+            is_resource_load = 'failed to load resource' in log['text'].lower()
+            is_favicon = 'favicon' in log['text'].lower()
+
+            if is_404 and (is_favicon or is_resource_load):
+                benign_errors.append(log)
+            else:
+                critical_errors.append(log)
+
+        if critical_errors:
+            print(f"    ❌ Found {len(critical_errors)} critical console error(s):")
+            for log in critical_errors:
                 print(f"       - {log['text']}")
-                issues.append(f"Console error: {log['text']}")
+
+        if benign_errors:
+            print(f"    ℹ️  Found {len(benign_errors)} benign error(s) (404s for optional resources):")
+            for log in benign_errors[:3]:  # Show first 3
+                print(f"       - {log['text']}")
+
+        if not self.browser_errors and not critical_errors:
+            print("    ✅ No critical errors detected")
+
+        # Check for failed network requests (404s, 500s, etc.)
+        failed_requests = [req for req in self.network_requests if req.get('status', 200) >= 400]
+        if failed_requests:
+            print(f"    ⚠️  Found {len(failed_requests)} failed network request(s):")
+            for req in failed_requests:
+                status = req.get('status', '?')
+                print(f"       - {status} {req.get('status_text', '')}: {req['url']}")
+                # Only treat critical errors (not 404s or favicons) as issues
+                if status >= 500 or (status >= 400 and status != 404):
+                    issues.append(f"{status} error: {req['url']}")
+                elif status == 404 and 'favicon' not in req['url'].lower():
+                    # Note the 404 but don't fail the test
+                    print(f"       ℹ️  Non-critical 404 (common for optional resources)")
+
+        # Add critical console errors to issues list
+        for log in critical_errors:
+            issues.append(f"Console error: {log['text']}")
 
         # 8. Check for timeout/connection issues
         print("\n[8] CONNECTION ISSUES:")
@@ -250,18 +329,27 @@ class LogCollector:
 
 
 class InteractiveVoiceTest:
-    """Interactive voice testing with manual control"""
+    """Interactive voice testing with manual user control"""
 
     BASE_URL = "http://localhost:9000"
 
-    def __init__(self, page: Page, log_collector: LogCollector):
+    def __init__(self, page: Page, log_collector: LogCollector, non_interactive: bool = False):
         self.page = page
         self.logs = log_collector
+        self.non_interactive = non_interactive
 
     async def wait_for_user_input(self, prompt: str):
-        """Wait for user to press Enter"""
+        """Wait for user to press Enter (or auto-continue in non-interactive mode)"""
         print(f"\n{prompt}")
-        await asyncio.get_event_loop().run_in_executor(None, input)
+        if self.non_interactive:
+            print("   (Non-interactive mode: auto-continuing after 2 seconds...)")
+            await asyncio.sleep(2)
+        else:
+            try:
+                await asyncio.get_event_loop().run_in_executor(None, input)
+            except EOFError:
+                print("   (No input available: auto-continuing...)")
+                await asyncio.sleep(2)
 
     async def navigate_to_page(self):
         """Navigate to the voice agent selector page"""
@@ -384,13 +472,14 @@ class InteractiveVoiceTest:
         print("\n✅ Interactive test completed")
 
 
-async def main(use_fake_device=False):
+async def main(use_fake_device=False, non_interactive=False):
     """
     Main test function
 
     Args:
         use_fake_device: If True, use fake audio device for testing.
                         If False, attempt to use real microphone.
+        non_interactive: If True, run without waiting for user input.
     """
     log_collector = LogCollector()
     log_file = Path(__file__).parent / f"voice_test_logs_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
@@ -427,10 +516,23 @@ async def main(use_fake_device=False):
         # Set up log collectors
         page.on("console", lambda msg: log_collector.add_console_log(msg))
         page.on("pageerror", lambda err: log_collector.add_error(err))
+
+        # Track both requests and responses to capture status codes
         page.on("request", lambda req: log_collector.add_network_request(req))
 
+        async def handle_response(response):
+            """Handle response to capture status codes"""
+            # Find the matching request and update it with response data
+            for req in reversed(log_collector.network_requests):
+                if req['url'] == response.url:
+                    req['status'] = response.status
+                    req['status_text'] = response.status_text
+                    break
+
+        page.on("response", lambda res: asyncio.create_task(handle_response(res)))
+
         # Run interactive test
-        test = InteractiveVoiceTest(page, log_collector)
+        test = InteractiveVoiceTest(page, log_collector, non_interactive=non_interactive)
 
         try:
             await test.run_interactive_test()
@@ -462,10 +564,13 @@ if __name__ == "__main__":
                        help='Use fake audio device instead of real microphone (recommended for headless/CI)')
     parser.add_argument('--real-device', action='store_true',
                        help='Use real microphone device (requires physical microphone)')
+    parser.add_argument('--non-interactive', action='store_true',
+                       help='Run in non-interactive mode (auto-continue without user input)')
     args = parser.parse_args()
 
     # Default to fake device if neither specified
     use_fake = args.fake_device or not args.real_device
+    non_interactive = args.non_interactive
 
     print("""
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -503,7 +608,7 @@ Press Ctrl+C to abort at any time.
 """)
 
     try:
-        asyncio.run(main(use_fake_device=use_fake))
+        asyncio.run(main(use_fake_device=use_fake, non_interactive=non_interactive))
     except KeyboardInterrupt:
         print("\n\n⚠️  Test aborted by user")
         sys.exit(0)

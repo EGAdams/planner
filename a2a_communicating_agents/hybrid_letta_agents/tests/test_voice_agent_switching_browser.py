@@ -53,7 +53,7 @@ class VoiceAgentSwitchingTest:
         msg_type = msg.type
 
         # Log all console messages
-        print( f"[Browser Console] {msg_type.upper()}: {text}" )
+        print( f"[Browser Console] {msg_type.upper()}: {text}" ) # December 27, 2025 7:56 AM
         if msg_type == "error":
             logger.error( f"Browser console ERROR: {text}" )
             self.console_errors.append( text )
@@ -82,9 +82,7 @@ class VoiceAgentSwitchingTest:
         """Navigate to the voice agent selector page"""
         logger.info( f"Navigating to {self.BASE_URL}" )
         await self.page.goto( self.BASE_URL, wait_until="networkidle" )
-        await expect(
-            self.page
-        ).to_have_title( "Letta Voice Agent - Multi-Agent Selector" )
+        await expect( self.page ).to_have_title( "Letta Voice Agent - Multi-Agent Selector" )
         logger.info( "✅ Page loaded successfully" )
 
     async def check_microphone_available( self ):
@@ -97,22 +95,83 @@ class VoiceAgentSwitchingTest:
         logger.info( "Checking for microphone availability..." )
 
         try:
-            # Use JavaScript to check for audio input devices
-            has_microphone = await self.page.evaluate( """
+            # Use JavaScript to check for audio input devices with detailed info
+            device_info = await self.page.evaluate( """
                 async () => {
+                    // Check what's available
+                    const debugInfo = {
+                        hasNavigator: typeof navigator !== 'undefined',
+                        hasMediaDevices: typeof navigator !== 'undefined' && 'mediaDevices' in navigator,
+                        hasGetUserMedia: typeof navigator !== 'undefined' && navigator.mediaDevices && 'getUserMedia' in navigator.mediaDevices,
+                        hasEnumerateDevices: typeof navigator !== 'undefined' && navigator.mediaDevices && 'enumerateDevices' in navigator.mediaDevices,
+                        isSecureContext: typeof window !== 'undefined' && window.isSecureContext,
+                        protocol: window.location.protocol
+                    };
+
                     if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-                        return false;
+                        return {
+                            hasAPI: false,
+                            audioInputs: [],
+                            allDevices: [],
+                            error: 'MediaDevices API not available',
+                            debug: debugInfo
+                        };
                     }
-                    const devices = await navigator.mediaDevices.enumerateDevices();
-                    const audioInputs = devices.filter(d => d.kind === 'audioinput');
-                    return audioInputs.length > 0;
+
+                    try {
+                        const devices = await navigator.mediaDevices.enumerateDevices();
+                        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+
+                        return {
+                            hasAPI: true,
+                            audioInputs: audioInputs.map(d => ({
+                                label: d.label || 'Unknown Device',
+                                deviceId: d.deviceId,
+                                kind: d.kind
+                            })),
+                            allDevices: devices.map(d => ({
+                                label: d.label || 'Unknown Device',
+                                deviceId: d.deviceId,
+                                kind: d.kind
+                            })),
+                            error: null,
+                            debug: debugInfo
+                        };
+                    } catch (err) {
+                        return {
+                            hasAPI: true,
+                            audioInputs: [],
+                            allDevices: [],
+                            error: err.toString(),
+                            debug: debugInfo
+                        };
+                    }
                 }
             """ )
+
+            # Log detailed device information
+            logger.info( f"MediaDevices API Available: {device_info['hasAPI']}" )
+
+            if device_info['error']:
+                logger.warning( f"Error: {device_info['error']}" )
+                logger.debug( f"Debug info: {device_info['debug']}" )
+
+            logger.info( f"Total devices found: {len(device_info['allDevices'])}" )
+            for idx, device in enumerate(device_info['allDevices']):
+                logger.debug( f"  [{idx}] {device['kind']}: {device['label']}" )
+
+            logger.info( f"Audio input devices: {len(device_info['audioInputs'])}" )
+            for idx, device in enumerate(device_info['audioInputs']):
+                logger.info( f"  [{idx}] {device['label']}" )
+
+            has_microphone = len(device_info['audioInputs']) > 0
 
             if has_microphone:
                 logger.info( "✅ Microphone is available" )
             else:
                 logger.warning( "⚠️  No microphone devices found" )
+                if not device_info['debug']['isSecureContext']:
+                    logger.warning( "⚠️  Page is not in a secure context (HTTPS/localhost required)" )
 
             return has_microphone
 
@@ -135,7 +194,7 @@ class VoiceAgentSwitchingTest:
             status_class = await status_element.get_attribute( "class" )
             if "error" in status_class:
                 status_text = await status_element.text_content()
-                raise Exception( f"Failed to load agents: {status_text}" )
+                raise Exception( f"Failed to load agents: { status_text }" )
 
             # Wait for agent cards to appear
             await self.page.wait_for_selector( ".agent-card", timeout=5000 )
@@ -162,8 +221,7 @@ class VoiceAgentSwitchingTest:
             await disconnect_btn.click()
 
             # Wait for status to update to "Disconnected"
-            await expect( self.page.locator( "#status" )
-                         ).to_contain_text( "Disconnected", timeout=5000 )
+            await expect( self.page.locator( "#status" )).to_contain_text( "Disconnected", timeout=5000 )
             logger.info( "✅ Successfully disconnected" )
             return True
         else:
@@ -180,7 +238,7 @@ class VoiceAgentSwitchingTest:
         Returns:
             Agent name that was selected
         """
-        logger.info( f"Selecting agent at index {agent_index}" )
+        logger.info( f"Selecting agent at index { agent_index }" )
 
         # Get all agent cards
         agent_cards = self.page.locator( ".agent-card" )
@@ -191,7 +249,7 @@ class VoiceAgentSwitchingTest:
 
         if agent_index >= agent_count:
             raise Exception(
-                f"Agent index {agent_index} out of range (only {agent_count} agents)"
+                f"Agent index { agent_index } out of range (only { agent_count } agents)"
             )
 
         # Click the agent card
@@ -210,7 +268,6 @@ class VoiceAgentSwitchingTest:
         # Verify connect button is now enabled
         connect_btn = self.page.locator( "#connectBtn" )
         await expect( connect_btn ).to_be_enabled()
-
         return agent_name
 
     async def connect_to_agent( self ):
@@ -224,22 +281,22 @@ class VoiceAgentSwitchingTest:
         status_element = self.page.locator( "#status" )
 
         # Give it a moment to update
-        await self.page.wait_for_timeout( 1000 )
+        await self.page.wait_for_timeout( 3000 )
 
         # Check if we got an error (e.g., microphone check failed)
         status_class = await status_element.get_attribute( "class" )
         status_text = await status_element.text_content()
 
         if "error" in status_class:
-            logger.error( f"❌ Connection failed with error: {status_text}" )
-            raise AssertionError( f"Connection failed: {status_text}" )
+            logger.error( f"❌ Connection failed with error: { status_text }" )
+            raise AssertionError( f"Connection failed: { status_text }" )
 
         # Otherwise we should see "Connecting..." or "Connected..."
         if "Connecting" not in status_text and "Connected" not in status_text:
             raise AssertionError(
-                f"Unexpected status after connect: {status_text}" )
+                f"Unexpected status after connect: { status_text }" )
 
-        logger.info( f"✅ Connection initiated: {status_text}" )
+        logger.info( f"✅ Connection initiated: { status_text }" )
 
     async def wait_for_agent_connection( self, expected_agent_name: str ):
         """
@@ -264,25 +321,20 @@ class VoiceAgentSwitchingTest:
                 ignore_case=True )
 
             status_text = await status_element.text_content()
-            logger.info( f"✅ Agent connected: {status_text}" )
+            logger.info( f"✅ Agent connected: { status_text }" )
 
             # Verify the correct agent name is in the status
             if expected_agent_name not in status_text:
                 raise AssertionError(
                     f"Connected to wrong agent. Expected '{expected_agent_name}' "
-                    f"but got: {status_text}" )
+                    f"but got: { status_text }" )
 
             # Verify status has 'connected' class
             status_class = await status_element.get_attribute( "class" )
-            assert ( "connected" in status_class
-                    ), f"Status doesn't have 'connected' class: {status_class}"
-
-            # Check for console errors (device errors, etc.)
-            if self.console_errors:
+            assert ( "connected" in status_class ), f"Status doesn't have 'connected' class: { status_class }"
+            if self.console_errors: # Check for console errors (device errors, etc.)
                 error_list = "\n  - ".join( self.console_errors )
-                raise AssertionError(
-                    f"Browser errors detected during connection:\n  - {error_list}"
-                )
+                raise AssertionError( f"Browser errors detected during connection:\n  - { error_list }" )
 
             logger.info( "✅ Agent connection verified successfully" )
             return True
@@ -291,9 +343,7 @@ class VoiceAgentSwitchingTest:
             # Get current status for debugging
             status_text = await status_element.text_content()
             status_class = await status_element.get_attribute( "class" )
-            logger.error(
-                f"❌ Connection failed. Status: {status_text}, Class: {status_class}"
-            )
+            logger.error( f"❌ Connection failed. Status: { status_text }, Class: { status_class }" )
 
             # Log any console errors
             if self.console_errors:
@@ -306,10 +356,7 @@ class VoiceAgentSwitchingTest:
         logger.info( "Verifying microphone is enabled..." )
 
         # Check via JavaScript
-        mic_enabled = await self.page.evaluate(
-            "() => window.room?.localParticipant?.isMicrophoneEnabled ?? false"
-        )
-
+        mic_enabled = await self.page.evaluate( "() => window.room?.localParticipant?.isMicrophoneEnabled ?? false" )
         if not mic_enabled:
             raise AssertionError( "Microphone is not enabled" )
 
@@ -317,7 +364,7 @@ class VoiceAgentSwitchingTest:
         return True
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def browser_context():
     """Create a Playwright browser context with proper configuration"""
     async with async_playwright() as p:
@@ -325,23 +372,35 @@ async def browser_context():
         browser = await p.chromium.launch(
             headless=False,  # Set to True for CI/CD
             slow_mo=500,  # Slow down actions for visibility (remove for CI)
-        )
+            args=[
+                '--use-fake-device-for-media-stream',  # Use fake audio/video devices
+                '--use-fake-ui-for-media-stream',      # Skip permission prompts
+            ])
 
         # Create context with permissions for microphone
         context = await browser.new_context( permissions=[ "microphone" ],
                                             viewport={
                                                 "width": 1280,
-                                                "height": 720
-                                            } )
+                                                "height": 720 })
 
         # Create page (console handlers will be attached by VoiceAgentSwitchingTest)
         page = await context.new_page()
 
-        yield page
+        try:
+            yield page # return page, but come back to cleanup after the test finishes
+        finally:
+            # ***************** WAITING HERE FOR TEST *****************
 
-        # Cleanup
-        await context.close()
-        await browser.close()
+            # Ensure all pages are closed before closing context
+            for p in context.pages:
+                await p.close()
+
+            # Cleanup
+            await context.close()
+            await browser.close()
+
+            # Small delay to ensure cleanup completes before next test
+            await asyncio.sleep(0.5)
 
 
 @pytest.mark.asyncio
@@ -420,9 +479,7 @@ async def test_voice_agent_switching_workflow( browser_context ):
         logger.info( "\n[STEP 10] Select second agent" )
         second_agent_name = await test.select_agent( 1 )
 
-        assert (
-            second_agent_name
-            != first_agent_name ), "Second agent should be different from first"
+        assert ( second_agent_name != first_agent_name ), "Second agent should be different from first"
 
         logger.info( "\n[STEP 11] Connect to second agent" )
         await test.connect_to_agent()
@@ -430,18 +487,14 @@ async def test_voice_agent_switching_workflow( browser_context ):
         logger.info( "\n[STEP 12] Wait for second agent connection" )
         await test.wait_for_agent_connection( second_agent_name )
 
-        logger.info(
-            "\n[STEP 13] Verify microphone is enabled for second agent" )
+        logger.info( "\n[STEP 13] Verify microphone is enabled for second agent" )
         await test.verify_microphone_enabled()
     else:
-        logger.info(
-            "\n⚠️  Only one agent available - cannot test switching between agents"
-        )
+        logger.info( "\n⚠️  Only one agent available - cannot test switching between agents" )
 
     logger.info( "\n" + "=" * 80 )
     logger.info( "TEST COMPLETED SUCCESSFULLY" )
     logger.info( "=" * 80 )
-
 
 @pytest.mark.asyncio
 async def test_voice_agent_selection_ui( browser_context ):
