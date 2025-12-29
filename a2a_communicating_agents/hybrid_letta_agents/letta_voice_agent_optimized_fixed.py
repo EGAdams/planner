@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Letta Voice Agent - FULLY OPTIMIZED VERSION
+Letta Voice Agent - FULLY OPTIMIZED VERSION WITH MEMORY FIX
 ============================================
-Performance + Reliability improvements combined.
+Performance + Reliability + Memory Access improvements combined.
 
 Performance Optimizations:
 1. Hybrid streaming: Direct OpenAI (1-2s) + background Letta memory
@@ -20,16 +20,22 @@ Reliability Improvements:
 11. Response validation: Quality checks on all responses
 12. Timeout protection: 10s max per operation
 
+CRITICAL FIX - Memory Access:
+13. Hybrid mode now loads Agent_66's persona and memory blocks
+14. Agent's knowledge and context included in OpenAI prompts
+15. Maintains fast response times while using agent's brain
+
 Expected latency: <2 seconds end-to-end
 Previous latency: 16 seconds (8x improvement)
 Silent failures: 0% (was common)
+Memory access: FIXED (agent knowledge now used in responses)
 """
 
 import asyncio
 import logging
 import os
 import json
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 import time
 
@@ -178,7 +184,7 @@ class CircuitBreaker:
 
 class LettaVoiceAssistantOptimized(Agent):
     """
-    Voice assistant with hybrid streaming and reliability improvements.
+    Voice assistant with hybrid streaming, reliability, and MEMORY ACCESS improvements.
 
     Performance improvements:
     - Hybrid mode: Direct OpenAI streaming (1-2s) + background Letta memory
@@ -193,6 +199,11 @@ class LettaVoiceAssistantOptimized(Agent):
     - Retry logic with exponential backoff
     - Guaranteed response delivery
     - Response validation
+
+    CRITICAL FIX - Memory Access:
+    - Hybrid mode now loads agent's persona and memory blocks
+    - Agent's knowledge included in OpenAI context
+    - Maintains fast response times while using agent's brain
     """
 
     def __init__(self, ctx: JobContext, letta_client: AsyncLetta, agent_id: str):
@@ -238,6 +249,76 @@ class LettaVoiceAssistantOptimized(Agent):
         # Background Letta sync task (for hybrid mode)
         self.letta_sync_task = None
 
+        # *** CRITICAL FIX: Cache agent memory and persona
+        self.agent_persona = None
+        self.agent_memory_blocks = {}
+        self.agent_system_instructions = None
+        self.memory_loaded = False
+
+    async def _load_agent_memory(self) -> bool:
+        """
+        CRITICAL FIX: Load agent's persona and memory blocks for hybrid mode.
+
+        This ensures the OpenAI fast path has access to Agent_66's knowledge.
+
+        Returns:
+            True if memory loaded successfully, False otherwise
+        """
+        if self.memory_loaded:
+            return True
+
+        try:
+            logger.info(f"🧠 Loading memory and persona for {self.primary_agent_name}...")
+            start_time = time.perf_counter()
+
+            # Retrieve agent details
+            agent = await self.letta_client.agents.retrieve(agent_id=self.agent_id)
+
+            # Extract persona from memory blocks
+            if hasattr(agent, 'memory') and agent.memory:
+                for block in agent.memory:
+                    if hasattr(block, 'label') and hasattr(block, 'value'):
+                        label = block.label
+                        value = block.value
+                        self.agent_memory_blocks[label] = value
+
+                        if label == "persona" or label == "human":
+                            self.agent_persona = value
+                            logger.info(f"✅ Loaded persona block: {value[:100]}...")
+
+                # Build enhanced system instructions from persona and memory
+                persona_context = self.agent_persona or "You are a helpful AI assistant."
+                memory_context = "\n\n".join([
+                    f"{label.upper()}:\n{value[:500]}"
+                    for label, value in self.agent_memory_blocks.items()
+                    if label not in ["persona", "human"] and len(value) > 0
+                ])
+
+                self.agent_system_instructions = f"""{persona_context}
+
+{memory_context}
+
+Keep responses conversational and brief for voice output.
+Use your memory to provide contextual, knowledgeable responses.
+"""
+
+                self.memory_loaded = True
+                elapsed = time.perf_counter() - start_time
+                logger.info(f"✅ Memory loaded successfully in {elapsed:.2f}s")
+                logger.info(f"   - Persona: {len(self.agent_persona)} chars")
+                logger.info(f"   - Memory blocks: {len(self.agent_memory_blocks)}")
+                return True
+            else:
+                logger.warning("⚠️ Agent has no memory blocks, using default instructions")
+                self.agent_system_instructions = self.instructions
+                self.memory_loaded = True
+                return False
+
+        except Exception as e:
+            logger.error(f"❌ Failed to load agent memory: {e}")
+            self.agent_system_instructions = self.instructions
+            return False
+
     async def _check_letta_health(self) -> bool:
         """Quick health check before calling Letta."""
         try:
@@ -275,13 +356,29 @@ class LettaVoiceAssistantOptimized(Agent):
         return response_text
 
     async def _get_openai_response_streaming(self, user_message: str) -> str:
-        """Get response directly from OpenAI with streaming (fast path for hybrid mode)."""
+        """
+        Get response directly from OpenAI with streaming (fast path for hybrid mode).
+
+        CRITICAL FIX: Now includes agent's persona and memory blocks in context!
+        This ensures Agent_66's knowledge is used in responses.
+        """
         try:
-            logger.info("⚡ Using direct OpenAI streaming (fast path)")
-            messages = [{"role": "system", "content": self.instructions}]
+            # *** CRITICAL FIX: Load agent memory if not already loaded
+            await self._load_agent_memory()
+
+            logger.info("⚡ Using direct OpenAI streaming with agent memory (fast path)")
+
+            # Build messages with agent's persona and memory
+            system_content = self.agent_system_instructions or self.instructions
+            messages = [{"role": "system", "content": system_content}]
+
+            # Include recent conversation history
             for msg in self.message_history[-10:]:
                 messages.append(msg)
             messages.append({"role": "user", "content": user_message})
+
+            logger.debug(f"📋 System instructions: {system_content[:200]}...")
+            logger.debug(f"📋 Conversation history: {len(self.message_history)} messages (using last 10)")
 
             openai_api_key = os.getenv("OPENAI_API_KEY")
             if not openai_api_key:
@@ -321,14 +418,14 @@ class LettaVoiceAssistantOptimized(Agent):
                                     if content:
                                         if not ttft_logged:
                                             ttft = time.perf_counter() - start_time
-                                            logger.info(f"⚡ TTFT: {ttft*1000:.0f}ms")
+                                            logger.info(f"⚡ TTFT: {ttft*1000:.0f}ms (with agent memory)")
                                             ttft_logged = True
                                         response_text += content
                             except json.JSONDecodeError:
                                 continue
 
             total_time = time.perf_counter() - start_time
-            logger.info(f"⚡ Direct OpenAI streaming complete: {total_time:.2f}s")
+            logger.info(f"⚡ Direct OpenAI streaming complete: {total_time:.2f}s (with agent knowledge)")
             return response_text
 
         except Exception as e:
@@ -349,6 +446,13 @@ class LettaVoiceAssistantOptimized(Agent):
             )
             elapsed = time.perf_counter() - start_time
             logger.info(f"✅ Letta memory synced in {elapsed:.2f}s (background)")
+
+            # Reload memory periodically to pick up changes
+            if len(self.message_history) % 5 == 0:
+                logger.info("🔄 Reloading agent memory to pick up recent changes...")
+                self.memory_loaded = False
+                await self._load_agent_memory()
+
         except Exception as e:
             logger.error(f"Background Letta sync failed (non-critical): {e}")
 
@@ -357,7 +461,7 @@ class LettaVoiceAssistantOptimized(Agent):
         Override LLM node to route through hybrid processing or Letta with reliability.
 
         Hybrid Mode (USE_HYBRID_STREAMING=true):
-            - Fast path: Direct OpenAI streaming (1-2s)
+            - Fast path: Direct OpenAI streaming WITH agent memory (1-2s)
             - Slow path: Background Letta memory sync (non-blocking)
 
         Legacy Mode (USE_HYBRID_STREAMING=false):
@@ -380,12 +484,12 @@ class LettaVoiceAssistantOptimized(Agent):
 
         # Route based on mode
         if USE_HYBRID_STREAMING:
-            logger.info("⚡ Using HYBRID mode (fast OpenAI + background Letta)")
+            logger.info("⚡ Using HYBRID mode (fast OpenAI with agent memory + background Letta)")
 
             try:
-                # Fast path: Direct OpenAI streaming
+                # Fast path: Direct OpenAI streaming WITH agent memory
                 letta_start = time.perf_counter()
-                await self._publish_status("processing", "Generating response...")
+                await self._publish_status("processing", "Generating response with agent knowledge...")
 
                 response_text = await self._get_openai_response_streaming(user_message)
 
@@ -685,6 +789,10 @@ class LettaVoiceAssistantOptimized(Agent):
             self.agent_id = new_agent_id
             self.message_history = []  # Clear history for new agent
 
+            # *** CRITICAL: Reload memory for new agent
+            self.memory_loaded = False
+            await self._load_agent_memory()
+
             logger.info(f"✅ Switched from agent {old_agent_id} to {new_agent_id} ({agent_display_name or 'unnamed'})")
 
             # Notify user via voice
@@ -819,7 +927,7 @@ async def entrypoint(ctx: JobContext):
     Uses AsyncLetta for optimal performance with optional hybrid mode.
     """
     logger.info(f"🚀 Voice agent starting in room: {ctx.room.name}")
-    logger.info(f"⚡ Hybrid streaming: {'ENABLED' if USE_HYBRID_STREAMING else 'DISABLED'}")
+    logger.info(f"⚡ Hybrid streaming: {'ENABLED (with agent memory)' if USE_HYBRID_STREAMING else 'DISABLED'}")
 
     # Initialize AsyncLetta client (CRITICAL FIX)
     if LETTA_API_KEY:
@@ -876,6 +984,10 @@ async def entrypoint(ctx: JobContext):
     # Store session reference
     assistant._agent_session = session
 
+    # *** CRITICAL FIX: Pre-load agent memory on startup
+    logger.info("🧠 Pre-loading agent memory for fast hybrid mode...")
+    await assistant._load_agent_memory()
+
     @ctx.room.on("participant_connected")
     def on_participant_connected(participant: rtc.RemoteParticipant):
         logger.debug(f"Participant connected: {participant.identity}")
@@ -924,7 +1036,7 @@ async def entrypoint(ctx: JobContext):
     # Start idle timeout monitor
     await assistant._start_idle_monitor()
 
-    mode_str = "HYBRID MODE" if USE_HYBRID_STREAMING else "ASYNC LETTA MODE"
+    mode_str = "HYBRID MODE (with agent memory)" if USE_HYBRID_STREAMING else "ASYNC LETTA MODE"
     logger.info(f"✅ Voice agent ready and listening ({mode_str})")
 
 

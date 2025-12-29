@@ -17,6 +17,12 @@ These instructions describe how to operate the hybrid Letta voice stack with a b
 - `letta_voice_agent_optimized.py` cross-checks every `agent_selection` payload against `VOICE_PRIMARY_AGENT_NAME` (defaults to `Agent_66`) and refuses to switch if the requested agent name differs, speaking a reminder that the voice surface is locked.
 - Always confirm logs show `Sent agent selection: Agent_66` on the frontend and `🔄 Agent selection request: Agent_66` / `✅ Using Agent_66 with ID:` on the backend before attempting any diagnosis—if those strings disappear, investigate the selector and worker guardrails first.
 
+## Agent Dispatch Hardening (Dec 28, 2025)
+- Both selector surfaces (`/` and `/debug`) immediately hit `/api/dispatch-agent` after LiveKit connects and again if the user is stuck on “Waiting for agent…”, so the worker is re-requested automatically on every reconnect.
+- `room_health_monitor.py` now watches for “human present, agent missing” states and triggers `voice_agent_dispatcher.dispatch_agent_async` with a short cooldown, which prevents the room from getting wedged when the browser token stays valid but the agent never rejoins.
+- The shared `voice_agent_dispatcher.py` helper encapsulates the LiveKit AgentDispatch API (logging dispatch IDs, room existence, and errors) and is reused by the CORS proxy and monitor—reference it before adding any new dispatch logic.
+- Token rotation is part of both `start_voice_system.sh` and `restart_voice_system.sh`; if the status panel shows “invalid token”, rerun either script instead of editing HTML by hand.
+
 ## Core Responsibilities
 1. **State Awareness**
    - Inspect running workers (`ps -ef | grep letta_voice_agent`) and logs (`tail -f /tmp/letta_voice_agent.log`) before changing anything.

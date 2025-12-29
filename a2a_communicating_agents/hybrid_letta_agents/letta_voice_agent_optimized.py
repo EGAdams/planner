@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Letta Voice Agent - FULLY OPTIMIZED VERSION
+Letta Voice Agent - FULLY OPTIMIZED VERSION WITH MEMORY FIX
 ============================================
-Performance + Reliability improvements combined.
+Performance + Reliability + Memory Access improvements combined.
 
 Performance Optimizations:
 1. Hybrid streaming: Direct OpenAI (1-2s) + background Letta memory
@@ -20,16 +20,22 @@ Reliability Improvements:
 11. Response validation: Quality checks on all responses
 12. Timeout protection: 10s max per operation
 
+CRITICAL FIX - Memory Access:
+13. Hybrid mode now loads Agent_66's persona and memory blocks
+14. Agent's knowledge and context included in OpenAI prompts
+15. Maintains fast response times while using agent's brain
+
 Expected latency: <2 seconds end-to-end
 Previous latency: 16 seconds (8x improvement)
 Silent failures: 0% (was common)
+Memory access: FIXED (agent knowledge now used in responses)
 """
 
 import asyncio
 import logging
 import os
 import json
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from datetime import datetime
 import time
 
@@ -50,8 +56,8 @@ from livekit.plugins import openai, deepgram, silero, cartesia
 from letta_client import AsyncLetta
 import httpx
 
-# Load environment variables
-load_dotenv("/home/adamsl/planner/.env")
+# Load environment variables (workspace secrets take precedence)
+load_dotenv("/home/adamsl/planner/.env", override=True)
 load_dotenv("/home/adamsl/ottomator-agents/livekit-agent/.env")
 
 # Configure logging
@@ -70,6 +76,7 @@ USE_HYBRID_STREAMING = os.getenv("USE_HYBRID_STREAMING", "true").lower() == "tru
 
 # Primary Letta agent enforced for all voice sessions
 PRIMARY_AGENT_NAME = os.getenv("VOICE_PRIMARY_AGENT_NAME", "Agent_66")
+PRIMARY_AGENT_ID = os.getenv("VOICE_PRIMARY_AGENT_ID")  # Specific agent ID (takes precedence over name search)
 
 # Persistent async HTTP client for connection pooling
 HTTP_CLIENT = httpx.AsyncClient(
@@ -80,6 +87,13 @@ HTTP_CLIENT = httpx.AsyncClient(
         keepalive_expiry=60.0
     )
 )
+
+# CRITICAL FIX: Agent instance and room assignment tracking
+# Prevents multiple agent instances for same agent_id and multiple agents per room
+_ACTIVE_AGENT_INSTANCES = {}  # Track active agent instances by agent_id
+_ROOM_TO_AGENT = {}  # Track which agent is assigned to which room
+_AGENT_INSTANCE_LOCK = asyncio.Lock()
+_ROOM_ASSIGNMENT_LOCK = asyncio.Lock()
 
 
 def _normalize_model_name(model_name: Optional[str], endpoint: str) -> Optional[str]:
@@ -177,7 +191,7 @@ class CircuitBreaker:
 
 class LettaVoiceAssistantOptimized(Agent):
     """
-    Voice assistant with hybrid streaming and reliability improvements.
+    Voice assistant with hybrid streaming, reliability, and MEMORY ACCESS improvements.
 
     Performance improvements:
     - Hybrid mode: Direct OpenAI streaming (1-2s) + background Letta memory
@@ -192,6 +206,11 @@ class LettaVoiceAssistantOptimized(Agent):
     - Retry logic with exponential backoff
     - Guaranteed response delivery
     - Response validation
+
+    CRITICAL FIX - Memory Access:
+    - Hybrid mode now loads agent's persona and memory blocks
+    - Agent's knowledge included in OpenAI context
+    - Maintains fast response times while using agent's brain
     """
 
     def __init__(self, ctx: JobContext, letta_client: AsyncLetta, agent_id: str):
@@ -237,6 +256,103 @@ class LettaVoiceAssistantOptimized(Agent):
         # Background Letta sync task (for hybrid mode)
         self.letta_sync_task = None
 
+        # *** CRITICAL FIX: Cache agent memory and persona
+        self.agent_persona = None
+        self.agent_memory_blocks = {}
+        self.agent_system_instructions = None
+        self.memory_loaded = False
+
+    async def _load_agent_memory(self) -> bool:
+        """
+        CRITICAL FIX: Load agent's persona and memory blocks for hybrid mode.
+
+        This ensures the OpenAI fast path has access to Agent_66's knowledge.
+
+        IMPORTANT: Uses REST API directly instead of buggy AsyncLetta client.
+        The AsyncLetta client's .agents.retrieve() returns empty memory blocks,
+        while the REST API returns full blocks correctly.
+
+        Returns:
+            True if memory loaded successfully, False otherwise
+        """
+        if self.memory_loaded:
+            logger.info(f"✅ Memory already loaded for agent {self.agent_id}")
+            return True
+
+        try:
+            logger.info(f"🧠 LOADING MEMORY - Agent ID: {self.agent_id}")
+            logger.info(f"🧠 LOADING MEMORY - Agent Name: {self.primary_agent_name}")
+            start_time = time.perf_counter()
+
+            # *** CRITICAL FIX: Use REST API directly instead of buggy AsyncLetta client
+            logger.info(f"🧠 Fetching agent details via REST API (bypassing AsyncLetta client bug)")
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(
+                    f"{LETTA_BASE_URL}/v1/agents/{self.agent_id}",
+                    headers={"Content-Type": "application/json"}
+                )
+                response.raise_for_status()
+                agent_data = response.json()
+
+            logger.info(f"🧠 Retrieved agent data from REST API: {agent_data.get('name', 'unknown')} (ID: {self.agent_id})")
+
+            # Extract memory blocks from JSON response
+            memory_data = agent_data.get('memory', {})
+            memory_blocks = memory_data.get('blocks', [])
+
+            logger.info(f"🧠 Found {len(memory_blocks)} memory blocks in REST API response")
+
+            if memory_blocks:
+                # Process each memory block
+                for block in memory_blocks:
+                    label = block.get('label')
+                    value = block.get('value')
+
+                    if label and value:
+                        self.agent_memory_blocks[label] = value
+                        logger.info(f"✅ Loaded block '{label}': {len(value)} chars")
+
+                        # Extract persona from key blocks
+                        if label in ["persona", "human", "role"]:
+                            self.agent_persona = value
+                            logger.info(f"✅ Loaded {label} block as persona: {value[:100]}...")
+
+                # Build enhanced system instructions from persona and memory
+                persona_context = self.agent_persona or "You are a helpful AI assistant."
+                memory_context = "\n\n".join([
+                    f"{label.upper()}:\n{value[:500]}"
+                    for label, value in self.agent_memory_blocks.items()
+                    if label not in ["persona", "human", "role"] and len(value) > 0
+                ])
+
+                self.agent_system_instructions = f"""{persona_context}
+
+{memory_context}
+
+Keep responses conversational and brief for voice output.
+Use your memory to provide contextual, knowledgeable responses.
+"""
+
+                self.memory_loaded = True
+                elapsed = time.perf_counter() - start_time
+                logger.info(f"✅ Memory loaded successfully via REST API in {elapsed:.2f}s")
+                logger.info(f"   - Persona: {len(self.agent_persona)} chars")
+                logger.info(f"   - Memory blocks: {len(self.agent_memory_blocks)}")
+                logger.info(f"   - Block labels: {list(self.agent_memory_blocks.keys())}")
+                return True
+            else:
+                logger.warning("⚠️ Agent has no memory blocks in REST API response, using default instructions")
+                self.agent_system_instructions = self.instructions
+                self.memory_loaded = True
+                return False
+
+        except Exception as e:
+            logger.error(f"❌ Failed to load agent memory via REST API: {e}")
+            import traceback
+            logger.error(traceback.format_exc())
+            self.agent_system_instructions = self.instructions
+            return False
+
     async def _check_letta_health(self) -> bool:
         """Quick health check before calling Letta."""
         try:
@@ -274,13 +390,32 @@ class LettaVoiceAssistantOptimized(Agent):
         return response_text
 
     async def _get_openai_response_streaming(self, user_message: str) -> str:
-        """Get response directly from OpenAI with streaming (fast path for hybrid mode)."""
+        """
+        Get response directly from OpenAI with streaming (fast path for hybrid mode).
+
+        CRITICAL FIX: Now includes agent's persona and memory blocks in context!
+        This ensures Agent_66's knowledge is used in responses.
+        """
         try:
-            logger.info("⚡ Using direct OpenAI streaming (fast path)")
-            messages = [{"role": "system", "content": self.instructions}]
+            # *** CRITICAL FIX: Load agent memory if not already loaded
+            logger.info(f"⚡ OPENAI FAST PATH - Agent ID: {self.agent_id}")
+            await self._load_agent_memory()
+
+            logger.info("⚡ Using direct OpenAI streaming with agent memory (fast path)")
+            logger.info(f"⚡ Agent persona loaded: {len(self.agent_persona) if self.agent_persona else 0} chars")
+            logger.info(f"⚡ Memory blocks count: {len(self.agent_memory_blocks)}")
+
+            # Build messages with agent's persona and memory
+            system_content = self.agent_system_instructions or self.instructions
+            messages = [{"role": "system", "content": system_content}]
+
+            # Include recent conversation history
             for msg in self.message_history[-10:]:
                 messages.append(msg)
             messages.append({"role": "user", "content": user_message})
+
+            logger.debug(f"📋 System instructions: {system_content[:200]}...")
+            logger.debug(f"📋 Conversation history: {len(self.message_history)} messages (using last 10)")
 
             openai_api_key = os.getenv("OPENAI_API_KEY")
             if not openai_api_key:
@@ -320,14 +455,14 @@ class LettaVoiceAssistantOptimized(Agent):
                                     if content:
                                         if not ttft_logged:
                                             ttft = time.perf_counter() - start_time
-                                            logger.info(f"⚡ TTFT: {ttft*1000:.0f}ms")
+                                            logger.info(f"⚡ TTFT: {ttft*1000:.0f}ms (with agent memory)")
                                             ttft_logged = True
                                         response_text += content
                             except json.JSONDecodeError:
                                 continue
 
             total_time = time.perf_counter() - start_time
-            logger.info(f"⚡ Direct OpenAI streaming complete: {total_time:.2f}s")
+            logger.info(f"⚡ Direct OpenAI streaming complete: {total_time:.2f}s (with agent knowledge)")
             return response_text
 
         except Exception as e:
@@ -348,6 +483,13 @@ class LettaVoiceAssistantOptimized(Agent):
             )
             elapsed = time.perf_counter() - start_time
             logger.info(f"✅ Letta memory synced in {elapsed:.2f}s (background)")
+
+            # Reload memory periodically to pick up changes
+            if len(self.message_history) % 5 == 0:
+                logger.info("🔄 Reloading agent memory to pick up recent changes...")
+                self.memory_loaded = False
+                await self._load_agent_memory()
+
         except Exception as e:
             logger.error(f"Background Letta sync failed (non-critical): {e}")
 
@@ -356,7 +498,7 @@ class LettaVoiceAssistantOptimized(Agent):
         Override LLM node to route through hybrid processing or Letta with reliability.
 
         Hybrid Mode (USE_HYBRID_STREAMING=true):
-            - Fast path: Direct OpenAI streaming (1-2s)
+            - Fast path: Direct OpenAI streaming WITH agent memory (1-2s)
             - Slow path: Background Letta memory sync (non-blocking)
 
         Legacy Mode (USE_HYBRID_STREAMING=false):
@@ -368,7 +510,13 @@ class LettaVoiceAssistantOptimized(Agent):
         user_message = _coerce_text(chat_ctx.items[-1].content if chat_ctx.items else "")
         total_start = time.perf_counter()
 
+        logger.info(f"🎤 ========================================")
+        logger.info(f"🎤 NEW QUERY RECEIVED")
         logger.info(f"🎤 User message: {user_message}")
+        logger.info(f"🎤 Current Agent ID: {self.agent_id}")
+        logger.info(f"🎤 Current Agent Name: {self.primary_agent_name}")
+        logger.info(f"🎤 Memory Loaded: {self.memory_loaded}")
+        logger.info(f"🎤 ========================================")
 
         # Publish transcript to room for UI
         await self._publish_transcript("user", user_message)
@@ -379,12 +527,12 @@ class LettaVoiceAssistantOptimized(Agent):
 
         # Route based on mode
         if USE_HYBRID_STREAMING:
-            logger.info("⚡ Using HYBRID mode (fast OpenAI + background Letta)")
+            logger.info("⚡ Using HYBRID mode (fast OpenAI with agent memory + background Letta)")
 
             try:
-                # Fast path: Direct OpenAI streaming
+                # Fast path: Direct OpenAI streaming WITH agent memory
                 letta_start = time.perf_counter()
-                await self._publish_status("processing", "Generating response...")
+                await self._publish_status("processing", "Generating response with agent knowledge...")
 
                 response_text = await self._get_openai_response_streaming(user_message)
 
@@ -432,12 +580,17 @@ class LettaVoiceAssistantOptimized(Agent):
             logger.error(f"🚨 CRITICAL: Invalid response after all safeguards: '{response_text}'")
             response_text = "I apologize, something went wrong with my response generation."
 
+        # DEBUG: Prepend agent identification to every response
+        debug_prefix = f"[DEBUG: Using Agent ID {self.agent_id[-8:]}] "
+        response_text = debug_prefix + response_text
+
         # Publish complete response to room for UI
         await self._publish_transcript("assistant", response_text)
         logger.info(f"🔊 Response: {response_text[:100]}...")
 
         total_elapsed = time.perf_counter() - total_start
         logger.info(f"✅ Total llm_node latency: {total_elapsed:.2f}s")
+        logger.info(f"✅ RESPONSE GENERATED BY AGENT: {self.agent_id}")
 
         # Return response text - framework will automatically handle TTS
         return response_text
@@ -446,6 +599,59 @@ class LettaVoiceAssistantOptimized(Agent):
         """Update the last activity timestamp."""
         self.last_activity_time = time.time()
         logger.debug(f"⏰ Activity updated at {self.last_activity_time}")
+
+    async def reset_for_reconnect(self):
+        """
+        Reset agent state for clean reconnection.
+
+        CRITICAL FIX: This prevents stale state when user disconnects and reconnects.
+        Called when user disconnects to ensure fresh state without creating new agent instance.
+
+        Resets:
+        - Background tasks (Letta sync, idle monitor)
+        - Message history
+        - Activity timestamps
+        - Forces memory reload
+        """
+        logger.info(f"🔄 ========================================")
+        logger.info(f"🔄 RESETTING AGENT STATE FOR RECONNECT")
+        logger.info(f"🔄 Agent ID: {self.agent_id}")
+        logger.info(f"🔄 Agent Name: {self.primary_agent_name}")
+        logger.info(f"🔄 ========================================")
+
+        # Cancel background tasks
+        if self.letta_sync_task and not self.letta_sync_task.done():
+            self.letta_sync_task.cancel()
+            try:
+                await self.letta_sync_task
+            except asyncio.CancelledError:
+                pass
+            self.letta_sync_task = None
+            logger.info("✅ Cancelled background Letta sync task")
+
+        if self.idle_monitor_task and not self.idle_monitor_task.done():
+            self.idle_monitor_task.cancel()
+            try:
+                await self.idle_monitor_task
+            except asyncio.CancelledError:
+                pass
+            self.idle_monitor_task = None
+            logger.info("✅ Cancelled idle monitor task")
+
+        # Reset state
+        self.message_history = []
+        self.last_activity_time = time.time()
+        self.is_shutting_down = False
+        logger.info("✅ Cleared message history and reset timestamps")
+
+        # Force memory reload to ensure fresh agent knowledge
+        self.memory_loaded = False
+        await self._load_agent_memory()
+        logger.info("✅ Reloaded agent memory")
+
+        logger.info(f"🔄 ========================================")
+        logger.info(f"🔄 AGENT RESET COMPLETE - READY FOR RECONNECT")
+        logger.info(f"🔄 ========================================")
 
     async def _start_idle_monitor(self):
         """Start background task to monitor idle time and disconnect after timeout."""
@@ -646,19 +852,30 @@ class LettaVoiceAssistantOptimized(Agent):
 
     async def switch_agent(self, new_agent_id: str, agent_name: str = None):
         """Switch to a different Letta agent dynamically"""
+        logger.info(f"🔄 ========================================")
+        logger.info(f"🔄 AGENT SWITCH REQUEST RECEIVED")
+        logger.info(f"🔄 Current Agent ID: {self.agent_id}")
+        logger.info(f"🔄 Requested Agent ID: {new_agent_id}")
+        logger.info(f"🔄 Requested Agent Name: {agent_name}")
+        logger.info(f"🔄 Switching Allowed: {self.allow_agent_switching}")
+        logger.info(f"🔄 Primary Agent Name: {self.primary_agent_name}")
+        logger.info(f"🔄 ========================================")
+
         if not self.allow_agent_switching:
-            logger.warning("Agent switching is disabled")
+            logger.warning("❌ Agent switching is disabled")
             return False
 
         try:
             # Verify the new agent exists (using async client)
+            logger.info(f"🔍 Retrieving agent details for {new_agent_id}...")
             agent = await self.letta_client.agents.retrieve(agent_id=new_agent_id)
 
             if not agent:
-                logger.error(f"Agent {new_agent_id} not found")
+                logger.error(f"❌ Agent {new_agent_id} not found")
                 return False
 
             agent_display_name = getattr(agent, "name", None)
+            logger.info(f"✅ Agent exists: {agent_display_name} (ID: {new_agent_id})")
 
             if agent_display_name != self.primary_agent_name:
                 requested_name = agent_name or agent_display_name or new_agent_id
@@ -667,7 +884,7 @@ class LettaVoiceAssistantOptimized(Agent):
                     f"Ignoring request for {requested_name}."
                 )
                 logger.warning(
-                    "Rejected agent switch to %s (%s); enforcing %s",
+                    "❌ REJECTED - Agent switch to %s (%s); enforcing %s",
                     requested_name,
                     new_agent_id,
                     self.primary_agent_name,
@@ -684,7 +901,19 @@ class LettaVoiceAssistantOptimized(Agent):
             self.agent_id = new_agent_id
             self.message_history = []  # Clear history for new agent
 
-            logger.info(f"✅ Switched from agent {old_agent_id} to {new_agent_id} ({agent_display_name or 'unnamed'})")
+            logger.info(f"🔄 SWITCHING - Old: {old_agent_id}, New: {new_agent_id}")
+
+            # *** CRITICAL: Reload memory for new agent
+            self.memory_loaded = False
+            logger.info(f"🧠 Forcing memory reload for new agent...")
+            await self._load_agent_memory()
+
+            logger.info(f"✅ ========================================")
+            logger.info(f"✅ AGENT SWITCH SUCCESSFUL")
+            logger.info(f"✅ Switched from {old_agent_id} to {new_agent_id}")
+            logger.info(f"✅ New Agent Name: {agent_display_name or 'unnamed'}")
+            logger.info(f"✅ Memory Loaded: {self.memory_loaded}")
+            logger.info(f"✅ ========================================")
 
             # Notify user via voice
             switch_message = f"Switched to agent {agent_display_name or new_agent_id}. How can I help you?"
@@ -698,7 +927,9 @@ class LettaVoiceAssistantOptimized(Agent):
             return True
 
         except Exception as e:
-            logger.error(f"Error switching agent: {e}")
+            logger.error(f"❌ Error switching agent: {e}")
+            import traceback
+            traceback.print_exc()
             return False
 
 
@@ -734,7 +965,17 @@ async def get_or_create_orchestrator(letta_client: AsyncLetta) -> str:
     embedding_dim = _safe_int(os.getenv("LETTA_EMBEDDING_DIM"), 1536)
 
     try:
-        # Try to find existing primary agent (hardcoded, no updates)
+        # PRIORITY 1: If specific agent ID is configured, use it directly
+        if PRIMARY_AGENT_ID:
+            try:
+                agent = await letta_client.agents.retrieve(agent_id=PRIMARY_AGENT_ID)
+                logger.info(f"✅ Using configured agent ID: {PRIMARY_AGENT_ID} (name: {agent.name})")
+                return PRIMARY_AGENT_ID
+            except Exception as e:
+                logger.warning(f"⚠️ Configured agent ID {PRIMARY_AGENT_ID} not found: {e}")
+                logger.info("Falling back to agent name search...")
+
+        # PRIORITY 2: Search by agent name
         agents_list = await letta_client.agents.list()
         agents = list(agents_list) if agents_list else []
 
@@ -808,7 +1049,7 @@ async def entrypoint(ctx: JobContext):
     Uses AsyncLetta for optimal performance with optional hybrid mode.
     """
     logger.info(f"🚀 Voice agent starting in room: {ctx.room.name}")
-    logger.info(f"⚡ Hybrid streaming: {'ENABLED' if USE_HYBRID_STREAMING else 'DISABLED'}")
+    logger.info(f"⚡ Hybrid streaming: {'ENABLED (with agent memory)' if USE_HYBRID_STREAMING else 'DISABLED'}")
 
     # Initialize AsyncLetta client (CRITICAL FIX)
     if LETTA_API_KEY:
@@ -818,11 +1059,22 @@ async def entrypoint(ctx: JobContext):
 
     # Get or create orchestrator agent
     try:
+        logger.info(f"🚀 ========================================")
+        logger.info(f"🚀 VOICE AGENT INITIALIZATION")
+        logger.info(f"🚀 Target Agent Name: {PRIMARY_AGENT_NAME}")
+        logger.info(f"🚀 Target Agent ID (from env): {PRIMARY_AGENT_ID}")
+        logger.info(f"🚀 ========================================")
+
         agent_id = await get_or_create_orchestrator(letta_client)
         if not agent_id:
             logger.error("❌ CRITICAL: get_or_create_orchestrator returned None/empty agent_id")
             return
-        logger.info(f"✅ Using {PRIMARY_AGENT_NAME} with ID: {agent_id}")
+
+        logger.info(f"🚀 ========================================")
+        logger.info(f"🚀 AGENT INITIALIZED")
+        logger.info(f"🚀 Agent Name: {PRIMARY_AGENT_NAME}")
+        logger.info(f"🚀 Agent ID: {agent_id}")
+        logger.info(f"🚀 ========================================")
     except Exception as e:
         logger.error(f"Failed to initialize Letta orchestrator: {e}")
         import traceback
@@ -859,15 +1111,132 @@ async def entrypoint(ctx: JobContext):
         ),
     )
 
-    # Create assistant instance
-    assistant = LettaVoiceAssistantOptimized(ctx, letta_client, agent_id)
+    # CRITICAL FIX: Check for existing agent instance (prevent duplicates)
+    async with _AGENT_INSTANCE_LOCK:
+        if agent_id in _ACTIVE_AGENT_INSTANCES:
+            logger.warning(f"⚠️  ========================================")
+            logger.warning(f"⚠️  Agent {agent_id} already has active instance!")
+            logger.warning(f"⚠️  Reusing existing instance and resetting state")
+            logger.warning(f"⚠️  ========================================")
+            assistant = _ACTIVE_AGENT_INSTANCES[agent_id]
+            # Reset the assistant for fresh connection
+            await assistant.reset_for_reconnect()
+        else:
+            # Create new assistant instance
+            logger.info(f"✅ Creating NEW agent instance for {agent_id}")
+            assistant = LettaVoiceAssistantOptimized(ctx, letta_client, agent_id)
+            _ACTIVE_AGENT_INSTANCES[agent_id] = assistant
+            logger.info(f"✅ Stored agent instance in tracking dict")
 
     # Store session reference
     assistant._agent_session = session
 
+    # Update context reference (important for reconnects)
+    assistant.ctx = ctx
+
+    # *** CRITICAL FIX: Pre-load agent memory on startup
+    logger.info("🧠 Pre-loading agent memory for fast hybrid mode...")
+    await assistant._load_agent_memory()
+
     @ctx.room.on("participant_connected")
     def on_participant_connected(participant: rtc.RemoteParticipant):
+        """
+        CRITICAL FIX: Validate single agent per room on participant join.
+
+        If multiple agents are detected in the same room, trigger emergency
+        disconnect to prevent audio duplication and message routing conflicts.
+        """
         logger.debug(f"Participant connected: {participant.identity}")
+
+        # Count agents in room (including both remote and local)
+        agent_identities = []
+
+        # Check remote participants
+        for p in ctx.room.remote_participants.values():
+            if p.identity:
+                is_agent = (
+                    'agent' in p.identity.lower() or
+                    'bot' in p.identity.lower() or
+                    p.identity.startswith('AW_')
+                )
+                if is_agent:
+                    agent_identities.append(p.identity)
+
+        # Check local participant
+        if ctx.room.local_participant and ctx.room.local_participant.identity:
+            local_id = ctx.room.local_participant.identity
+            is_local_agent = (
+                'agent' in local_id.lower() or
+                'bot' in local_id.lower() or
+                local_id.startswith('AW_')
+            )
+            if is_local_agent:
+                agent_identities.append(f"{local_id} (LOCAL)")
+
+        agent_count = len(agent_identities)
+
+        if agent_count > 1:
+            logger.error(f"🚨 ========================================")
+            logger.error(f"🚨 MULTI-AGENT CONFLICT DETECTED!")
+            logger.error(f"🚨 Room: {ctx.room.name}")
+            logger.error(f"🚨 Agent count: {agent_count}")
+            logger.error(f"🚨 Agents: {agent_identities}")
+            logger.error(f"🚨 THIS WILL CAUSE AUDIO DUPLICATION!")
+            logger.error(f"🚨 Triggering emergency disconnect...")
+            logger.error(f"🚨 ========================================")
+
+            # Emergency disconnect to prevent conflict
+            async def emergency_disconnect():
+                await asyncio.sleep(2)  # Brief delay to let other agent settle
+                logger.error(f"🚨 Executing emergency disconnect due to agent conflict")
+                try:
+                    await ctx.room.disconnect()
+                    logger.info(f"✅ Emergency disconnect complete")
+                except Exception as e:
+                    logger.error(f"❌ Emergency disconnect failed: {e}")
+
+            asyncio.create_task(emergency_disconnect())
+        elif agent_count == 1:
+            logger.info(f"✅ Single agent validated in room: {agent_identities[0]}")
+
+    @ctx.room.on("participant_disconnected")
+    def on_participant_disconnected(participant: rtc.RemoteParticipant):
+        """
+        CRITICAL FIX: Handle user disconnect - prepare for potential reconnect.
+
+        When user disconnects, reset agent state to ensure clean reconnection.
+        This prevents stale state (message history, background tasks, etc.)
+        from interfering with the next session.
+        """
+        logger.info(f"👋 ========================================")
+        logger.info(f"👋 PARTICIPANT DISCONNECTED")
+        logger.info(f"👋 Identity: {participant.identity}")
+        logger.info(f"👋 ========================================")
+
+        # Check if this was the only human user
+        remaining_humans = sum(
+            1 for p in ctx.room.remote_participants.values()
+            if not any(x in p.identity.lower() for x in ['agent', 'bot', 'aw_'])
+        )
+
+        logger.info(f"👥 Remaining human participants: {remaining_humans}")
+
+        if remaining_humans == 0:
+            logger.info("🔄 Last human disconnected, resetting agent for reconnect...")
+
+            async def cleanup_on_disconnect():
+                # Reset agent state
+                await assistant.reset_for_reconnect()
+
+                # CRITICAL FIX: Clear room assignment when all humans leave
+                async with _ROOM_ASSIGNMENT_LOCK:
+                    if ctx.room.name in _ROOM_TO_AGENT:
+                        del _ROOM_TO_AGENT[ctx.room.name]
+                        logger.info(f"🧹 Cleared room assignment: {ctx.room.name}")
+
+            asyncio.create_task(cleanup_on_disconnect())
+        else:
+            logger.info(f"👥 {remaining_humans} human(s) still in room, keeping agent active")
 
     @ctx.room.on("track_subscribed")
     def on_track_subscribed(track: rtc.Track, publication: rtc.TrackPublication, participant: rtc.RemoteParticipant):
@@ -880,47 +1249,91 @@ async def entrypoint(ctx: JobContext):
         """Handle incoming data messages"""
         try:
             message_str = data_packet.data.decode('utf-8')
-            message_data = json.loads(message_str)
+            logger.info(f"📨 ========================================")
+            logger.info(f"📨 DATA RECEIVED FROM CLIENT")
+            logger.info(f"📨 Raw data: {message_str[:200]}")
+            logger.info(f"📨 ========================================")
 
-            if message_data.get("type") == "room_cleanup":
+            message_data = json.loads(message_str)
+            message_type = message_data.get("type")
+            logger.info(f"📨 Message type: {message_type}")
+
+            if message_type == "room_cleanup":
                 logger.info("🧹 Room cleanup requested - preparing to exit room")
                 asyncio.create_task(_graceful_shutdown(ctx))
 
-            elif message_data.get("type") == "agent_selection":
+            elif message_type == "agent_selection":
                 agent_id = message_data.get("agent_id")
                 agent_name = message_data.get("agent_name", "Unknown")
+                logger.info(f"📨 ========================================")
+                logger.info(f"📨 AGENT SELECTION MESSAGE RECEIVED")
+                logger.info(f"📨 Agent ID: {agent_id}")
+                logger.info(f"📨 Agent Name: {agent_name}")
+                logger.info(f"📨 Current Assistant Agent ID: {assistant.agent_id}")
+                logger.info(f"📨 ========================================")
                 if agent_id:
-                    logger.info(f"🔄 Agent selection request: {agent_name} ({agent_id})")
+                    logger.info(f"🔄 Creating switch_agent task...")
                     asyncio.create_task(assistant.switch_agent(agent_id, agent_name))
+                else:
+                    logger.error("❌ No agent_id in agent_selection message!")
 
-            elif message_data.get("type") == "chat":
+            elif message_type == "chat":
                 user_message = message_data.get("message", "")
                 if user_message:
                     logger.info(f"📨 Text chat: {user_message}")
                     asyncio.create_task(assistant.handle_text_message(user_message))
 
         except Exception as e:
-            logger.error(f"Error handling data message: {e}")
+            logger.error(f"❌ Error handling data message: {e}")
+            import traceback
+            traceback.print_exc()
 
     # Start the session
     logger.info("🚀 Voice agent starting in room: " + ctx.room.name)
     await session.start(
         room=ctx.room,
         agent=assistant,
-        room_output_options=RoomOutputOptions(transcription_enabled=True),
+        room_output_options=RoomOutputOptions(
+            transcription_enabled=True,
+            audio_enabled=True  # CRITICAL FIX: Enable voice output (TTS pipeline)
+        ),
     )
 
     # Start idle timeout monitor
     await assistant._start_idle_monitor()
 
-    mode_str = "HYBRID MODE" if USE_HYBRID_STREAMING else "ASYNC LETTA MODE"
+    mode_str = "HYBRID MODE (with agent memory)" if USE_HYBRID_STREAMING else "ASYNC LETTA MODE"
     logger.info(f"✅ Voice agent ready and listening ({mode_str})")
 
 
 async def request_handler(job_request: JobRequest):
-    """Accept all job requests to ensure agent joins rooms."""
+    """
+    Accept job requests with conflict detection.
+
+    CRITICAL FIX: Prevents multiple agents from being assigned to the same room.
+    If a room already has an agent assigned, reject the duplicate job request.
+    """
     room_name = job_request.room.name
     logger.info(f"📥 Job request received for room: {room_name}")
+
+    # CRITICAL FIX: Check if this room already has an agent assigned
+    async with _ROOM_ASSIGNMENT_LOCK:
+        if room_name in _ROOM_TO_AGENT:
+            existing_agent_id = _ROOM_TO_AGENT[room_name]
+            logger.error(f"🚨 ========================================")
+            logger.error(f"🚨 AGENT CONFLICT DETECTED!")
+            logger.error(f"🚨 Room: {room_name}")
+            logger.error(f"🚨 Already assigned to: {existing_agent_id}")
+            logger.error(f"🚨 REJECTING duplicate job request")
+            logger.error(f"🚨 ========================================")
+            await job_request.reject()
+            return
+
+        # Assign the primary agent to this room
+        # Note: We use PRIMARY_AGENT_ID if set, otherwise we'll get it from get_or_create_orchestrator
+        agent_id_to_assign = PRIMARY_AGENT_ID or "pending"
+        _ROOM_TO_AGENT[room_name] = agent_id_to_assign
+        logger.info(f"✅ Assigned agent to room {room_name}")
 
     # Room self-recovery
     try:
@@ -933,6 +1346,9 @@ async def request_handler(job_request: JobRequest):
 
     except Exception as e:
         logger.warning(f"Room cleanup failed (continuing anyway): {e}")
+    finally:
+        if 'manager' in locals():
+            await manager.close()
 
     await job_request.accept()
     logger.info(f"✅ Job accepted, starting optimized entrypoint...")

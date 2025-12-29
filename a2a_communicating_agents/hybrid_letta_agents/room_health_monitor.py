@@ -15,7 +15,10 @@ detecting and fixing stuck room states before they cause connection issues.
 import asyncio
 import logging
 import time
+from typing import Dict
+
 from livekit_room_manager import RoomManager
+from voice_agent_dispatcher import dispatch_agent_async
 
 logging.basicConfig(
     level=logging.INFO,
@@ -36,7 +39,7 @@ class RoomHealthMonitor:
     - Detailed logging for debugging
     """
 
-    def __init__(self, check_interval_seconds=30):
+    def __init__(self, check_interval_seconds=30, agent_name: str = "letta-voice-agent"):
         """
         Initialize the health monitor.
 
@@ -47,6 +50,9 @@ class RoomHealthMonitor:
         self.manager = RoomManager()
         self.cleanup_count = 0
         self.check_count = 0
+        self.agent_name = agent_name
+        self._last_agent_dispatch: Dict[str, float] = {}
+        self._agent_dispatch_cooldown = 20  # seconds
 
     async def monitor_loop(self):
         """Main monitoring loop - runs continuously."""
@@ -81,6 +87,8 @@ class RoomHealthMonitor:
             try:
                 # Get room participants
                 participants = await self.manager.list_participants(room.name)
+
+                await self._ensure_agent_present(room.name, participants)
 
                 # Check for stuck states
                 if len(participants) == 0 and room.num_participants > 0:
@@ -160,6 +168,70 @@ class RoomHealthMonitor:
                 self.cleanup_count += 1
             except Exception as delete_error:
                 logger.error(f"Failed to delete room {room_name}: {delete_error}")
+
+    async def _ensure_agent_present(self, room_name: str, participants):
+        """Dispatch the agent when humans are waiting without assistance."""
+        if not participants:
+            return
+
+        human_count = 0
+        agent_count = 0
+
+        for participant in participants:
+            identity = (participant.identity or "").lower()
+            if self._looks_like_agent(identity):
+                agent_count += 1
+            else:
+                human_count += 1
+
+        if human_count > 0 and agent_count == 0:
+            now = time.time()
+            last_attempt = self._last_agent_dispatch.get(room_name, 0)
+
+            if now - last_attempt < self._agent_dispatch_cooldown:
+                remaining = self._agent_dispatch_cooldown - (now - last_attempt)
+                logger.info(
+                    "Skipping dispatch for %s (cooldown %.1fs remaining)",
+                    room_name,
+                    max(0, remaining),
+                )
+                return
+
+            logger.warning(
+                "Room %s has %d human participant(s) but no agent. Dispatching %s...",
+                room_name,
+                human_count,
+                self.agent_name,
+            )
+
+            try:
+                result = await dispatch_agent_async(room_name, agent_name=self.agent_name)
+                if result.get("success"):
+                    logger.info(
+                        "Dispatch result for %s: %s (dispatch_id=%s)",
+                        room_name,
+                        result.get("message"),
+                        result.get("dispatch_id"),
+                    )
+                else:
+                    logger.error("Dispatch failed for %s: %s", room_name, result)
+            except Exception as dispatch_err:
+                logger.error("Dispatch error for %s: %s", room_name, dispatch_err)
+
+            self._last_agent_dispatch[room_name] = now
+
+    def _looks_like_agent(self, identity: str) -> bool:
+        """Heuristic to determine if a LiveKit participant represents the worker."""
+        if not identity:
+            return False
+
+        lowered = identity.lower()
+        return (
+            "agent" in lowered
+            or lowered.startswith("aw_")
+            or lowered.startswith("bot")
+            or self.agent_name.lower() in lowered
+        )
 
 
 async def main():

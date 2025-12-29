@@ -9,9 +9,9 @@
         const PROXY_URL = 'http://localhost:9000';
         const LIVEKIT_URL = 'ws://localhost:7880';
 
-        // Token for dev mode (valid for 24 hours from 2025-12-28 02:20:40 UTC)
+        // Token for dev mode (valid for 24 hours from 2025-12-29 04:34:11 UTC)
         // NOTE: This token will expire. Regenerate with: ./update_voice_token.sh
-        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2ODg4NDQwLCJleHAiOjE3NjY5NzQ4NDB9.Fa-yJnz8rmWfRHZjeBYLDIF1l2hVPY20gXZBFqERJLs';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2OTgyODUxLCJleHAiOjE3NjcwNjkyNTF9.28ZueM3huoUzOreK2sLGQcYtuOBXFg87A-5l155ZJqo';
         const PRIMARY_AGENT_NAME = 'Agent_66';
         const PRIMARY_AGENT_WARNING = `Only ${PRIMARY_AGENT_NAME} is supported for LiveKit voice sessions.`;
 
@@ -24,6 +24,28 @@
         const MAX_RETRIES = 3;
         const AGENT_JOIN_TIMEOUT = 15000;  // 15 seconds to wait for agent
         let agentJoinTimer = null;
+
+        async function requestAgentDispatch(roomName) {
+            try {
+                console.log('📡 Requesting agent dispatch to room...', roomName);
+                const dispatchResponse = await fetch(`${PROXY_URL}/api/dispatch-agent`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ room: roomName })
+                });
+                const data = await dispatchResponse.json();
+
+                if (!data.success) {
+                    console.warn('Dispatch warning:', data);
+                } else {
+                    console.log('✅ Agent dispatch requested:', data.message);
+                }
+                return data;
+            } catch (err) {
+                console.error('❌ Failed to request agent dispatch:', err);
+                return { success: false, error: err.message };
+            }
+        }
 
         const status = document.getElementById('status');
         const agentSelector = document.getElementById('agentSelector');
@@ -350,6 +372,9 @@
                 await Promise.race([connectPromise, timeoutPromise]);
 
                 console.log('✅ Connected to room:', room.name);
+
+                // Request the agent to join immediately
+                await requestAgentDispatch(roomName);
                 console.log('🎤 Enabling microphone...');
 
                 // Enable microphone with explicit error handling
@@ -379,6 +404,8 @@
                     console.log(`⏰ Starting ${AGENT_JOIN_TIMEOUT/1000}s timeout for agent to join...`);
                     agentJoinTimer = setTimeout(async () => {
                         console.error('⏱️ Agent join timeout! No agent joined the room.');
+
+                        await requestAgentDispatch(roomName);
 
                         if (connectionRetries < MAX_RETRIES) {
                             connectionRetries++;
@@ -456,8 +483,10 @@
                     console.error('Error sending cleanup notification:', e);
                 }
 
-                // Give backend a moment to process cleanup
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // CRITICAL FIX: Give backend more time to process cleanup and reset agent state
+                // Increased from 500ms to 2000ms to ensure agent fully resets before reconnect
+                console.log('⏳ Waiting 2 seconds for backend cleanup and agent reset...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
 
                 await room.disconnect();
                 room = null;

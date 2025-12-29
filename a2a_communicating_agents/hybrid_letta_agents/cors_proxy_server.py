@@ -172,65 +172,9 @@ class CORSRequestHandler(http.server.SimpleHTTPRequestHandler):
 
                 # Try to use LiveKit API to dispatch agent
                 try:
-                    from livekit.api import room_service, agent_dispatch_service
-                    import asyncio
-                    import aiohttp
+                    from voice_agent_dispatcher import dispatch_agent
 
-                    livekit_key = os.environ.get('LIVEKIT_API_KEY')
-                    livekit_secret = os.environ.get('LIVEKIT_API_SECRET')
-
-                    if not livekit_key or not livekit_secret:
-                        raise ValueError("LIVEKIT_API_KEY and LIVEKIT_API_SECRET not configured")
-
-                    # CRITICAL FIX: RoomService requires aiohttp.ClientSession as first parameter
-                    async def check_and_dispatch():
-                        try:
-                            async with aiohttp.ClientSession() as session:
-                                # Create RoomService with session
-                                room_svc = room_service.RoomService(session, LIVEKIT_URL, livekit_key, livekit_secret)
-
-                                # Check if room exists
-                                try:
-                                    rooms = await room_svc.list_rooms(room_service.ListRoomsRequest())
-                                    room_exists = any(r.name == room_name for r in rooms.rooms)
-                                    logger.info(f"Room check: '{room_name}' exists={room_exists}")
-                                except Exception as list_err:
-                                    logger.warning(f"Could not check room existence: {list_err}")
-                                    room_exists = False
-
-                                # Create agent dispatch service with session
-                                dispatch_svc = agent_dispatch_service.AgentDispatchService(
-                                    session, LIVEKIT_URL, livekit_key, livekit_secret
-                                )
-
-                                # Create dispatch request with agent_name
-                                # CRITICAL: agent_name must match WorkerOptions agent_name in letta_voice_agent_optimized.py
-                                dispatch_req = agent_dispatch_service.CreateAgentDispatchRequest(
-                                    room=room_name,
-                                    agent_name="letta-voice-agent"
-                                )
-
-                                # Send the dispatch request (works even if room doesn't exist yet)
-                                dispatch_result = await dispatch_svc.create_dispatch(dispatch_req)
-
-                                logger.info(f"Agent dispatch created successfully for room: {room_name} (dispatch_id: {dispatch_result.id})")
-                                return {
-                                    'success': True,
-                                    'room': room_name,
-                                    'message': f'Agent dispatched to room {room_name}',
-                                    'dispatch_id': dispatch_result.id if hasattr(dispatch_result, 'id') else 'unknown',
-                                    'room_existed': room_exists
-                                }
-                        except Exception as e:
-                            logger.error(f"Error in check_and_dispatch: {e}", exc_info=True)
-                            return {
-                                'success': False,
-                                'error': str(e),
-                                'message': 'Falling back to auto-dispatch'
-                            }
-
-                    # Run the async function
-                    result = asyncio.run(check_and_dispatch())
+                    result = dispatch_agent(room_name)
 
                     self.send_response(200)
                     self.send_header('Content-Type', 'application/json')

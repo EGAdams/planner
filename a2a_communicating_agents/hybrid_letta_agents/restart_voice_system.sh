@@ -394,11 +394,16 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}[8/10] Checking LiveKit demo server...${NC}"
+echo -e "${YELLOW}[8/10] Refreshing voice selector token...${NC}"
+cd "$SCRIPT_DIR"
+./update_voice_token.sh
+echo ""
+
+echo -e "${YELLOW}[9/10] Checking LiveKit demo server...${NC}"
 ensure_http_server
 echo ""
 
-echo -e "${YELLOW}[9/10] Verifying single voice agent...${NC}"
+echo -e "${YELLOW}[10/10] Verifying single voice agent...${NC}"
 # Final duplicate check - ensure only ONE voice agent is running
 FINAL_AGENT_COUNT=$(ps aux | grep "$LETTA_VOICE_AGENT_EXE dev" | grep -v grep | wc -l)
 if [ "$FINAL_AGENT_COUNT" -eq 1 ]; then
@@ -416,7 +421,7 @@ else
 fi
 echo ""
 
-echo -e "${YELLOW}[10/10] System Summary${NC}"
+echo -e "${YELLOW}System Summary${NC}"
 echo "  LLM Mode: ⚡ OPTIMIZED LETTA"
 echo -e "  ${GREEN}✓ Performance optimizations active:${NC}"
 echo "    • Token streaming (perceived latency reduction)"

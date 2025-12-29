@@ -5,6 +5,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HTML_FILE="$SCRIPT_DIR/voice-agent-selector.html"
+DEBUG_HTML_FILE="$SCRIPT_DIR/voice-agent-selector-debug.html"
 VENV_PYTHON="/home/adamsl/planner/.venv/bin/python3"
 
 echo "Generating fresh 24-hour JWT token..."
@@ -56,23 +57,33 @@ fi
 echo "Token generated successfully!"
 echo ""
 
-# Backup old file
-cp "$HTML_FILE" "$HTML_FILE.backup"
-echo "Backed up HTML file to: $HTML_FILE.backup"
-
 # Get current timestamp
 TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')
 
-# Update the HTML file
-# We need to replace the entire token constant block
-sed -i.tmp "/\/\/ Token for dev mode/,/const TOKEN = '[^']*';/c\\
+update_file() {
+    local target_file="$1"
+    local label="$2"
+
+    if [ ! -f "$target_file" ]; then
+        echo "WARNING: $label not found at $target_file (skipping)"
+        return
+    fi
+
+    cp "$target_file" "$target_file.backup"
+    echo "Backed up $label to: $target_file.backup"
+
+    sed -i.tmp "/\/\/ Token for dev mode/,/const TOKEN = '[^']*';/c\\
         // Token for dev mode (valid for 24 hours from $TIMESTAMP)\\
         // NOTE: This token will expire. Regenerate with: ./update_voice_token.sh\\
-        const TOKEN = '$NEW_TOKEN';" "$HTML_FILE"
+        const TOKEN = '$NEW_TOKEN';" "$target_file"
+    rm -f "$target_file.tmp"
 
-rm -f "$HTML_FILE.tmp"
+    echo "Updated token in: $target_file"
+}
 
-echo "Updated token in: $HTML_FILE"
+update_file "$HTML_FILE" "Voice Agent Selector"
+update_file "$DEBUG_HTML_FILE" "Voice Agent Selector (debug)"
+
 echo "Token valid until: $(date -u -d '+24 hours' '+%Y-%m-%d %H:%M:%S UTC')"
 echo ""
 echo "If CORS proxy server is running, restart it to serve the updated HTML:"

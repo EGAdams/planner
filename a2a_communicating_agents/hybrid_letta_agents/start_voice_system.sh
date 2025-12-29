@@ -393,6 +393,11 @@ echo "   • CORS Proxy: PID $CORS_PID (port 9000)"
 echo "   • Demo Server: PID $HTTP_PID (port 8888)"
 echo ""
 
+echo "8️⃣  Refreshing voice selector token..."
+cd "$PROJECT_DIR"
+./update_voice_token.sh
+echo ""
+
 # *** OPTIMIZATION STATUS *** (Dec 25, 2025)
 # Show all active optimizations
 echo "⚡ FULLY OPTIMIZED MODE (1.8s response - was 16s)"
