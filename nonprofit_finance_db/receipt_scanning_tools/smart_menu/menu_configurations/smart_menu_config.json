@@ -1,0 +1,14 @@
+[
+    {
+        "title": "List Registered Letta Agents",
+        "action": "bash -lc 'cd /home/adamsl/planner && /home/adamsl/planner/livekit-venv/bin/python a2a_communicating_agents/hybrid_letta_agents/agents/test_letta_minimal.py'",
+        "working_directory": "/home/adamsl/planner",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Brightness",
+        "action": "python3 adjust_brightness.py",
+        "working_directory": "",
+        "open_in_subprocess": false
+    }
+]

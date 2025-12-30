@@ -1,0 +1,1 @@
+{"version":3,"file":"port-monitor.d.ts","sourceRoot":"","sources":["../../../port-monitor/port-monitor.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAeH,qBAAa,WAAY,SAAQ,WAAW;IAC1C,OAAO,CAAC,SAAS,CAAqB;IACtC,OAAO,CAAC,WAAW,CAA6B;;IAOhD,iBAAiB;IAKjB,oBAAoB;IAQpB,OAAO,CAAC,mBAAmB;IAQ3B,OAAO,CAAC,eAAe;IAKvB,OAAO,CAAC,MAAM;CA8Mf"}

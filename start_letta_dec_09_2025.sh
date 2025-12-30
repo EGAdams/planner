@@ -25,5 +25,5 @@ if [ -z "$EXA_API_KEY" ]; then
 fi
 echo "EXA_API_KEY:    loaded from environment"
 
-# Start the server
-exec letta server
+# Start the server (bind to 0.0.0.0 for Windows/WSL access)
+exec letta server --host 0.0.0.0

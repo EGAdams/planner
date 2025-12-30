@@ -151,7 +151,7 @@ class CORSRequestHandler(http.server.SimpleHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": "Not found"}).encode())
 
     def do_POST(self):
-        """Handle POST requests for agent dispatch."""
+        """Handle POST requests for agent dispatch and diagnostic scripts."""
         if self.path == '/api/dispatch-agent':
             try:
                 # Read request body
@@ -194,6 +194,92 @@ class CORSRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self.send_header('Content-Type', 'application/json')
                 self.end_headers()
                 self.wfile.write(json.dumps({"error": str(e)}).encode())
+
+        elif self.path == '/api/run-diagnostic':
+            try:
+                # Read request body
+                content_length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(content_length)
+                data = json.loads(body.decode('utf-8'))
+
+                script_name = data.get('script')
+                if not script_name:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": "script name required"}).encode())
+                    logger.error("Diagnostic request missing script name")
+                    return
+
+                # Validate script name (security check)
+                allowed_scripts = {
+                    'cleanup_livekit_room.py': 'Clean LiveKit rooms',
+                    'test_agent_66_voice.py': 'Test voice connection system'
+                }
+
+                if script_name not in allowed_scripts:
+                    self.send_response(400)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": f"Invalid script: {script_name}"}).encode())
+                    logger.error(f"Invalid diagnostic script requested: {script_name}")
+                    return
+
+                logger.info(f"Running diagnostic script: {script_name}")
+
+                # Execute the script
+                import subprocess
+                script_path = PROJECT_ROOT / script_name
+
+                if not script_path.exists():
+                    self.send_response(404)
+                    self.send_header('Content-Type', 'application/json')
+                    self.end_headers()
+                    self.wfile.write(json.dumps({"error": f"Script not found: {script_name}"}).encode())
+                    logger.error(f"Script not found: {script_path}")
+                    return
+
+                # Run script with Python from virtual environment if available
+                venv_python = Path("/home/adamsl/planner/.venv/bin/python3")
+                python_cmd = str(venv_python) if venv_python.exists() else "python3"
+
+                result = subprocess.run(
+                    [python_cmd, str(script_path)],
+                    capture_output=True,
+                    text=True,
+                    timeout=30,  # 30 second timeout
+                    cwd=str(PROJECT_ROOT)
+                )
+
+                # Combine stdout and stderr
+                output = result.stdout
+                if result.stderr:
+                    output += "\n--- ERRORS ---\n" + result.stderr
+
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({
+                    "success": result.returncode == 0,
+                    "output": output,
+                    "returncode": result.returncode,
+                    "script": script_name
+                }).encode())
+                logger.info(f"Diagnostic script completed: {script_name} (exit code: {result.returncode})")
+
+            except subprocess.TimeoutExpired:
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": "Script execution timeout (30s)"}).encode())
+                logger.error(f"Diagnostic script timeout: {script_name}")
+            except Exception as e:
+                logger.error(f"Diagnostic script error: {e}", exc_info=True)
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(e)}).encode())
+
         else:
             # Unknown POST endpoint
             self.send_response(404)
@@ -208,11 +294,12 @@ class CORSRequestHandler(http.server.SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     os.chdir(PROJECT_ROOT)
-    server = http.server.HTTPServer(('localhost', 9000), CORSRequestHandler)
+    server = http.server.HTTPServer(('0.0.0.0', 9000), CORSRequestHandler)
     logger.info("CORS proxy server starting on http://localhost:9000")
     logger.info("- Serves HTML from http://localhost:9000")
     logger.info("- Proxies Letta API via http://localhost:9000/api/v1/agents/")
     logger.info("- Agent dispatch endpoint at http://localhost:9000/api/dispatch-agent")
+    logger.info("- Diagnostic script endpoint at http://localhost:9000/api/run-diagnostic")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

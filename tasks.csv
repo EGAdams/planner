@@ -1,0 +1,4 @@
+Task,Owner,Due Date,Status,Notes
+Fix Codex Coder bridge,Agent_66,2025-12-31,In Progress,Copy codex_coder_bridge.mjs to node_executables and test
+Investigate localhost:9900,Agent_66,2026-01-02,Pending,Run netstat/lsof/ps and check logs
+Find Python file with 'switching',Agent_66,2026-01-01,Pending,Search project directories for matching files

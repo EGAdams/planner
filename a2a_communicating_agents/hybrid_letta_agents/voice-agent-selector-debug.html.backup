@@ -9,9 +9,9 @@
         const PROXY_URL = 'http://localhost:9000';
         const LIVEKIT_URL = 'ws://localhost:7880';
 
-        // Token for dev mode (valid for 24 hours from 2025-12-29 04:15:47 UTC)
+        // Token for dev mode (valid for 24 hours from 2025-12-30 20:53:14 UTC)
         // NOTE: This token will expire. Regenerate with: ./update_voice_token.sh
-        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY2OTgxNzQ2LCJleHAiOjE3NjcwNjgxNDZ9.FJVoG7yjF7BBZ6VJFhL2nygIxwcmDmUW9oy1a2cTp38';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY3MTI3OTk0LCJleHAiOjE3NjcyMTQzOTR9.M1gu4eOnxxKgoloKBmeXrkO7N3Yj8Xes6opSAxAmA2s';
         const PRIMARY_AGENT_NAME = 'Agent_66';
         const PRIMARY_AGENT_WARNING = `Only ${PRIMARY_AGENT_NAME} is supported for LiveKit voice sessions.`;
 
@@ -41,35 +41,65 @@
         const micStatus = document.getElementById('micStatus');
         const audioLevel = document.getElementById('audioLevel');
 
+        // Debug status LED elements
+        const ledWebSocket = document.getElementById('ledWebSocket');
+        const ledLiveKit = document.getElementById('ledLiveKit');
+        const ledAgentSelection = document.getElementById('ledAgentSelection');
+        const ledAudioInput = document.getElementById('ledAudioInput');
+        const ledAudioOutput = document.getElementById('ledAudioOutput');
+        const ledMessageSend = document.getElementById('ledMessageSend');
+        const ledMessageReceive = document.getElementById('ledMessageReceive');
+        const ledAgentResponse = document.getElementById('ledAgentResponse');
+
+        // State textbox elements
+        const stateAgentId = document.getElementById('stateAgentId');
+        const stateAgentName = document.getElementById('stateAgentName');
+        const stateRoomName = document.getElementById('stateRoomName');
+        const stateWebSocketUrl = document.getElementById('stateWebSocketUrl');
+        const stateLiveKitState = document.getElementById('stateLiveKitState');
+        const stateLastMessageSent = document.getElementById('stateLastMessageSent');
+        const stateLastMessageReceived = document.getElementById('stateLastMessageReceived');
+        const stateAudioState = document.getElementById('stateAudioState');
+        const stateParticipantCount = document.getElementById('stateParticipantCount');
+        const stateErrorMessage = document.getElementById('stateErrorMessage');
+
+        // LED state updater functions
+        function updateLED(ledElement, state) {
+            // State: 'disconnected' (gray), 'connecting' (yellow), 'connected' (green), 'error' (red)
+            ledElement.className = 'status-led status-led-' + state;
+            ledElement.setAttribute('data-state', state);
+        }
+
+        function updateState(stateElement, value) {
+            stateElement.textContent = value || '-';
+        }
+
+        function logEvent(message, category = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = `event-log-entry event-${category}`;
+            entry.setAttribute('data-category', category);
+            entry.setAttribute('data-timestamp', new Date().toISOString());
+            entry.textContent = `[${time}] ${message}`;
+            debugLog.appendChild(entry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
         // DEBUG: Logging with visual feedback
         function debugInfo(message, emoji = '📝') {
             console.log(message);
-            const time = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.className = 'log-entry log-info';
-            entry.textContent = `[${time}] ${emoji} ${message}`;
-            debugLog.appendChild(entry);
-            debugLog.scrollTop = debugLog.scrollHeight;
+            logEvent(`${emoji} ${message}`, 'info');
         }
 
         function debugError(message, emoji = '❌') {
             console.error(message);
-            const time = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.className = 'log-entry log-error';
-            entry.textContent = `[${time}] ${emoji} ${message}`;
-            debugLog.appendChild(entry);
-            debugLog.scrollTop = debugLog.scrollHeight;
+            logEvent(`${emoji} ${message}`, 'error');
+            updateState(stateErrorMessage, message);
         }
 
         function debugSuccess(message, emoji = '✅') {
             console.log(message);
-            const time = new Date().toLocaleTimeString();
-            const entry = document.createElement('div');
-            entry.className = 'log-entry log-success';
-            entry.textContent = `[${time}] ${emoji} ${message}`;
-            debugLog.appendChild(entry);
-            debugLog.scrollTop = debugLog.scrollHeight;
+            logEvent(`${emoji} ${message}`, 'success');
         }
 
         // Generate a room name that includes the session ID
@@ -82,6 +112,7 @@
         async function checkMicrophoneAvailability() {
             try {
                 debugInfo('Checking microphone availability...', '🎤');
+                logEvent('CHECKING MICROPHONE AVAILABILITY', 'audio');
 
                 // Check if mediaDevices API is available
                 if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
@@ -107,8 +138,7 @@
                     // Stop the stream immediately - we just needed to check permissions
                     stream.getTracks().forEach(track => track.stop());
                     debugSuccess('Microphone permissions granted');
-                    micStatus.textContent = 'Permission granted';
-                    micStatus.className = 'indicator success';
+                    logEvent('MICROPHONE PERMISSIONS GRANTED', 'audio');
                 } catch (permErr) {
                     throw new Error(`Microphone permission denied: ${permErr.message}`);
                 }
@@ -116,8 +146,8 @@
                 return true;
             } catch (err) {
                 debugError(`Microphone check failed: ${err.message}`);
-                micStatus.textContent = 'ERROR';
-                micStatus.className = 'indicator error';
+                updateLED(ledAudioInput, 'error');
+                logEvent(`MICROPHONE CHECK FAILED: ${err.message}`, 'error');
                 throw err;
             }
         }
@@ -166,6 +196,18 @@
         // Load agents on page load
         window.addEventListener('DOMContentLoaded', () => {
             debugInfo('Page loaded, initializing...', '🚀');
+            logEvent('APPLICATION INITIALIZED', 'info');
+
+            // Initialize all LEDs to disconnected state
+            updateLED(ledWebSocket, 'disconnected');
+            updateLED(ledLiveKit, 'disconnected');
+            updateLED(ledAgentSelection, 'disconnected');
+            updateLED(ledAudioInput, 'disconnected');
+            updateLED(ledAudioOutput, 'disconnected');
+            updateLED(ledMessageSend, 'disconnected');
+            updateLED(ledMessageReceive, 'disconnected');
+            updateLED(ledAgentResponse, 'disconnected');
+
             loadAgents();
         });
 
@@ -289,6 +331,12 @@
         function selectAgent(agent, cardElement = null) {
             selectedAgent = agent;
             debugInfo(`Agent selected: ${agent.name} (${agent.id})`, '👤');
+            logEvent(`AGENT SELECTED: ${agent.name} (${agent.id})`, 'agent-selection');
+
+            // Update debug status
+            updateLED(ledAgentSelection, 'connected');
+            updateState(stateAgentId, agent.id);
+            updateState(stateAgentName, agent.name);
 
             // Highlight selected card
             document.querySelectorAll('.agent-card').forEach(card => {
@@ -342,11 +390,17 @@
                 status.className = '';
                 connectBtn.disabled = true;
 
+                // Update initial LED states
+                updateLED(ledLiveKit, 'connecting');
+                updateLED(ledAudioInput, 'connecting');
+                logEvent('CONNECTION INITIATED', 'connection');
+
                 // Check microphone availability BEFORE connecting
                 await checkMicrophoneAvailability();
 
                 status.textContent = 'Connecting...';
                 debugInfo('Creating LiveKit room...', '🔗');
+                updateState(stateWebSocketUrl, LIVEKIT_URL);
 
                 // Create room with options
                 room = new Room({
@@ -358,17 +412,26 @@
                 // Add event listeners
                 room.on(RoomEvent.SignalConnected, () => {
                     debugSuccess('Signal connection established');
+                    updateLED(ledWebSocket, 'connected');
+                    logEvent('WEBSOCKET CONNECTED', 'connection');
                 });
 
                 room.on(RoomEvent.Connected, () => {
                     debugSuccess('Room connected successfully');
                     status.textContent = 'Connected! Waiting for agent...';
                     status.className = 'connected';
+                    updateLED(ledLiveKit, 'connected');
+                    updateState(stateLiveKitState, 'connected');
+                    updateState(stateRoomName, room.name);
+                    logEvent('LIVEKIT ROOM CONNECTED', 'connection');
                 });
 
                 room.on(RoomEvent.Reconnecting, () => {
                     debugInfo('Reconnecting...', '🔄');
                     status.textContent = 'Reconnecting...';
+                    updateLED(ledLiveKit, 'connecting');
+                    updateState(stateLiveKitState, 'reconnecting');
+                    logEvent('RECONNECTING TO ROOM', 'connection');
                 });
 
                 room.on(RoomEvent.Disconnected, (reason) => {
@@ -376,10 +439,18 @@
                     connectBtn.disabled = false;
                     disconnectBtn.disabled = true;
                     stopAudioLevelMonitoring();
+                    updateLED(ledWebSocket, 'disconnected');
+                    updateLED(ledLiveKit, 'disconnected');
+                    updateLED(ledAudioInput, 'disconnected');
+                    updateLED(ledAudioOutput, 'disconnected');
+                    updateState(stateLiveKitState, 'disconnected');
+                    logEvent(`DISCONNECTED: ${reason}`, 'disconnection');
                 });
 
                 room.on(RoomEvent.ConnectionStateChanged, (state) => {
                     debugInfo(`Connection state: ${state}`, '🔌');
+                    updateState(stateLiveKitState, state);
+                    logEvent(`CONNECTION STATE: ${state}`, 'connection');
                 });
 
                 // Track when local tracks are published
@@ -387,15 +458,34 @@
                     debugSuccess(`Local track published: ${publication.kind} (${publication.source})`, '📤');
                     if (publication.kind === 'audio') {
                         debugSuccess('AUDIO TRACK IS NOW PUBLISHING TO LIVEKIT!', '🎙️');
+                        updateLED(ledAudioInput, 'connected');
+                        updateState(stateAudioState, 'publishing');
+                        logEvent('AUDIO TRACK PUBLISHING', 'audio');
                     }
                 });
 
                 room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
                     debugError(`Local track unpublished: ${publication.kind}`, '📥');
+                    if (publication.kind === 'audio') {
+                        updateLED(ledAudioInput, 'error');
+                        updateState(stateAudioState, 'unpublished');
+                        logEvent('AUDIO TRACK UNPUBLISHED', 'audio');
+                    }
                 });
 
                 room.on('participantConnected', (participant) => {
                     debugSuccess(`Participant connected: ${participant.identity}`, '👤');
+                    logEvent(`PARTICIPANT JOINED: ${participant.identity}`, 'participant');
+
+                    // Update participant count
+                    const count = room.remoteParticipants.size;
+                    updateState(stateParticipantCount, count);
+
+                    // Check if this is the agent
+                    if (participant.identity.includes('agent') || participant.identity.includes('Agent')) {
+                        updateLED(ledAgentResponse, 'connected');
+                        logEvent('AGENT PARTICIPANT CONNECTED', 'agent');
+                    }
 
                     // Clear the agent join timeout timer
                     if (agentJoinTimer) {
@@ -412,27 +502,49 @@
 
                 room.on('trackSubscribed', (track, publication, participant) => {
                     debugSuccess(`Track subscribed: ${track.kind} from ${participant.identity}`, '🎵');
+                    logEvent(`TRACK SUBSCRIBED: ${track.kind} from ${participant.identity}`, 'audio');
+
                     if (track.kind === 'audio') {
                         const audioElement = track.attach();
                         document.body.appendChild(audioElement);
                         debugSuccess('Audio element attached - you should hear responses now!', '🔊');
+                        updateLED(ledAudioOutput, 'connected');
+                        logEvent('AUDIO OUTPUT ENABLED', 'audio');
                     }
                 });
 
                 room.on('trackUnsubscribed', (track) => {
                     debugInfo(`Track unsubscribed: ${track.kind}`, '📥');
                     track.detach();
+                    if (track.kind === 'audio') {
+                        updateLED(ledAudioOutput, 'disconnected');
+                        logEvent('AUDIO TRACK UNSUBSCRIBED', 'audio');
+                    }
                 });
 
                 // Listen for data messages from agent
                 room.on('dataReceived', (payload, participant) => {
                     try {
                         const data = JSON.parse(new TextDecoder().decode(payload));
+                        const timestamp = new Date().toLocaleTimeString();
+
+                        updateLED(ledMessageReceive, 'connected');
+                        updateState(stateLastMessageReceived, `${timestamp} - ${data.type}`);
+                        logEvent(`MESSAGE RECEIVED: ${data.type} from ${participant?.identity || 'unknown'}`, 'message');
+
                         if (data.type === 'transcript') {
                             debugInfo(`${data.role}: ${data.text}`, data.role === 'user' ? '🗣️' : '🤖');
+                            if (data.role === 'agent') {
+                                updateLED(ledAgentResponse, 'connected');
+                                logEvent(`AGENT RESPONSE: ${data.text.substring(0, 50)}...`, 'agent');
+                            }
                         } else if (data.type === 'status_update') {
                             debugInfo(`Status: ${data.stage} - ${data.detail}`, '📊');
+                            logEvent(`STATUS UPDATE: ${data.stage} - ${data.detail}`, 'status');
                         }
+
+                        // Reset message receive LED after brief flash
+                        setTimeout(() => updateLED(ledMessageReceive, 'disconnected'), 500);
                     } catch (e) {
                         // Not JSON, ignore
                     }
@@ -448,6 +560,14 @@
                     }));
                     room.localParticipant.publishData(data, { reliable: true });
                     debugInfo(`Sent agent selection: ${selectedAgent.id}`, '📤');
+
+                    const timestamp = new Date().toLocaleTimeString();
+                    updateLED(ledMessageSend, 'connected');
+                    updateState(stateLastMessageSent, `${timestamp} - agent_selection`);
+                    logEvent('AGENT SELECTION MESSAGE SENT', 'message');
+
+                    // Reset message send LED after brief flash
+                    setTimeout(() => updateLED(ledMessageSend, 'disconnected'), 500);
                 });
 
                 // CRITICAL FIX: Use "test-room" to match the JWT token
@@ -625,6 +745,24 @@
                 connectBtn.disabled = selectedAgent ? false : true;
                 disconnectBtn.disabled = true;
                 debugInfo('Disconnected from room', '👋');
+
+                // Reset all LED states
+                updateLED(ledWebSocket, 'disconnected');
+                updateLED(ledLiveKit, 'disconnected');
+                updateLED(ledAudioInput, 'disconnected');
+                updateLED(ledAudioOutput, 'disconnected');
+                updateLED(ledMessageSend, 'disconnected');
+                updateLED(ledMessageReceive, 'disconnected');
+                updateLED(ledAgentResponse, 'disconnected');
+
+                // Reset state displays
+                updateState(stateRoomName, '-');
+                updateState(stateLiveKitState, 'disconnected');
+                updateState(stateAudioState, '-');
+                updateState(stateParticipantCount, '0');
+                updateState(stateErrorMessage, '-');
+
+                logEvent('FULLY DISCONNECTED - ALL SYSTEMS RESET', 'disconnection');
             }
         };
 
@@ -654,6 +792,82 @@
         window.clearDebugLog = function() {
             debugLog.innerHTML = '';
             debugInfo('Debug log cleared', '🧹');
+        };
+
+        // Diagnostic script execution
+        async function runDiagnostic(scriptName, buttonId) {
+            const button = document.getElementById(buttonId);
+            const originalText = button.textContent;
+
+            try {
+                // Disable button and show loading state
+                button.disabled = true;
+                button.textContent = 'Running...';
+                button.style.opacity = '0.6';
+
+                debugInfo(`Starting diagnostic: ${scriptName}`, '🔧');
+                debugLog.scrollTop = debugLog.scrollHeight;
+
+                // Execute script via backend API
+                const response = await fetch(`${PROXY_URL}/api/run-diagnostic`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ script: scriptName })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.error || 'Script execution failed');
+                }
+
+                // Display output in debug log
+                const timestamp = new Date().toLocaleTimeString();
+                const outputLines = result.output.split('\n');
+
+                debugInfo(`\n========== ${scriptName} OUTPUT [${timestamp}] ==========`, '📊');
+
+                outputLines.forEach(line => {
+                    if (line.trim()) {
+                        // Color code based on content
+                        if (line.includes('✅') || line.includes('SUCCESS')) {
+                            debugSuccess(line);
+                        } else if (line.includes('❌') || line.includes('ERROR') || line.includes('CRITICAL')) {
+                            debugError(line);
+                        } else if (line.includes('⚠️') || line.includes('WARNING')) {
+                            debugInfo(line, '⚠️');
+                        } else {
+                            debugInfo(line);
+                        }
+                    }
+                });
+
+                debugInfo(`========== END OUTPUT (exit code: ${result.returncode}) ==========\n`, '📊');
+
+                if (result.success) {
+                    debugSuccess(`Diagnostic completed successfully: ${scriptName}`, '✅');
+                } else {
+                    debugError(`Diagnostic completed with errors: ${scriptName}`, '⚠️');
+                }
+
+            } catch (err) {
+                debugError(`Diagnostic failed: ${err.message}`, '❌');
+                status.textContent = `Diagnostic error: ${err.message}`;
+                status.className = 'error';
+            } finally {
+                // Re-enable button
+                button.disabled = false;
+                button.textContent = originalText;
+                button.style.opacity = '1';
+            }
+        }
+
+        window.cleanLiveKitRooms = function() {
+            runDiagnostic('cleanup_livekit_room.py', 'cleanRoomsBtn');
+        };
+
+        window.testVoiceSystem = function() {
+            runDiagnostic('test_agent_66_voice.py', 'testVoiceBtn');
         };
     </script>
     <style>
@@ -797,6 +1011,30 @@
 
         #refreshBtn:hover, #clearLogBtn:hover {
             background: #138496;
+        }
+
+        .diagnostic-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .diagnostic-btn:hover:not(:disabled) {
+            background: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+
+        .diagnostic-controls {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .diagnostic-controls h4 {
+            margin-bottom: 10px;
+            color: #666;
+            font-size: 0.9em;
+            font-weight: 600;
         }
 
         .search-box {
@@ -945,93 +1183,194 @@
             font-size: 1.2em;
         }
 
-        .status-indicators {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
+        .debug-panel h3 {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 1em;
+            border-bottom: 1px solid #3e3e3e;
+            padding-bottom: 5px;
         }
 
-        .indicator-box {
-            flex: 1;
-            min-width: 120px;
+        /* LED Grid */
+        .led-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
             background: #2d2d2d;
-            padding: 10px;
+            padding: 15px;
             border-radius: 6px;
-            border: 2px solid #3e3e3e;
         }
 
-        .indicator-box label {
-            display: block;
+        .led-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .led-item label {
             font-size: 0.85em;
-            color: #888;
-            margin-bottom: 5px;
+            color: #bbb;
         }
 
-        .indicator {
+        .status-led {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
             display: inline-block;
-            padding: 5px 12px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            font-weight: bold;
-            background: #444;
-            color: #999;
+            box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
         }
 
-        .indicator.success {
-            background: #28a745;
-            color: white;
+        .status-led-disconnected {
+            background: #666;
+            box-shadow: 0 0 4px rgba(102, 102, 102, 0.5);
         }
 
-        .indicator.error {
-            background: #dc3545;
-            color: white;
-        }
-
-        .indicator.warning {
+        .status-led-connecting {
             background: #ffc107;
-            color: #333;
+            box-shadow: 0 0 8px rgba(255, 193, 7, 0.8);
+            animation: pulse-yellow 1s infinite;
         }
 
-        .indicator.pulse {
-            animation: pulse 1.5s ease-in-out infinite;
+        .status-led-connected {
+            background: #28a745;
+            box-shadow: 0 0 8px rgba(40, 167, 69, 0.8);
         }
 
-        @keyframes pulse {
+        .status-led-error {
+            background: #dc3545;
+            box-shadow: 0 0 8px rgba(220, 53, 69, 0.8);
+            animation: pulse-red 1s infinite;
+        }
+
+        @keyframes pulse-yellow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes pulse-red {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
 
-        #debugLog {
-            background: #1e1e1e;
-            border: 1px solid #3e3e3e;
+        /* State Panel */
+        .state-panel {
+            background: #2d2d2d;
+            padding: 15px;
             border-radius: 6px;
-            padding: 10px;
-            height: 500px;
-            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .state-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .state-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .state-item-full {
+            grid-column: 1 / -1;
+        }
+
+        .state-item label {
+            font-size: 0.8em;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .state-value {
+            background: #1e1e1e;
+            padding: 8px 10px;
+            border-radius: 4px;
             font-family: 'Courier New', monospace;
             font-size: 0.85em;
+            color: #4ec9b0;
+            border: 1px solid #3e3e3e;
+            word-break: break-all;
         }
 
-        .log-entry {
+        .state-value-error {
+            color: #f48771;
+        }
+
+        /* Event Log Panel */
+        .event-log-panel {
+            background: #2d2d2d;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .event-log {
+            background: #1e1e1e;
+            border: 1px solid #3e3e3e;
+            border-radius: 4px;
+            padding: 10px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+        }
+
+        .event-log-entry {
             padding: 4px 0;
             border-bottom: 1px solid #2d2d2d;
+            line-height: 1.4;
         }
 
-        .log-entry:last-child {
+        .event-log-entry:last-child {
             border-bottom: none;
         }
 
-        .log-info {
+        .event-info {
             color: #d4d4d4;
         }
 
-        .log-success {
+        .event-success {
             color: #4ec9b0;
         }
 
-        .log-error {
+        .event-error {
             color: #f48771;
+        }
+
+        .event-connection {
+            color: #569cd6;
+        }
+
+        .event-disconnection {
+            color: #ce9178;
+        }
+
+        .event-agent-selection {
+            color: #c586c0;
+        }
+
+        .event-audio {
+            color: #dcdcaa;
+        }
+
+        .event-message {
+            color: #9cdcfe;
+        }
+
+        .event-participant {
+            color: #b5cea8;
+        }
+
+        .event-agent {
+            color: #c586c0;
+            font-weight: bold;
+        }
+
+        .event-status {
+            color: #808080;
         }
 
         .instructions {
@@ -1124,24 +1463,108 @@
             </div>
 
             <div class="debug-panel">
-                <h2>Debug Console</h2>
+                <h2>Debug Status Panel</h2>
 
-                <div class="status-indicators">
-                    <div class="indicator-box">
-                        <label>Microphone Status</label>
-                        <span id="micStatus" class="indicator">Disconnected</span>
+                <!-- LED Status Indicators -->
+                <div class="led-grid">
+                    <div class="led-item">
+                        <span id="ledWebSocket" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>WebSocket</label>
                     </div>
-                    <div class="indicator-box">
-                        <label>Audio Level</label>
-                        <span id="audioLevel" class="indicator">-</span>
+                    <div class="led-item">
+                        <span id="ledLiveKit" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>LiveKit Room</label>
+                    </div>
+                    <div class="led-item">
+                        <span id="ledAgentSelection" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>Agent Selection</label>
+                    </div>
+                    <div class="led-item">
+                        <span id="ledAudioInput" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>Audio Input (Mic)</label>
+                    </div>
+                    <div class="led-item">
+                        <span id="ledAudioOutput" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>Audio Output</label>
+                    </div>
+                    <div class="led-item">
+                        <span id="ledMessageSend" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>Message Send</label>
+                    </div>
+                    <div class="led-item">
+                        <span id="ledMessageReceive" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>Message Receive</label>
+                    </div>
+                    <div class="led-item">
+                        <span id="ledAgentResponse" class="status-led status-led-disconnected" data-state="disconnected"></span>
+                        <label>Agent Response</label>
                     </div>
                 </div>
 
-                <div class="controls" style="margin-bottom: 15px;">
-                    <button id="clearLogBtn" onclick="clearDebugLog()">Clear Log</button>
+                <!-- State Information Display -->
+                <div class="state-panel">
+                    <h3>Connection State</h3>
+                    <div class="state-grid">
+                        <div class="state-item">
+                            <label>Selected Agent ID:</label>
+                            <span id="stateAgentId" class="state-value" data-field="agent-id">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>Selected Agent Name:</label>
+                            <span id="stateAgentName" class="state-value" data-field="agent-name">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>Current Room Name:</label>
+                            <span id="stateRoomName" class="state-value" data-field="room-name">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>WebSocket URL:</label>
+                            <span id="stateWebSocketUrl" class="state-value" data-field="websocket-url">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>LiveKit Connection:</label>
+                            <span id="stateLiveKitState" class="state-value" data-field="livekit-state">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>Audio State:</label>
+                            <span id="stateAudioState" class="state-value" data-field="audio-state">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>Participant Count:</label>
+                            <span id="stateParticipantCount" class="state-value" data-field="participant-count">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>Last Message Sent:</label>
+                            <span id="stateLastMessageSent" class="state-value" data-field="last-message-sent">-</span>
+                        </div>
+                        <div class="state-item">
+                            <label>Last Message Received:</label>
+                            <span id="stateLastMessageReceived" class="state-value" data-field="last-message-received">-</span>
+                        </div>
+                        <div class="state-item state-item-full">
+                            <label>Error Message:</label>
+                            <span id="stateErrorMessage" class="state-value state-value-error" data-field="error-message">-</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div id="debugLog"></div>
+                <!-- Event Log -->
+                <div class="event-log-panel">
+                    <h3>Real-time Event Log</h3>
+                    <div class="controls" style="margin-bottom: 10px;">
+                        <button id="clearLogBtn" onclick="clearDebugLog()">Clear Log</button>
+                    </div>
+                    <div id="debugLog" class="event-log"></div>
+                </div>
+
+                <!-- Diagnostic Tools -->
+                <div class="diagnostic-controls">
+                    <h4>Diagnostic Tools</h4>
+                    <div class="controls">
+                        <button id="cleanRoomsBtn" class="diagnostic-btn" onclick="cleanLiveKitRooms()">Clean LiveKit Rooms</button>
+                        <button id="testVoiceBtn" class="diagnostic-btn" onclick="testVoiceSystem()">Test Voice System</button>
+                    </div>
+                </div>
             </div>
         </main>
     </div>

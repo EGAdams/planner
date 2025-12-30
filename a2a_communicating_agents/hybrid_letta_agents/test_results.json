@@ -1,0 +1,527 @@
+{
+  "timestamp": "2025-12-30T03:57:56.043Z",
+  "steps": [
+    {
+      "step": "Navigate",
+      "status": "START",
+      "details": "Loading debug page",
+      "timestamp": "2025-12-30T03:57:56.044Z"
+    },
+    {
+      "step": "Navigate",
+      "status": "SUCCESS",
+      "details": "Page loaded",
+      "timestamp": "2025-12-30T03:57:58.195Z"
+    },
+    {
+      "step": "Initialize",
+      "status": "START",
+      "details": "Waiting for page initialization",
+      "timestamp": "2025-12-30T03:57:58.532Z"
+    },
+    {
+      "step": "Initialize",
+      "status": "SUCCESS",
+      "details": "LED states captured",
+      "timestamp": "2025-12-30T03:58:00.540Z"
+    },
+    {
+      "step": "Initialize",
+      "status": "SUCCESS",
+      "details": "State values captured",
+      "timestamp": "2025-12-30T03:58:00.544Z"
+    },
+    {
+      "step": "Agent Selection",
+      "status": "START",
+      "details": "Checking Agent_66 selection",
+      "timestamp": "2025-12-30T03:58:00.544Z"
+    },
+    {
+      "step": "Agent Selection",
+      "status": "SUCCESS",
+      "details": "Agent_66 auto-selected: Agent_66",
+      "timestamp": "2025-12-30T03:58:00.556Z"
+    },
+    {
+      "step": "Connect Button",
+      "status": "START",
+      "details": "Clicking Connect button",
+      "timestamp": "2025-12-30T03:58:00.811Z"
+    },
+    {
+      "step": "Connect Button",
+      "status": "SUCCESS",
+      "details": "Connect button clicked",
+      "timestamp": "2025-12-30T03:58:00.893Z"
+    },
+    {
+      "step": "Connection Flow",
+      "status": "START",
+      "details": "Monitoring LED state changes",
+      "timestamp": "2025-12-30T03:58:01.287Z"
+    }
+  ],
+  "ledStates": {
+    "initial": {
+      "webSocket": "disconnected",
+      "liveKit": "disconnected",
+      "agentSelection": "connected",
+      "audioInput": "disconnected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t0s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connecting",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t2s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t4s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t6s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t8s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t10s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t12s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t14s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t16s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "t18s": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    },
+    "final": {
+      "webSocket": "connected",
+      "liveKit": "connected",
+      "agentSelection": "connected",
+      "audioInput": "connected",
+      "audioOutput": "disconnected",
+      "messageSend": "disconnected",
+      "messageReceive": "disconnected",
+      "agentResponse": "disconnected"
+    }
+  },
+  "stateValues": {
+    "initial": {
+      "agentId": "agent-4dfca708-49a8-4982-8e36-0f1146f9a66e",
+      "agentName": "Agent_66",
+      "roomName": "-",
+      "webSocketUrl": "-",
+      "liveKitState": "-",
+      "audioState": "-",
+      "participantCount": "-",
+      "errorMessage": "-"
+    },
+    "t0s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "-",
+      "errorMessage": "-"
+    },
+    "t2s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "-"
+    },
+    "t4s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "-"
+    },
+    "t6s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "-"
+    },
+    "t8s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "-"
+    },
+    "t10s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "-"
+    },
+    "t12s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "-"
+    },
+    "t14s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "-"
+    },
+    "t16s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "Agent join timeout! No agent joined the room."
+    },
+    "t18s": {
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "Agent join timeout! No agent joined the room."
+    },
+    "final": {
+      "agentId": "agent-4dfca708-49a8-4982-8e36-0f1146f9a66e",
+      "agentName": "Agent_66",
+      "roomName": "test-room",
+      "liveKitState": "connected",
+      "participantCount": "-",
+      "audioState": "publishing",
+      "errorMessage": "Agent join timeout! No agent joined the room."
+    }
+  },
+  "eventLog": [
+    {
+      "timestamp": "2025-12-30T03:57:56.620Z",
+      "category": "info",
+      "text": "[10:57:56 PM] ðŸš€ Page loaded, initializing..."
+    },
+    {
+      "timestamp": "2025-12-30T03:57:56.627Z",
+      "category": "info",
+      "text": "[10:57:56 PM] APPLICATION INITIALIZED"
+    },
+    {
+      "timestamp": "2025-12-30T03:57:56.628Z",
+      "category": "info",
+      "text": "[10:57:56 PM] ðŸ”„ Fetching agents from Letta server..."
+    },
+    {
+      "timestamp": "2025-12-30T03:57:57.694Z",
+      "category": "success",
+      "text": "[10:57:57 PM] âœ… Loaded 50 agents from Letta server"
+    },
+    {
+      "timestamp": "2025-12-30T03:57:57.698Z",
+      "category": "info",
+      "text": "[10:57:57 PM] ðŸŽ¯ Detected Agent_66: agent-4dfca708-49a8-4982-8e36-0f1146f9a66e"
+    },
+    {
+      "timestamp": "2025-12-30T03:57:57.722Z",
+      "category": "info",
+      "text": "[10:57:57 PM] ðŸ”’ Auto-selecting Agent_66 to keep voice agent locked"
+    },
+    {
+      "timestamp": "2025-12-30T03:57:57.723Z",
+      "category": "info",
+      "text": "[10:57:57 PM] ðŸ‘¤ Agent selected: Agent_66 (agent-4dfca708-49a8-4982-8e36-0f1146f9a66e)"
+    },
+    {
+      "timestamp": "2025-12-30T03:57:57.724Z",
+      "category": "agent-selection",
+      "text": "[10:57:57 PM] AGENT SELECTED: Agent_66 (agent-4dfca708-49a8-4982-8e36-0f1146f9a66e)"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:00.879Z",
+      "category": "connection",
+      "text": "[10:58:00 PM] CONNECTION INITIATED"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:00.880Z",
+      "category": "info",
+      "text": "[10:58:00 PM] ðŸŽ¤ Checking microphone availability..."
+    },
+    {
+      "timestamp": "2025-12-30T03:58:00.881Z",
+      "category": "audio",
+      "text": "[10:58:00 PM] CHECKING MICROPHONE AVAILABILITY"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:00.980Z",
+      "category": "success",
+      "text": "[10:58:00 PM] âœ… Found 3 microphone device(s):"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:00.982Z",
+      "category": "info",
+      "text": "[10:58:00 PM] ðŸ“   1. Fake Default Audio Input (default...)"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:00.992Z",
+      "category": "info",
+      "text": "[10:58:00 PM] ðŸ“   2. Fake Audio Input 1 (fdc65a0f2edbcdd6ac2f...)"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:00.993Z",
+      "category": "info",
+      "text": "[10:58:00 PM] ðŸ“   3. Fake Audio Input 2 (6462f0b3bb02d75b1c3e...)"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.100Z",
+      "category": "success",
+      "text": "[10:58:01 PM] âœ… Microphone permissions granted"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.102Z",
+      "category": "audio",
+      "text": "[10:58:01 PM] MICROPHONE PERMISSIONS GRANTED"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.102Z",
+      "category": "info",
+      "text": "[10:58:01 PM] ðŸ”— Creating LiveKit room..."
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.109Z",
+      "category": "info",
+      "text": "[10:58:01 PM] ðŸ”— Connecting to room: test-room on ws://localhost:7880"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.111Z",
+      "category": "info",
+      "text": "[10:58:01 PM] ðŸ”‘ âš ï¸  Using fixed room name \"test-room\" to match JWT token"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.116Z",
+      "category": "info",
+      "text": "[10:58:01 PM] ðŸ”Œ Connection state: connecting"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.116Z",
+      "category": "connection",
+      "text": "[10:58:01 PM] CONNECTION STATE: connecting"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.437Z",
+      "category": "success",
+      "text": "[10:58:01 PM] âœ… Signal connection established"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:01.450Z",
+      "category": "connection",
+      "text": "[10:58:01 PM] WEBSOCKET CONNECTED"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.634Z",
+      "category": "info",
+      "text": "[10:58:02 PM] ðŸ”Œ Connection state: connected"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.634Z",
+      "category": "connection",
+      "text": "[10:58:02 PM] CONNECTION STATE: connected"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.635Z",
+      "category": "success",
+      "text": "[10:58:02 PM] âœ… Room connected successfully"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.636Z",
+      "category": "connection",
+      "text": "[10:58:02 PM] LIVEKIT ROOM CONNECTED"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.639Z",
+      "category": "info",
+      "text": "[10:58:02 PM] ðŸ“¤ Sent agent selection: agent-4dfca708-49a8-4982-8e36-0f1146f9a66e"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.641Z",
+      "category": "message",
+      "text": "[10:58:02 PM] AGENT SELECTION MESSAGE SENT"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.649Z",
+      "category": "success",
+      "text": "[10:58:02 PM] ðŸŽµ Track subscribed: audio from agent-AJ_xy5PT8AYd32F"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.650Z",
+      "category": "audio",
+      "text": "[10:58:02 PM] TRACK SUBSCRIBED: audio from agent-AJ_xy5PT8AYd32F"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.657Z",
+      "category": "success",
+      "text": "[10:58:02 PM] ðŸ”Š Audio element attached - you should hear responses now!"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.665Z",
+      "category": "audio",
+      "text": "[10:58:02 PM] AUDIO OUTPUT ENABLED"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.668Z",
+      "category": "success",
+      "text": "[10:58:02 PM] ðŸŽ‰ Connected to room: test-room"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.672Z",
+      "category": "info",
+      "text": "[10:58:02 PM] ðŸ“¡ Requesting agent dispatch to room..."
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.743Z",
+      "category": "info",
+      "text": "[10:58:02 PM] ðŸ“¥ Track unsubscribed: audio"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:02.748Z",
+      "category": "audio",
+      "text": "[10:58:02 PM] AUDIO TRACK UNSUBSCRIBED"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.735Z",
+      "category": "success",
+      "text": "[10:58:03 PM] âœ… Agent dispatch requested: Agent dispatched to room test-room"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.736Z",
+      "category": "info",
+      "text": "[10:58:03 PM] ðŸŽ¤ Enabling microphone..."
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.826Z",
+      "category": "success",
+      "text": "[10:58:03 PM] ðŸ“¤ Local track published: audio (microphone)"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.830Z",
+      "category": "success",
+      "text": "[10:58:03 PM] ðŸŽ™ï¸ AUDIO TRACK IS NOW PUBLISHING TO LIVEKIT!"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.831Z",
+      "category": "audio",
+      "text": "[10:58:03 PM] AUDIO TRACK PUBLISHING"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.834Z",
+      "category": "success",
+      "text": "[10:58:03 PM] âœ… Microphone enabled successfully!"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.835Z",
+      "category": "info",
+      "text": "[10:58:03 PM] ðŸ‘¥ Existing participants in room: 0"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.837Z",
+      "category": "info",
+      "text": "[10:58:03 PM] â° Waiting 15s for agent to join..."
+    },
+    {
+      "timestamp": "2025-12-30T03:58:03.842Z",
+      "category": "success",
+      "text": "[10:58:03 PM] âœ… Setup complete - ready to talk!"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:04.335Z",
+      "category": "success",
+      "text": "[10:58:04 PM] ðŸŽ™ï¸ Audio track is PUBLISHING to LiveKit"
+    },
+    {
+      "timestamp": "2025-12-30T03:58:18.842Z",
+      "category": "error",
+      "text": "[10:58:18 PM] â±ï¸ Agent join timeout! No agent joined the room."
+    },
+    {
+      "timestamp": "2025-12-30T03:58:18.846Z",
+      "category": "info",
+      "text": "[10:58:18 PM] ðŸ”„ Retry 1/3 after 1000ms delay..."
+    },
+    {
+      "timestamp": "2025-12-30T03:58:18.847Z",
+      "category": "info",
+      "text": "[10:58:18 PM] â° Cleared agent join timeout"
+    }
+  ],
+  "failurePoint": "Agent failed to join room",
+  "success": false
+}

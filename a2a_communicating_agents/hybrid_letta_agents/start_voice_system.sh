@@ -89,21 +89,28 @@ source "$ENV_FILE"
 
 # *** AUTO-CONFIGURATION *** (Dec 25, 2025)
 # Automatically configure optimizations in .env file
-echo "🔧 Auto-configuring optimizations..."
+echo "🔧 Checking hybrid streaming configuration..."
 
-# Ensure USE_HYBRID_STREAMING is set to true
-if ! grep -q "^USE_HYBRID_STREAMING=" "$ENV_FILE" 2>/dev/null; then
-    echo "USE_HYBRID_STREAMING=true" >> "$ENV_FILE"
-    echo "   ✅ Added USE_HYBRID_STREAMING=true to .env"
-elif grep -q "^USE_HYBRID_STREAMING=false" "$ENV_FILE" 2>/dev/null; then
-    sed -i 's/^USE_HYBRID_STREAMING=false/USE_HYBRID_STREAMING=true/' "$ENV_FILE"
-    echo "   ✅ Changed USE_HYBRID_STREAMING to true in .env"
+# CHANGED: Don't force hybrid mode - respect user configuration in project .env
+# Hybrid mode is FAST (1-2s) but doesn't support tool calling (function execution)
+# If agent needs to use tools (like get_current_time), set USE_HYBRID_STREAMING=false
+PROJECT_ENV="${PROJECT_DIR}/.env"
+if [ -f "$PROJECT_ENV" ]; then
+    echo "   ℹ️  Using project-specific .env configuration from:"
+    echo "      $PROJECT_ENV"
+    # Load project .env instead of forcing global setting
+    source "$PROJECT_ENV"
+    if grep -q "^USE_HYBRID_STREAMING=false" "$PROJECT_ENV"; then
+        echo "   ⚠️  HYBRID MODE DISABLED (tool calling enabled)"
+        echo "      This allows agent to use functions like get_current_time"
+        echo "      Response time: 3-5s (vs 1-2s with hybrid mode)"
+    else
+        echo "   ⚡ HYBRID MODE ENABLED (fast responses, no tool calling)"
+        echo "      Response time: 1-2s"
+    fi
 else
-    echo "   ✓ USE_HYBRID_STREAMING already configured"
+    echo "   ℹ️  No project .env found, using default configuration"
 fi
-
-# Reload environment to pick up changes
-source "$ENV_FILE"
 
 echo ""
 
@@ -400,15 +407,27 @@ echo ""
 
 # *** OPTIMIZATION STATUS *** (Dec 25, 2025)
 # Show all active optimizations
-echo "⚡ FULLY OPTIMIZED MODE (1.8s response - was 16s)"
-echo ""
-echo "   PERFORMANCE OPTIMIZATIONS:"
-echo "   • Hybrid streaming: Direct OpenAI (1-2s) + background Letta memory"
-echo "   • AsyncLetta client (eliminates thread blocking)"
-echo "   • gpt-5-mini model (<200ms TTFT)"
-echo "   • HTTP connection pooling"
-echo "   • Sleep-time compute (background memory)"
-echo ""
+if [ "$USE_HYBRID_STREAMING" = "true" ]; then
+    echo "⚡ HYBRID MODE (1-2s response, no tool calling)"
+    echo ""
+    echo "   PERFORMANCE OPTIMIZATIONS:"
+    echo "   • Hybrid streaming: Direct OpenAI (1-2s) + background Letta memory"
+    echo "   • AsyncLetta client (eliminates thread blocking)"
+    echo "   • gpt-5-mini model (<200ms TTFT)"
+    echo "   • HTTP connection pooling"
+    echo "   • Sleep-time compute (background memory)"
+    echo ""
+else
+    echo "⚡ LETTA MODE (3-5s response, full tool calling support)"
+    echo ""
+    echo "   PERFORMANCE OPTIMIZATIONS:"
+    echo "   • AsyncLetta streaming (true async iteration)"
+    echo "   • Function calling support (tools like get_current_time work)"
+    echo "   • gpt-5-mini model (<200ms TTFT)"
+    echo "   • HTTP connection pooling"
+    echo "   • Sleep-time compute (background memory)"
+    echo ""
+fi
 echo "   RELIABILITY PROTECTIONS:"
 echo "   • Circuit breaker (fast-fail when services down)"
 echo "   • Health checks (2s validation before calls)"

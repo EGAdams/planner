@@ -38,6 +38,9 @@ import json
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 import time
+import uuid
+import traceback
+import hashlib
 
 from dotenv import load_dotenv
 from livekit import rtc, agents
@@ -261,6 +264,11 @@ class LettaVoiceAssistantOptimized(Agent):
         self.agent_memory_blocks = {}
         self.agent_system_instructions = None
         self.memory_loaded = False
+
+        # *** DEDUPLICATION FIX: Track processed requests to prevent duplicate processing
+        self.processed_requests = {}  # {request_hash: (timestamp, response)}
+        self.request_dedup_timeout = 5.0  # Requests older than 5s are removed from cache
+        self.active_requests = set()  # Track currently processing requests
 
     async def _load_agent_memory(self) -> bool:
         """
@@ -493,6 +501,25 @@ Use your memory to provide contextual, knowledgeable responses.
         except Exception as e:
             logger.error(f"Background Letta sync failed (non-critical): {e}")
 
+    def _generate_request_hash(self, user_message: str) -> str:
+        """Generate a hash for deduplication of identical requests within a short time window."""
+        # Combine message + timestamp bucket (1 second buckets) for near-duplicate detection
+        time_bucket = int(time.time())
+        hash_input = f"{user_message.strip().lower()}:{time_bucket}"
+        return hashlib.md5(hash_input.encode()).hexdigest()
+
+    def _cleanup_old_requests(self):
+        """Remove old requests from deduplication cache."""
+        current_time = time.time()
+        expired_hashes = [
+            req_hash for req_hash, (timestamp, _) in self.processed_requests.items()
+            if current_time - timestamp > self.request_dedup_timeout
+        ]
+        for req_hash in expired_hashes:
+            del self.processed_requests[req_hash]
+        if expired_hashes:
+            logger.debug(f"🧹 Cleaned up {len(expired_hashes)} expired request(s) from dedup cache")
+
     async def llm_node(self, chat_ctx, tools, model_settings):
         """
         Override LLM node to route through hybrid processing or Letta with reliability.
@@ -505,95 +532,159 @@ Use your memory to provide contextual, knowledgeable responses.
             - AsyncLetta with retry/circuit breaker
 
         GUARANTEED to return a valid response (never None or empty).
+
+        DEDUPLICATION: Prevents processing the same request twice within a short time window.
         """
+        # Generate unique request ID for tracking
+        request_id = str(uuid.uuid4())[:8]
+
         # Extract user message from chat context
         user_message = _coerce_text(chat_ctx.items[-1].content if chat_ctx.items else "")
         total_start = time.perf_counter()
 
+        # Generate request hash for deduplication
+        request_hash = self._generate_request_hash(user_message)
+
+        # Get call stack for debugging duplicate invocations
+        call_stack = ''.join(traceback.format_stack()[-5:-1])  # Last 4 frames before this one
+
         logger.info(f"🎤 ========================================")
         logger.info(f"🎤 NEW QUERY RECEIVED")
+        logger.info(f"🎤 Request ID: {request_id}")
+        logger.info(f"🎤 Request Hash: {request_hash}")
         logger.info(f"🎤 User message: {user_message}")
         logger.info(f"🎤 Current Agent ID: {self.agent_id}")
         logger.info(f"🎤 Current Agent Name: {self.primary_agent_name}")
         logger.info(f"🎤 Memory Loaded: {self.memory_loaded}")
+        logger.info(f"🎤 Call Stack Preview:\n{call_stack}")
         logger.info(f"🎤 ========================================")
 
-        # Publish transcript to room for UI
-        await self._publish_transcript("user", user_message)
-        await self._publish_status(
-            "transcript_ready",
-            f"Recognized: {user_message[:80] or '<<blank>>'}"
-        )
+        # *** DEDUPLICATION CHECK ***
+        # Clean up old requests first
+        self._cleanup_old_requests()
 
-        # Route based on mode
-        if USE_HYBRID_STREAMING:
-            logger.info("⚡ Using HYBRID mode (fast OpenAI with agent memory + background Letta)")
+        # Check if this request is already being processed
+        if request_hash in self.active_requests:
+            logger.warning(f"⚠️  DUPLICATE REQUEST DETECTED (currently processing): {request_id}")
+            logger.warning(f"⚠️  Request hash: {request_hash}")
+            logger.warning(f"⚠️  Returning cached 'processing' response to prevent duplicate")
+            return "I'm still processing your previous request. Please wait a moment."
 
-            try:
-                # Fast path: Direct OpenAI streaming WITH agent memory
-                letta_start = time.perf_counter()
-                await self._publish_status("processing", "Generating response with agent knowledge...")
+        # Check if we recently processed this exact request
+        if request_hash in self.processed_requests:
+            timestamp, cached_response = self.processed_requests[request_hash]
+            age = time.time() - timestamp
+            logger.warning(f"⚠️  DUPLICATE REQUEST DETECTED (already processed {age:.1f}s ago): {request_id}")
+            logger.warning(f"⚠️  Request hash: {request_hash}")
+            logger.warning(f"⚠️  Returning cached response to prevent duplicate processing")
+            return cached_response
 
-                response_text = await self._get_openai_response_streaming(user_message)
+        # Mark this request as active
+        self.active_requests.add(request_hash)
+        logger.info(f"✅ Request {request_id} marked as active (hash: {request_hash})")
 
-                letta_elapsed = time.perf_counter() - letta_start
-                logger.info(f"⚡ Fast path response duration: {letta_elapsed:.2f}s")
-                await self._publish_status("response_ready", f"Response ready in {letta_elapsed:.1f}s", letta_elapsed)
+        # Wrap entire processing in try-catch to ensure cleanup
+        try:
+            # Publish transcript to room for UI
+            await self._publish_transcript("user", user_message)
+            await self._publish_status(
+                "transcript_ready",
+                f"Recognized: {user_message[:80] or '<<blank>>'}"
+            )
 
-                # Validate response
-                response_text = self._validate_response(response_text)
+            # Route based on mode
+            if USE_HYBRID_STREAMING:
+                logger.info("⚡ Using HYBRID mode (fast OpenAI with agent memory + background Letta)")
 
-                # Update local history
-                self.message_history.append({"role": "user", "content": user_message})
-                self.message_history.append({"role": "assistant", "content": response_text})
+                try:
+                    # Fast path: Direct OpenAI streaming WITH agent memory
+                    letta_start = time.perf_counter()
+                    await self._publish_status("processing", "Generating response with agent knowledge...")
 
-                # Slow path: Background Letta memory sync (non-blocking)
-                if self.letta_sync_task:
-                    self.letta_sync_task.cancel()
+                    response_text = await self._get_openai_response_streaming(user_message)
 
-                self.letta_sync_task = asyncio.create_task(
-                    self._sync_letta_memory_background(user_message, response_text)
-                )
+                    letta_elapsed = time.perf_counter() - letta_start
+                    logger.info(f"⚡ Fast path response duration: {letta_elapsed:.2f}s")
+                    await self._publish_status("response_ready", f"Response ready in {letta_elapsed:.1f}s", letta_elapsed)
 
-            except Exception as e:
-                logger.error(f"Hybrid mode failed, falling back to AsyncLetta: {e}")
-                # Fallback to AsyncLetta with retry
+                    # Validate response
+                    response_text = self._validate_response(response_text)
+
+                    # Update local history
+                    self.message_history.append({"role": "user", "content": user_message})
+                    self.message_history.append({"role": "assistant", "content": response_text})
+
+                    # Slow path: Background Letta memory sync (non-blocking)
+                    if self.letta_sync_task:
+                        self.letta_sync_task.cancel()
+
+                    self.letta_sync_task = asyncio.create_task(
+                        self._sync_letta_memory_background(user_message, response_text)
+                    )
+
+                except Exception as e:
+                    logger.error(f"Hybrid mode failed, falling back to AsyncLetta: {e}")
+                    logger.error(f"Exception traceback: {traceback.format_exc()}")
+                    # Fallback to AsyncLetta with retry
+                    letta_start = time.perf_counter()
+                    await self._publish_status("sending_to_letta", "Contacting Letta orchestrator…")
+                    response_text = await self._get_letta_response_async_streaming(user_message)
+                    letta_elapsed = time.perf_counter() - letta_start
+                    await self._publish_status("letta_response", f"Response ready in {letta_elapsed:.1f}s", letta_elapsed)
+            else:
+                # Legacy mode: AsyncLetta with reliability improvements
+                logger.info("📞 Using AsyncLetta mode with retry/circuit breaker")
                 letta_start = time.perf_counter()
                 await self._publish_status("sending_to_letta", "Contacting Letta orchestrator…")
+
                 response_text = await self._get_letta_response_async_streaming(user_message)
+
                 letta_elapsed = time.perf_counter() - letta_start
+                logger.info(f"⚡ Letta streaming response duration: {letta_elapsed:.2f}s")
                 await self._publish_status("letta_response", f"Response ready in {letta_elapsed:.1f}s", letta_elapsed)
-        else:
-            # Legacy mode: AsyncLetta with reliability improvements
-            logger.info("📞 Using AsyncLetta mode with retry/circuit breaker")
-            letta_start = time.perf_counter()
-            await self._publish_status("sending_to_letta", "Contacting Letta orchestrator…")
 
-            response_text = await self._get_letta_response_async_streaming(user_message)
+            # Final validation (paranoid check - methods should guarantee valid response)
+            if not response_text or len(response_text.strip()) < 3:
+                logger.error(f"🚨 CRITICAL: Invalid response after all safeguards: '{response_text}'")
+                response_text = "I apologize, something went wrong with my response generation."
 
-            letta_elapsed = time.perf_counter() - letta_start
-            logger.info(f"⚡ Letta streaming response duration: {letta_elapsed:.2f}s")
-            await self._publish_status("letta_response", f"Response ready in {letta_elapsed:.1f}s", letta_elapsed)
+            # DEBUG: Prepend agent identification to every response
+            debug_prefix = f"[DEBUG: Using Agent ID {self.agent_id[-8:]} | Req {request_id}] "
+            response_text = debug_prefix + response_text
 
-        # Final validation (paranoid check - methods should guarantee valid response)
-        if not response_text or len(response_text.strip()) < 3:
-            logger.error(f"🚨 CRITICAL: Invalid response after all safeguards: '{response_text}'")
-            response_text = "I apologize, something went wrong with my response generation."
+            # Publish complete response to room for UI
+            await self._publish_transcript("assistant", response_text)
+            logger.info(f"🔊 Response (Req {request_id}): {response_text[:100]}...")
 
-        # DEBUG: Prepend agent identification to every response
-        debug_prefix = f"[DEBUG: Using Agent ID {self.agent_id[-8:]}] "
-        response_text = debug_prefix + response_text
+            total_elapsed = time.perf_counter() - total_start
+            logger.info(f"✅ Total llm_node latency: {total_elapsed:.2f}s (Request {request_id})")
+            logger.info(f"✅ RESPONSE GENERATED BY AGENT: {self.agent_id}")
 
-        # Publish complete response to room for UI
-        await self._publish_transcript("assistant", response_text)
-        logger.info(f"🔊 Response: {response_text[:100]}...")
+            # Cache the response for deduplication
+            self.processed_requests[request_hash] = (time.time(), response_text)
+            logger.info(f"✅ Cached response for request {request_id} (hash: {request_hash})")
 
-        total_elapsed = time.perf_counter() - total_start
-        logger.info(f"✅ Total llm_node latency: {total_elapsed:.2f}s")
-        logger.info(f"✅ RESPONSE GENERATED BY AGENT: {self.agent_id}")
+            # Return response text - framework will automatically handle TTS
+            return response_text
 
-        # Return response text - framework will automatically handle TTS
-        return response_text
+        except Exception as e:
+            # Catch-all error handler
+            logger.error(f"🚨 CRITICAL ERROR in llm_node (Request {request_id}): {e}")
+            logger.error(f"🚨 Full traceback:\n{traceback.format_exc()}")
+
+            # Return safe fallback response
+            fallback_response = f"I apologize, I encountered an error processing your request. Please try again."
+
+            # Still cache the error response to prevent retry loops
+            self.processed_requests[request_hash] = (time.time(), fallback_response)
+
+            return fallback_response
+
+        finally:
+            # Always remove from active requests, even if there was an error
+            if request_hash in self.active_requests:
+                self.active_requests.remove(request_hash)
+                logger.info(f"✅ Request {request_id} removed from active set (hash: {request_hash})")
 
     def _update_activity_time(self):
         """Update the last activity timestamp."""
@@ -1096,12 +1187,16 @@ async def entrypoint(ctx: JobContext):
         )
         logger.info("Using OpenAI TTS")
 
+    # CRITICAL FIX: LLM is needed for pipeline to work!
+    # The session needs an LLM to trigger the assistant's custom llm_node() override.
+    # Without it, the STT → LLM pipeline never invokes our llm_node() method.
+    # We add duplicate detection in llm_node() to prevent double processing.
     session = AgentSession(
         stt=deepgram.STT(
             model="nova-2",
             language="en",
         ),
-        llm=openai.LLM(model="gpt-5-mini"),
+        llm=openai.LLM(model="gpt-5-mini"),  # ← RESTORED: Required for pipeline
         tts=tts,
         vad=silero.VAD.load(
             min_speech_duration=0.1,
@@ -1316,18 +1411,41 @@ async def request_handler(job_request: JobRequest):
     room_name = job_request.room.name
     logger.info(f"📥 Job request received for room: {room_name}")
 
-    # CRITICAL FIX: Check if this room already has an agent assigned
+    # IMPROVED FIX: Check if this room already has an agent assigned AND has active participants
     async with _ROOM_ASSIGNMENT_LOCK:
         if room_name in _ROOM_TO_AGENT:
             existing_agent_id = _ROOM_TO_AGENT[room_name]
-            logger.error(f"🚨 ========================================")
-            logger.error(f"🚨 AGENT CONFLICT DETECTED!")
-            logger.error(f"🚨 Room: {room_name}")
-            logger.error(f"🚨 Already assigned to: {existing_agent_id}")
-            logger.error(f"🚨 REJECTING duplicate job request")
-            logger.error(f"🚨 ========================================")
-            await job_request.reject()
-            return
+
+            # Check if room actually has participants (smarter conflict detection)
+            try:
+                from livekit_room_manager import RoomManager
+                manager = RoomManager()
+                participants = await manager.list_participants(room_name)
+                participant_count = len(participants) if participants else 0
+                await manager.close()
+
+                if participant_count > 0:
+                    # Room has actual participants - this is a real conflict
+                    logger.error(f"🚨 ========================================")
+                    logger.error(f"🚨 AGENT CONFLICT DETECTED!")
+                    logger.error(f"🚨 Room: {room_name}")
+                    logger.error(f"🚨 Already assigned to: {existing_agent_id}")
+                    logger.error(f"🚨 Active participants: {participant_count}")
+                    logger.error(f"🚨 REJECTING duplicate job request")
+                    logger.error(f"🚨 ========================================")
+                    await job_request.reject()
+                    return
+                else:
+                    # Room is empty - stale assignment, clear it and continue
+                    logger.warning(f"⚠️  Room {room_name} has stale assignment (no participants)")
+                    logger.warning(f"⚠️  Clearing stale assignment and accepting new connection")
+                    del _ROOM_TO_AGENT[room_name]
+            except Exception as e:
+                # Can't check participant count - be conservative and reject
+                logger.error(f"🚨 Cannot verify room state: {e}")
+                logger.error(f"🚨 REJECTING duplicate job request (safety)")
+                await job_request.reject()
+                return
 
         # Assign the primary agent to this room
         # Note: We use PRIMARY_AGENT_ID if set, otherwise we'll get it from get_or_create_orchestrator
