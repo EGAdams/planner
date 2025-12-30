@@ -1,7 +1,7 @@
 # Repository Guidelines
 
 ## Database Credentials
-All database credentals are in this file:
+All database credentials are in this file:
 ```bash
 /home/adamsl/planner/.env
 ```
