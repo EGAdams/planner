@@ -339,6 +339,147 @@
     {
         "title": "Finance Report",
         "submenu": [
+                {
+            "title": "Receipt Tool Python Scripts",
+            "submenu": [
+                {
+                    "title": "Run receipt_tools_menu.py",
+                    "action": "python3 receipt_tools_menu.py",
+                    "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                    "open_in_subprocess": false,
+                    "use_expect_library": false
+                },
+                {
+                    "title": "Run manual_entry.py",
+                    "action": "python3 manual_entry.py",
+                    "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                    "open_in_subprocess": false,
+                    "use_expect_library": false
+                },
+                {
+                    "title": "Run delete_expenses_by_date.py",
+                    "action": "python3 delete_expenses_by_date.py",
+                    "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                    "open_in_subprocess": false,
+                    "use_expect_library": false
+                },
+                {
+                    "title": "Run update_merchants.py",
+                    "action": "python3 update_merchants.py",
+                    "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                    "open_in_subprocess": false,
+                    "use_expect_library": false
+                }
+            ]
+        },
+        {
+            "title": "Google Sheet Tools",
+            "submenu": [
+                {
+                    "title": "Create Spreadsheet from existing data",
+                    "submenu": [
+                            {
+                                "title": "Create January Spreadsheet",
+                                "action": "python3 create_january_spreadsheet.py",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create February Spreadsheet",
+                                "action": "echo 'TODO: implement create February spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create March Spreadsheet",
+                                "action": "echo 'TODO: implement create March spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create April Spreadsheet",
+                                "action": "echo 'TODO: implement create April spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create May Spreadsheet",
+                                "action": "echo 'TODO: implement create May spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create June Spreadsheet",
+                                "action": "echo 'TODO: implement create June spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create July Spreadsheet",
+                                "action": "echo 'TODO: implement create July spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create August Spreadsheet",
+                                "action": "echo 'TODO: implement create August spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create September Spreadsheet",
+                                "action": "echo 'TODO: implement create September spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create October Spreadsheet",
+                                "action": "echo 'TODO: implement create October spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create November Spreadsheet",
+                                "action": "echo 'TODO: implement create November spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            },
+                            {
+                                "title": "Create December Spreadsheet",
+                                "action": "echo 'TODO: implement create December spreadsheet workflow'",
+                                "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                                "open_in_subprocess": false,
+                                "use_expect_library": false
+                            }
+                        ]
+                    },
+                    {
+                        "title": "Update Spreadsheet with new data",
+                        "action": "echo 'TODO: implement update spreadsheet workflow'",
+                        "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                        "open_in_subprocess": false,
+                        "use_expect_library": false
+                    },
+                    {
+                        "title": "Show Spreadsheet",
+                        "action": "echo 'TODO: implement show spreadsheet workflow'",
+                        "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
+                        "open_in_subprocess": false,
+                        "use_expect_library": false
+                    }
+                ]
+            },
             {
                 "title": "Process Bank Statements",
                 "submenu": [

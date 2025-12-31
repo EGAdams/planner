@@ -40,7 +40,7 @@
                 "submenu": [
                     {
                         "title": "Create January Spreadsheet",
-                        "action": "echo 'TODO: implement create January spreadsheet workflow'",
+                        "action": "python3 create_january_spreadsheet.py",
                         "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
                         "open_in_subprocess": false,
                         "use_expect_library": false

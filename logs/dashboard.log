@@ -2,19 +2,18 @@
 > admin-dashboard@1.0.0 start
 > node backend/dist/server.js
 
-2025-12-25T15:00:15.749Z ADMIN_HOST from env: undefined
-2025-12-25T15:00:15.760Z Admin dashboard server running on http://127.0.0.1:3000
-2025-12-25T15:00:15.760Z Process management enabled with persistent state
-2025-12-25T15:00:15.767Z Server orchestrator initialized
+2025-12-31T18:28:08.891Z ADMIN_HOST from env: undefined
+2025-12-31T18:28:08.907Z Admin dashboard server running on http://127.0.0.1:3000
+2025-12-31T18:28:08.907Z Process management enabled with persistent state
+2025-12-31T18:28:08.915Z Server orchestrator initialized
 Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/letta
 Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/orchestrator
-2025-12-25T15:00:15.783Z Discovered agent: coder-agent in /home/adamsl/planner/a2a_communicating_agents/coder_agent
-2025-12-25T15:00:15.784Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
-2025-12-25T15:00:15.793Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
-2025-12-25T15:00:15.811Z Discovered agent: tester-agent in /home/adamsl/planner/a2a_communicating_agents/tester_agent
-2025-12-25T15:00:15.819Z Discovered agent: planner-agent in /home/adamsl/planner
+2025-12-31T18:28:08.929Z Discovered agent: coder-agent in /home/adamsl/planner/a2a_communicating_agents/coder_agent
+2025-12-31T18:28:08.931Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
+2025-12-31T18:28:08.957Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
+2025-12-31T18:28:08.961Z Discovered agent: tester-agent in /home/adamsl/planner/a2a_communicating_agents/tester_agent
+2025-12-31T18:28:08.965Z Discovered agent: planner-agent in /home/adamsl/planner
 Could not infer run command for agent in /home/adamsl/planner/nonprofit_finance_db/letta_agent/agent_messaging/agents/letta
 Could not infer run command for agent in /home/adamsl/planner/nonprofit_finance_db/letta_agent/agent_messaging/agents/orchestrator
-2025-12-25T15:00:16.158Z Discovered 5 agents
-2025-12-25T15:00:16.159Z Agent discovery complete. Registered agents:
-2025-12-25T15:00:59.546Z Server api-server started with PID 27839
+2025-12-31T18:28:09.324Z Discovered 5 agents
+2025-12-31T18:28:09.325Z Agent discovery complete. Registered agents:

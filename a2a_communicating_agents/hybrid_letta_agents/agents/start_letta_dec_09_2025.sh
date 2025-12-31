@@ -6,9 +6,12 @@ cd /home/adamsl/planner
 # Activate venv
 source .venv/bin/activate
 
-# Load environment variables from .env
-if [ -f /home/adamsl/planner/.env ]; then
-    export $(grep -v '^#' /home/adamsl/planner/.env | xargs)
+ENV_FILE=/home/adamsl/planner/.env
+if [ -f "$ENV_FILE" ]; then
+    # shellcheck disable=SC1090
+    set -a
+    source "$ENV_FILE"
+    set +a
 fi
 
 # Sanity check – verify key is loaded
