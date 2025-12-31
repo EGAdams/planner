@@ -380,7 +380,7 @@
                     "submenu": [
                             {
                                 "title": "Create January Spreadsheet",
-                                "action": "python3 create_january_spreadsheet.py",
+                                "action": "/home/adamsl/planner/.venv/bin/python3 xls_write.py",
                                 "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
                                 "open_in_subprocess": false,
                                 "use_expect_library": false

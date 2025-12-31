@@ -30,6 +30,7 @@ DEFAULT_ORG_ID = 1
 class SpreadsheetRow:
     date: date
     description: str
+    expense_type: str | None
     source: str
     ledger_type: str
     amount: Decimal
@@ -74,6 +75,7 @@ def fetch_transactions(cnx) -> List[SpreadsheetRow]:
                 SpreadsheetRow(
                     date=record["transaction_date"],
                     description=record["description"],
+                    expense_type=record["transaction_type"],
                     source="transactions",
                     ledger_type=ledger_type,
                     amount=amount,
@@ -104,6 +106,7 @@ def fetch_expenses(cnx) -> List[SpreadsheetRow]:
                 SpreadsheetRow(
                     date=record["expense_date"],
                     description=record["description"],
+                    expense_type=payment_method,
                     source="expenses",
                     ledger_type="Expense",
                     amount=amount,
@@ -146,6 +149,7 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
             [
                 "Date",
                 "Description",
+                "Expense Type",
                 "Source",
                 "Ledger Type",
                 "Amount",
@@ -166,6 +170,7 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
                 [
                     row.date.isoformat(),
                     row.description,
+                    row.expense_type or "",
                     row.source,
                     row.ledger_type,
                     format_currency(row.amount),

@@ -50,3 +50,4 @@ logs/dashboard.log
 logs/a2a_system.pids
 logs/dashboard_agent.log
 nonprofit_finance_db/.claude-collective/metrics/collective-metrics.log
+nonprofit_finance_db/receipt_scanning_tools/generated_spreadsheets/*
