@@ -1,7 +1,7 @@
 [
     {
         "title": "start letta server",
-        "action": "cd /home/adamsl/planner && ./start_letta_dec_09_2025.sh",
+        "action": "cd /home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools && ./start_letta_dec_09_2025.sh",
         "working_directory": "",
         "open_in_subprocess": false
     },
@@ -339,8 +339,37 @@
     {
         "title": "Finance Report",
         "submenu": [
-                {
-            "title": "Receipt Tool Python Scripts",
+            {
+                "title": "View PhpMyAdmin",
+                "action": "bash menu_configurations/view_phpmyadmin.sh",
+                "working_directory": "/home/adamsl/planner/smart_menu",
+                "open_in_subprocess": true
+            },
+            {
+                "title": "Start Dashboard",
+                "action": "./start_a2a_system.sh",
+                "working_directory": "/home/adamsl/planner/a2a_communicating_agents",
+                "open_in_subprocess": true
+            },
+            {
+                "title": "Voice System",
+                "submenu": [
+                    {
+                        "title": "Start Voice System",
+                        "action": "./start_voice_system.sh",
+                        "working_directory": "/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents",
+                        "open_in_subprocess": true
+                    },
+                    {
+                        "title": "Restart Voice System",
+                        "action": "./restart_voice_system.sh",
+                        "working_directory": "/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents",
+                        "open_in_subprocess": true
+                    }
+                ]
+            },
+            {
+                "title": "Receipt Tool Python Scripts",
             "submenu": [
                 {
                     "title": "Run receipt_tools_menu.py",

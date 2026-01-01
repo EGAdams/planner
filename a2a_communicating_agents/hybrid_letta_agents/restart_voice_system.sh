@@ -90,6 +90,16 @@ fi
 
 # Load environment
 source "$ENV_FILE"
+# 1st day of 2026
+# 🔑 CRITICAL FIX: export OpenAI key so Letta subprocesses can see it
+export OPENAI_API_KEY
+export OPENAI_TTS_VOICE
+
+# Defensive: prevent silent overrides
+unset OPENAI_API_BASE
+unset OPENAI_ORG_ID
+
+echo "✅ OPENAI_API_KEY exported for Letta server"
 
 # *** AUTO-CONFIGURATION *** (Dec 25, 2025)
 # Automatically configure optimizations in .env file
@@ -227,7 +237,7 @@ if curl -s http://localhost:8283/ > /dev/null 2>&1; then
 else
     echo "  ⚠️  Letta server NOT running. Starting..."
     cd /home/adamsl/planner
-    nohup ./start_letta_dec_09_2025.sh > /tmp/letta_startup.log 2>&1 &
+    nohup ./agents/start_letta_dec_09_2025.sh > /tmp/letta_startup.log 2>&1 &
     echo "  ⏳ Waiting for Letta server to start..."
     sleep 5
 

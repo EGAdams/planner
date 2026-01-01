@@ -47,13 +47,13 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
     label_bold_fmt = workbook.add_format({"bold": True})
 
     # Column widths
-    ws.set_column("A:A", 12)   # Date
-    ws.set_column("B:B", 42)   # Description
-    ws.set_column("C:C", 16)   # Expense Type
-    ws.set_column("D:D", 14)   # Source
-    ws.set_column("E:E", 14)   # Ledger Type
-    ws.set_column("F:H", 14)   # Amount/Net/Running
-    ws.set_column("I:I", 52)   # Notes
+    ws.set_column("A:A", 12)
+    ws.set_column("B:B", 42)
+    ws.set_column("C:C", 16)
+    ws.set_column("D:D", 14)
+    ws.set_column("E:E", 14)
+    ws.set_column("F:H", 14)
+    ws.set_column("I:I", 52)
 
     # ----------------------------
     # Title + metadata
@@ -99,8 +99,6 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
         else:
             total_outflows -= row.net_change
 
-        # xlsxwriter wants a datetime for write_datetime; a date works fine in practice,
-        # but if you ever see issues, convert to datetime(row.date.year, row.date.month, row.date.day).
         ws.write_datetime(r, 0, row.date, date_fmt)
         ws.write_string(r, 1, row.description or "", text_fmt)
         ws.write_string(r, 2, row.expense_type or "", text_fmt)
@@ -116,7 +114,6 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
 
     data_last_row = r - 1
 
-    # Add table only if we have at least one data row
     if data_last_row >= data_first_row:
         ws.add_table(
             start_row,
@@ -129,7 +126,6 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
             },
         )
 
-        # Conditional formatting: negative net change red (column G index 6)
         ws.conditional_format(
             data_first_row,
             6,
@@ -143,9 +139,6 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
             },
         )
 
-    # ----------------------------
-    # Summary
-    # ----------------------------
     summary_row = data_last_row + 3 if data_last_row >= data_first_row else start_row + 3
     ws.write(summary_row, 0, "Summary", title_fmt)
 

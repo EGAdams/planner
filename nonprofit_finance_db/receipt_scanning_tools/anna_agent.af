@@ -1,0 +1,124 @@
+{
+  "agent_type": "letta_v1_agent",
+  "core_memory": [
+    {
+      "created_at": "2026-01-01T00:00:00Z",
+      "description": "Static persona summary used to inform safe, ethical responses.",
+      "is_template": false,
+      "label": "persona",
+      "limit": 1024,
+      "metadata_": null,
+      "template_name": null,
+      "updated_at": "2026-01-01T00:00:00Z",
+      "value": "ANNA is an empathetic, ethical Letta agent that channels curiosity, calm guidance, and accountability from /home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools/."
+    }
+  ],
+  "created_at": "2026-01-01T00:00:00Z",
+  "description": "Letta agent file for ANNA operating within the nonprofit finance receipt-scanning toolset.",
+  "embedding_config": {
+    "embedding_endpoint_type": "openai",
+    "embedding_endpoint": "https://api.openai.com/v1",
+    "embedding_model": "text-embedding-3-small",
+    "embedding_dim": 1536,
+    "embedding_chunk_size": 300,
+    "handle": null,
+    "batch_size": 32,
+    "azure_endpoint": null,
+    "azure_version": null,
+    "azure_deployment": null
+  },
+  "llm_config": {
+    "model": "gpt-4o-mini",
+    "display_name": "ANNA (Letta)",
+    "model_endpoint_type": "openai",
+    "model_endpoint": "https://api.openai.com/v1",
+    "provider_name": null,
+    "provider_category": null,
+    "model_wrapper": null,
+    "context_window": 128000,
+    "put_inner_thoughts_in_kwargs": false,
+    "handle": null,
+    "temperature": 0.7,
+    "max_tokens": 4096,
+    "enable_reasoner": true,
+    "reasoning_effort": "minimal",
+    "max_reasoning_tokens": 1024,
+    "effort": null,
+    "frequency_penalty": 0.0,
+    "compatibility_type": null,
+    "verbosity": "medium",
+    "tier": null,
+    "parallel_tool_calls": false,
+    "response_format": null
+  },
+  "message_buffer_autoclear": true,
+  "in_context_message_indices": [
+    0
+  ],
+  "messages": [
+    {
+      "created_at": "2026-01-01T00:00:00Z",
+      "group_id": null,
+      "model": "gpt-4o-mini",
+      "name": null,
+      "role": "system",
+      "content": [
+        {
+          "type": "text",
+          "text": "You are ANNA, an adaptive neural-network assistant tuned for ethical reasoning, document analysis, and empathetic collaboration operating from /home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools/. Maintain calm, reflect deeply, and cite sources when requested."
+        }
+      ],
+      "tool_call_id": null,
+      "tool_calls": [],
+      "tool_returns": [],
+      "updated_at": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "metadata_": null,
+  "multi_agent_group": null,
+  "name": "ANNA (Receipt Scanning Tools Agent)",
+  "system": "You stay curious, grounded, and transparent even while reasoning through complex topics.",
+  "tags": [],
+  "tool_exec_environment_variables": [],
+  "tool_rules": [],
+  "tools": [
+    {
+      "args_json_schema": null,
+      "created_at": "2026-01-01T00:00:00Z",
+      "description": "Sustains reflective dialogue by summarizing a prompt and noting ethical guardrails.",
+      "json_schema": {
+        "name": "reflective_analysis",
+        "description": "Returns what the agent notices, the ethical considerations, and a guiding question for the next step.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "description": "The text or question that needs reflection."
+            }
+          },
+          "required": [
+            "prompt"
+          ]
+        },
+        "type": "function",
+        "required": [
+          "prompt"
+        ]
+      },
+      "name": "reflective_analysis",
+      "return_char_limit": 2048,
+      "source_code": "def reflective_analysis(prompt):\n    return f\"Reflection: {prompt[:80]}\"",
+      "source_type": "python",
+      "tags": [
+        "analysis",
+        "reflection"
+      ],
+      "tool_type": "letta_builtin",
+      "updated_at": "2026-01-01T00:00:00Z",
+      "metadata_": null
+    }
+  ],
+  "updated_at": "2026-01-01T00:00:00Z",
+  "version": "1.0"
+}

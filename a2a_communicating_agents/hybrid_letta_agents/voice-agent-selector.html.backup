@@ -9,9 +9,9 @@
         const PROXY_URL = 'http://localhost:9000';
         const LIVEKIT_URL = 'ws://localhost:7880';
 
-        // Token for dev mode (valid for 24 hours from 2025-12-31 02:44:11 UTC)
+        // Token for dev mode (valid for 24 hours from 2026-01-01 19:50:27 UTC)
         // NOTE: This token will expire. Regenerate with: ./update_voice_token.sh
-        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY3MTQ5MDUxLCJleHAiOjE3NjcyMzU0NTF9.ll8ZmEdNtjCFKZSjEBl-_RbDPeH9CbKWb-azSlpiYLQ';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiVXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoidGVzdC1yb29tIiwiY2FuUHVibGlzaCI6dHJ1ZSwiY2FuU3Vic2NyaWJlIjp0cnVlLCJjYW5QdWJsaXNoRGF0YSI6dHJ1ZX0sInN1YiI6InVzZXIxIiwiaXNzIjoiZGV2a2V5IiwibmJmIjoxNzY3Mjk3MDI3LCJleHAiOjE3NjczODM0Mjd9.Bv0QXHJ14qo74039Czfl7ca4FPTSgy-3w4VEQt0ToBk';
         const PRIMARY_AGENT_NAME = 'Agent_66';
         const PRIMARY_AGENT_WARNING = `Only ${PRIMARY_AGENT_NAME} is supported for LiveKit voice sessions.`;
 

@@ -87,6 +87,17 @@ fi
 # Load environment
 source "$ENV_FILE"
 
+# 1st day of 2026
+# 🔑 CRITICAL FIX: export OpenAI key so Letta subprocesses can see it
+export OPENAI_API_KEY
+export OPENAI_TTS_VOICE
+
+# Defensive: prevent silent overrides
+unset OPENAI_API_BASE
+unset OPENAI_ORG_ID
+
+echo "✅ OPENAI_API_KEY exported for Letta server"
+
 # *** AUTO-CONFIGURATION *** (Dec 25, 2025)
 # Automatically configure optimizations in .env file
 echo "🔧 Checking hybrid streaming configuration..."

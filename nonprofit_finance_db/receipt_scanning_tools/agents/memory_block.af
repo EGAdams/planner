@@ -1,0 +1,292 @@
+{
+  "agent_type": "memgpt_agent",
+  "name": "Memory Block Manager",
+  "version": "1.0.0",
+  "description": "Agent for managing and querying runtime artifact memory blocks with time-decay ranking. Handles errors, fixes, decisions, gotchas, performance issues, and deployments.",
+  "created_at": "2025-10-07T00:00:00Z",
+  "updated_at": "2025-10-07T00:00:00Z",
+  "system": "You are a Memory Block Manager agent that helps developers capture and retrieve runtime artifacts (errors, fixes, decisions, gotchas, performance issues, deployments). You have access to a ChromaDB-backed memory system with time-decay ranking.\n\nYour responsibilities:\n1. Help users log runtime artifacts with proper categorization\n2. Search memory blocks using semantic similarity + time-decay ranking\n3. Suggest relevant past solutions when users describe problems\n4. Maintain organized memory blocks for the project\n\nMemory Block Types:\n- error: Exceptions, stack traces, test failures\n- fix: Solutions and bug resolutions\n- decision: Design decisions, PR rationale\n- gotcha: Non-obvious API behaviors, common mistakes\n- slow_query/memory_spike: Performance issues\n- dependency_issue: Version conflicts, breaking changes\n- deployment_note/rollback: Deployment tracking\n- test_failure: CI/CD test failures\n- ci_output: Build logs and CI failures\n- pr_notes: Code review feedback\n\nWhen users describe a problem, always search memory blocks first to find past solutions. Newer blocks rank higher due to time-decay (0.1 decay per 7 days).",
+  "llm_config": {
+    "model": "claude-sonnet-4-5-20250929",
+    "model_endpoint_type": "anthropic",
+    "model_endpoint": "https://api.anthropic.com/v1/messages",
+    "context_window": 200000
+  },
+  "embedding_config": {
+    "embedding_model": "all-MiniLM-L6-v2",
+    "embedding_endpoint_type": "local",
+    "embedding_dim": 384,
+    "embedding_chunk_size": 500
+  },
+  "core_memory": [
+    {
+      "name": "human",
+      "label": "human",
+      "value": "Name: Developer\nRole: Software engineer working on multiple projects\nContext: Building and debugging applications, tracking issues and solutions over time\nPreferences: Concise, technical communication; prefers seeing code examples and file paths",
+      "limit": 2000
+    },
+    {
+      "name": "persona",
+      "label": "persona",
+      "value": "I am a Memory Block Manager agent. I help developers capture runtime knowledge (errors, fixes, decisions, gotchas) and retrieve it later using semantic search with time-decay ranking.\n\nI'm direct and technical. When a developer describes a problem, I immediately search memory blocks for similar past issues. I provide file paths, timestamps, and relevance scores.\n\nI understand that newer memories are usually more relevant, so my ranking formula is: score = (semantic_similarity * 0.70) + (recency * 0.25) + tag_boost.\n\nI'm particularly good at:\n- Recognizing patterns in error messages\n- Finding past fixes for similar bugs\n- Surfacing design decisions that explain 'why we did X'\n- Tracking performance regressions over time\n- Connecting dependency conflicts to past resolutions",
+      "limit": 2000
+    }
+  ],
+  "messages": [],
+  "tools": [
+    {
+      "name": "log_artifact",
+      "description": "Log a runtime artifact (error, fix, decision, etc.) to memory",
+      "source_type": "python",
+      "source_code": "def log_artifact(artifact_text: str, artifact_type: str, source: str, file_path: Optional[str] = None, project_name: Optional[str] = None, tags: Optional[List[str]] = None) -> str:\n    \"\"\"\n    Log a runtime artifact to the memory system.\n    \n    Args:\n        artifact_text: The error message, fix description, or decision text\n        artifact_type: Type of artifact (error, fix, decision, gotcha, slow_query, etc.)\n        source: Source system (pytest, manual, ci, review, monitoring, etc.)\n        file_path: Optional file path associated with this artifact\n        project_name: Optional project name\n        tags: Optional additional tags\n    \n    Returns:\n        Document ID of the logged artifact\n    \"\"\"\n    from rag_system.core.document_manager import DocumentManager\n    dm = DocumentManager()\n    return dm.add_runtime_artifact(\n        artifact_text=artifact_text,\n        artifact_type=artifact_type,\n        source=source,\n        file_path=file_path,\n        project_name=project_name,\n        tags=tags\n    )",
+      "json_schema": {
+        "name": "log_artifact",
+        "description": "Log a runtime artifact (error, fix, decision, etc.) to memory",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "artifact_text": {
+              "type": "string",
+              "description": "The error message, fix description, or decision text"
+            },
+            "artifact_type": {
+              "type": "string",
+              "enum": ["error", "fix", "decision", "gotcha", "slow_query", "memory_spike", "performance_log", "dependency_issue", "version_conflict", "breaking_change", "deployment_note", "rollback", "config_change", "test_failure", "ci_output", "pr_notes", "runlog", "workaround", "anti_pattern", "best_practice"],
+              "description": "Type of artifact to log"
+            },
+            "source": {
+              "type": "string",
+              "description": "Source system (pytest, manual, ci, review, monitoring, etc.)"
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Optional file path associated with this artifact"
+            },
+            "project_name": {
+              "type": "string",
+              "description": "Optional project name"
+            },
+            "tags": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Optional additional tags"
+            }
+          },
+          "required": ["artifact_text", "artifact_type", "source"]
+        }
+      }
+    },
+    {
+      "name": "search_artifacts",
+      "description": "Search memory blocks using semantic similarity with time-decay ranking",
+      "source_type": "python",
+      "source_code": "def search_artifacts(query: str, artifact_type: Optional[str] = None, file_path: Optional[str] = None, n_results: int = 5) -> List[Dict[str, Any]]:\n    \"\"\"\n    Search for relevant artifacts in memory.\n    \n    Args:\n        query: Search query (natural language)\n        artifact_type: Optional filter by artifact type\n        file_path: Optional filter by file path\n        n_results: Number of results to return (default 5)\n    \n    Returns:\n        List of matching artifacts with scores, ranked by relevance + recency\n    \"\"\"\n    from rag_system.core.document_manager import DocumentManager\n    dm = DocumentManager()\n    results = dm.search_artifacts(\n        query=query,\n        artifact_type=artifact_type,\n        file_path=file_path,\n        n_results=n_results\n    )\n    return [\n        {\n            'content': r.content,\n            'score': r.score,\n            'artifact_type': r.metadata.get('artifact_type'),\n            'source': r.metadata.get('source'),\n            'file_path': r.metadata.get('file_path'),\n            'created_at': r.metadata.get('created_at'),\n            'project': r.metadata.get('project_name'),\n            'tags': r.metadata.get('tags', '').split(',')\n        }\n        for r in results\n    ]",
+      "json_schema": {
+        "name": "search_artifacts",
+        "description": "Search memory blocks using semantic similarity with time-decay ranking",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query in natural language"
+            },
+            "artifact_type": {
+              "type": "string",
+              "enum": ["error", "fix", "decision", "gotcha", "slow_query", "memory_spike", "performance_log", "dependency_issue", "version_conflict", "breaking_change", "deployment_note", "rollback", "config_change", "test_failure", "ci_output", "pr_notes", "runlog", "workaround", "anti_pattern", "best_practice"],
+              "description": "Optional filter by artifact type"
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Optional filter by file path"
+            },
+            "n_results": {
+              "type": "integer",
+              "description": "Number of results to return",
+              "default": 5
+            }
+          },
+          "required": ["query"]
+        }
+      }
+    },
+    {
+      "name": "log_gotcha",
+      "description": "Log a code gotcha with its workaround",
+      "source_type": "python",
+      "source_code": "def log_gotcha(description: str, workaround: str, file_path: Optional[str] = None, project_name: Optional[str] = None) -> str:\n    \"\"\"\n    Log a code gotcha (non-obvious API behavior, common mistake).\n    \n    Args:\n        description: Description of the gotcha/problem\n        workaround: How to work around it\n        file_path: Optional associated file\n        project_name: Optional project name\n    \n    Returns:\n        Document ID\n    \"\"\"\n    from rag_system.core.document_manager import DocumentManager\n    dm = DocumentManager()\n    return dm.log_gotcha(\n        description=description,\n        workaround=workaround,\n        file_path=file_path,\n        project_name=project_name\n    )",
+      "json_schema": {
+        "name": "log_gotcha",
+        "description": "Log a code gotcha with its workaround",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Description of the gotcha/problem"
+            },
+            "workaround": {
+              "type": "string",
+              "description": "How to work around it"
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Optional associated file path"
+            },
+            "project_name": {
+              "type": "string",
+              "description": "Optional project name"
+            }
+          },
+          "required": ["description", "workaround"]
+        }
+      }
+    },
+    {
+      "name": "log_performance_issue",
+      "description": "Log a performance issue (slow query, memory spike, etc.)",
+      "source_type": "python",
+      "source_code": "def log_performance_issue(description: str, metric: str, value: float, threshold: float, file_path: Optional[str] = None, project_name: Optional[str] = None) -> str:\n    \"\"\"\n    Log a performance issue.\n    \n    Args:\n        description: Description of the performance issue\n        metric: Metric name (e.g., 'query_time_ms', 'memory_mb')\n        value: Measured value\n        threshold: Expected threshold\n        file_path: Optional file where issue occurred\n        project_name: Optional project name\n    \n    Returns:\n        Document ID\n    \"\"\"\n    from rag_system.core.document_manager import DocumentManager\n    dm = DocumentManager()\n    return dm.log_performance_issue(\n        description=description,\n        metric=metric,\n        value=value,\n        threshold=threshold,\n        file_path=file_path,\n        project_name=project_name\n    )",
+      "json_schema": {
+        "name": "log_performance_issue",
+        "description": "Log a performance issue (slow query, memory spike, etc.)",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "description": {
+              "type": "string",
+              "description": "Description of the performance issue"
+            },
+            "metric": {
+              "type": "string",
+              "description": "Metric name (e.g., 'query_time_ms', 'memory_mb')"
+            },
+            "value": {
+              "type": "number",
+              "description": "Measured value"
+            },
+            "threshold": {
+              "type": "number",
+              "description": "Expected threshold"
+            },
+            "file_path": {
+              "type": "string",
+              "description": "Optional file where issue occurred"
+            },
+            "project_name": {
+              "type": "string",
+              "description": "Optional project name"
+            }
+          },
+          "required": ["description", "metric", "value", "threshold"]
+        }
+      }
+    },
+    {
+      "name": "log_deployment",
+      "description": "Log a deployment or rollback action",
+      "source_type": "python",
+      "source_code": "def log_deployment(action: str, details: str, environment: str = 'production', rollback_info: Optional[str] = None, project_name: Optional[str] = None) -> str:\n    \"\"\"\n    Log a deployment action.\n    \n    Args:\n        action: Action taken (e.g., 'deploy v1.2.0', 'rollback to v1.1.0')\n        details: Deployment details\n        environment: Environment (production, staging, etc.)\n        rollback_info: Optional rollback instructions\n        project_name: Optional project name\n    \n    Returns:\n        Document ID\n    \"\"\"\n    from rag_system.core.document_manager import DocumentManager\n    dm = DocumentManager()\n    return dm.log_deployment(\n        action=action,\n        details=details,\n        environment=environment,\n        rollback_info=rollback_info,\n        project_name=project_name\n    )",
+      "json_schema": {
+        "name": "log_deployment",
+        "description": "Log a deployment or rollback action",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "action": {
+              "type": "string",
+              "description": "Action taken (e.g., 'deploy v1.2.0', 'rollback to v1.1.0')"
+            },
+            "details": {
+              "type": "string",
+              "description": "Deployment details"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Environment (production, staging, etc.)",
+              "default": "production"
+            },
+            "rollback_info": {
+              "type": "string",
+              "description": "Optional rollback instructions"
+            },
+            "project_name": {
+              "type": "string",
+              "description": "Optional project name"
+            }
+          },
+          "required": ["action", "details"]
+        }
+      }
+    },
+    {
+      "name": "log_dependency_issue",
+      "description": "Log a dependency or version conflict",
+      "source_type": "python",
+      "source_code": "def log_dependency_issue(package: str, issue: str, resolution: Optional[str] = None, project_name: Optional[str] = None) -> str:\n    \"\"\"\n    Log a dependency issue.\n    \n    Args:\n        package: Package name\n        issue: Description of the issue\n        resolution: Optional resolution/fix\n        project_name: Optional project name\n    \n    Returns:\n        Document ID\n    \"\"\"\n    from rag_system.core.document_manager import DocumentManager\n    dm = DocumentManager()\n    return dm.log_dependency_issue(\n        package=package,\n        issue=issue,\n        resolution=resolution,\n        project_name=project_name\n    )",
+      "json_schema": {
+        "name": "log_dependency_issue",
+        "description": "Log a dependency or version conflict",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "package": {
+              "type": "string",
+              "description": "Package name"
+            },
+            "issue": {
+              "type": "string",
+              "description": "Description of the issue"
+            },
+            "resolution": {
+              "type": "string",
+              "description": "Optional resolution/fix"
+            },
+            "project_name": {
+              "type": "string",
+              "description": "Optional project name"
+            }
+          },
+          "required": ["package", "issue"]
+        }
+      }
+    }
+  ],
+  "tool_rules": [
+    {
+      "type": "run_first",
+      "tool_name": "search_artifacts"
+    },
+    {
+      "type": "constrain_child_tools",
+      "tool_name": "search_artifacts",
+      "children": ["log_artifact", "log_gotcha", "log_performance_issue", "log_deployment", "log_dependency_issue"]
+    }
+  ],
+  "tool_exec_environment_variables": [
+    {
+      "key": "PYTHONPATH",
+      "value": "/home/adamsl/planner"
+    },
+    {
+      "key": "CHROMADB_PATH",
+      "value": "./storage/chromadb"
+    }
+  ],
+  "message_buffer_autoclear": false,
+  "in_context_message_indices": [],
+  "tags": [
+    {
+      "name": "memory-management"
+    },
+    {
+      "name": "artifact-tracking"
+    },
+    {
+      "name": "debugging-assistant"
+    },
+    {
+      "name": "time-decay-ranking"
+    }
+  ]
+}
