@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Hello WebAssembly</title>
+</head>
+<body>
+  <h1>Hello WebAssembly</h1>
+  <p>Open the browser console to see the greeting from WebAssembly.</p>
+
+  <script src="build/main.js"></script>
+  <script>
+    Module.onRuntimeInitialized = function() {
+      Module._say_hello();
+    };
+  </script>
+</body>
+</html>

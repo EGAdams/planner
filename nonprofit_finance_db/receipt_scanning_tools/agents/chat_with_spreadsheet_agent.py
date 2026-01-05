@@ -110,14 +110,14 @@ def run_codex_coder(
 
     # Decide which Codex model to use (same logic you had before)
     model_name = os.environ.get("CODEX_MODEL")
-    model_name = "gpt-5-mini"
+    model_name = "gpt-5-nano"
     if not model_name:
         orch_model = os.environ.get("ORCH_MODEL", "")
         candidate = orch_model.split("/", 1)[-1] if "/" in orch_model else orch_model
         if candidate and not candidate.startswith("gpt-4o"):
-            model_name = candidate
+            model_name = "gpt-5-nano"
         else:
-            model_name = "gpt-5-mini"
+            model_name = "gpt-5-nano"
 
     payload = {
         "spec": spec,

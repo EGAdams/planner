@@ -1,0 +1,19 @@
+Add-Type -AssemblyName System.Drawing
+$wia = New-Object -ComObject WIA.DeviceManager
+
+# Pick first scanner device found (type 1 == scanner)
+$deviceInfo = $wia.DeviceInfos | Where-Object { $_.Type -eq 1 } | Select-Object -First 1
+$device = $deviceInfo.Connect()
+
+# 1st item is typically the flatbed
+$item = $device.Items.Item(1)
+
+# Common properties (may vary by device)
+# 6147 = Horizontal DPI, 6148 = Vertical DPI, 6149 = X pos, 6150 = Y pos, 6151 = Width, 6152 = Height
+$item.Properties.Item("6147").Value = 300
+$item.Properties.Item("6148").Value = 300
+
+$image = $item.Transfer("{B96B3CAF-0728-11D3-9D7B-0000F81EF32E}") # BMP format
+$output = Join-Path $PWD "scan.bmp"
+$image.SaveFile($output)
+"Saved: $output"

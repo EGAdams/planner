@@ -3,7 +3,7 @@
   "info": {
     "title": "Letta API",
     "summary": "Create LLM agents with long-term memory and custom tools \ud83d\udcda\ud83e\udd99",
-    "version": "0.15.1"
+    "version": "0.16.1"
   },
   "paths": {
     "/v1/archives/": {
@@ -61,6 +61,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -354,6 +370,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -537,6 +569,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -711,6 +759,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -898,6 +962,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -1168,6 +1248,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -1348,6 +1444,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -1557,6 +1669,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -1726,6 +1854,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -1904,6 +2048,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -2078,6 +2238,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -2406,6 +2582,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -2795,6 +2987,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -2956,6 +3164,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -3129,6 +3353,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -3298,6 +3538,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -3477,6 +3733,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -3640,6 +3912,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -3815,6 +4103,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -3986,6 +4290,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -4195,6 +4515,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -4386,6 +4722,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -4564,6 +4916,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -4732,6 +5100,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -4936,6 +5320,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -5109,6 +5509,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -5293,6 +5709,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -5474,6 +5906,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -5666,6 +6114,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -5952,6 +6416,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -6122,6 +6602,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -6306,6 +6802,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -6481,6 +6993,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -6672,6 +7200,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -6839,6 +7383,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -7016,6 +7576,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -7176,6 +7752,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -7341,6 +7933,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -7563,6 +8171,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -7750,6 +8374,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -7982,6 +8622,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -8223,6 +8879,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -8436,6 +9108,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -8633,6 +9321,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -8785,6 +9489,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -8968,6 +9688,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -9142,6 +9878,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -9332,6 +10084,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -9499,6 +10267,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -9672,6 +10456,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -9939,6 +10739,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -10100,6 +10916,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -10318,6 +11150,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -10594,6 +11442,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -10858,6 +11722,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -11140,6 +12020,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -11337,6 +12233,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -11844,6 +12756,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -12023,6 +12951,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -12378,6 +13322,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -12576,6 +13536,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -12760,6 +13736,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -12953,6 +13945,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -13129,6 +14137,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -13366,6 +14390,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -13540,6 +14580,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -13804,6 +14860,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -14001,6 +15073,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -14205,6 +15293,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -14424,6 +15528,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -14637,6 +15757,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -14846,6 +15982,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -15039,6 +16191,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -15247,6 +16415,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -15443,6 +16627,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -15627,6 +16827,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -15830,6 +17046,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -16027,6 +17259,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -16289,6 +17537,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -16556,6 +17820,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -16864,6 +18144,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -17041,6 +18337,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -17232,6 +18544,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -17415,6 +18743,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -17691,6 +19035,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -17891,6 +19251,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -18087,6 +19463,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -18272,6 +19664,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -18461,6 +19869,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -18647,6 +20071,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -18830,6 +20270,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -19103,6 +20559,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -19282,6 +20754,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -19583,6 +21071,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -19769,6 +21273,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -20111,6 +21631,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -20289,6 +21825,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -20498,6 +22050,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -20755,6 +22323,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -20947,6 +22531,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -21117,6 +22717,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -21313,6 +22929,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -21499,6 +23131,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -21801,6 +23449,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -21981,6 +23645,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -22183,6 +23863,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -22335,6 +24031,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -22633,6 +24345,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -22815,6 +24543,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -22984,6 +24728,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -23164,6 +24924,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -23362,6 +25138,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -23549,6 +25341,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -23723,6 +25531,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -24039,6 +25863,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -24219,6 +26059,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -24426,6 +26282,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -24683,6 +26555,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -24866,6 +26754,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -25055,6 +26959,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -25196,8 +27116,12 @@
                   "type": "null"
                 }
               ],
+              "description": "[DEPRECATED: Use X-Project-Id header instead] Filter identities by project ID",
+              "deprecated": true,
               "title": "Project Id"
-            }
+            },
+            "description": "[DEPRECATED: Use X-Project-Id header instead] Filter identities by project ID",
+            "deprecated": true
           },
           {
             "name": "identifier_key",
@@ -25361,6 +27285,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -25543,6 +27483,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -25734,6 +27690,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -25904,6 +27876,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -26087,6 +28075,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -26261,6 +28265,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -26452,6 +28472,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -26626,6 +28662,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -26928,6 +28980,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -27195,6 +29263,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -27370,6 +29454,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -27559,6 +29659,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -28067,6 +30183,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -28227,6 +30359,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -28415,6 +30563,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -28714,6 +30878,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -29279,6 +31459,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -29442,6 +31638,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -29617,6 +31829,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -29789,6 +32017,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -29958,6 +32202,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -30171,6 +32431,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -30337,6 +32613,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -30554,6 +32846,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -30721,6 +33029,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -30884,6 +33208,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -31065,6 +33405,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -31253,6 +33609,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -31433,6 +33805,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -31592,6 +33980,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -31787,6 +34191,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -31971,6 +34391,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -32148,6 +34584,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -32350,6 +34802,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -32516,6 +34984,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -33015,6 +35499,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -33175,6 +35675,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -33347,6 +35863,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -33526,6 +36058,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -33715,6 +36263,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -33886,6 +36450,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -34199,6 +36779,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -34391,6 +36987,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -34576,6 +37188,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -34871,6 +37499,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -35125,6 +37769,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -35308,6 +37968,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -35482,6 +38158,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -35661,6 +38353,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -35844,6 +38552,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -36064,6 +38788,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -36229,6 +38969,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -36387,6 +39143,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -36549,6 +39321,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -36740,6 +39528,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -36926,6 +39730,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -37078,6 +39898,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -37256,6 +40092,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -37475,6 +40327,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -37646,6 +40514,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -37824,6 +40708,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -38102,6 +41002,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -38263,6 +41179,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -38455,6 +41387,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -38629,6 +41577,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -38816,6 +41780,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -39033,6 +42013,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -39406,6 +42402,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -39609,6 +42621,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -39784,6 +42812,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -39950,6 +42994,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -40206,6 +43266,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -40381,6 +43457,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -40549,6 +43641,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -40807,6 +43915,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -40978,6 +44102,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -41470,6 +44610,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -41653,6 +44809,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -41832,6 +45004,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -42007,6 +45195,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -42194,6 +45398,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -42470,6 +45690,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -42709,6 +45945,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -42998,6 +46250,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -43171,6 +46439,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -43415,6 +46699,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -43581,6 +46881,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -43681,53 +46997,25 @@
                   "items": {
                     "oneOf": [
                       {
-                        "$ref": "#/components/schemas/SystemMessage"
+                        "$ref": "#/components/schemas/SystemMessageListResult"
                       },
                       {
-                        "$ref": "#/components/schemas/UserMessage"
+                        "$ref": "#/components/schemas/UserMessageListResult"
                       },
                       {
-                        "$ref": "#/components/schemas/ReasoningMessage"
+                        "$ref": "#/components/schemas/ReasoningMessageListResult"
                       },
                       {
-                        "$ref": "#/components/schemas/HiddenReasoningMessage"
-                      },
-                      {
-                        "$ref": "#/components/schemas/ToolCallMessage"
-                      },
-                      {
-                        "$ref": "#/components/schemas/ToolReturnMessage"
-                      },
-                      {
-                        "$ref": "#/components/schemas/AssistantMessage"
-                      },
-                      {
-                        "$ref": "#/components/schemas/ApprovalRequestMessage"
-                      },
-                      {
-                        "$ref": "#/components/schemas/ApprovalResponseMessage"
-                      },
-                      {
-                        "$ref": "#/components/schemas/SummaryMessage"
-                      },
-                      {
-                        "$ref": "#/components/schemas/EventMessage"
+                        "$ref": "#/components/schemas/AssistantMessageListResult"
                       }
                     ],
                     "discriminator": {
                       "propertyName": "message_type",
                       "mapping": {
-                        "system_message": "#/components/schemas/SystemMessage",
-                        "user_message": "#/components/schemas/UserMessage",
-                        "reasoning_message": "#/components/schemas/ReasoningMessage",
-                        "hidden_reasoning_message": "#/components/schemas/HiddenReasoningMessage",
-                        "tool_call_message": "#/components/schemas/ToolCallMessage",
-                        "tool_return_message": "#/components/schemas/ToolReturnMessage",
-                        "assistant_message": "#/components/schemas/AssistantMessage",
-                        "approval_request_message": "#/components/schemas/ApprovalRequestMessage",
-                        "approval_response_message": "#/components/schemas/ApprovalResponseMessage",
-                        "summary": "#/components/schemas/SummaryMessage",
-                        "event": "#/components/schemas/EventMessage"
+                        "system_message": "#/components/schemas/SystemMessageListResult",
+                        "user_message": "#/components/schemas/UserMessageListResult",
+                        "reasoning_message": "#/components/schemas/ReasoningMessageListResult",
+                        "assistant_message": "#/components/schemas/AssistantMessageListResult"
                       }
                     }
                   },
@@ -43804,6 +47092,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -44062,6 +47366,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -44234,6 +47554,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -44510,6 +47846,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -44681,6 +48033,22 @@
             }
           },
           {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
+            }
+          },
+          {
             "name": "X-Stainless-Package-Version",
             "in": "header",
             "required": false,
@@ -44838,6 +48206,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -45024,6 +48408,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -45224,6 +48624,22 @@
                 }
               ],
               "title": "X-Project-Id"
+            }
+          },
+          {
+            "name": "X-Letta-Source",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Letta-Source"
             }
           },
           {
@@ -46338,6 +49754,17 @@
             "title": "Model Settings",
             "description": "The model settings used by the agent."
           },
+          "compaction_settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompactionSettings-Output"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The compaction settings configuration used for compaction."
+          },
           "response_format": {
             "anyOf": [
               {
@@ -46704,7 +50131,8 @@
           "type",
           "url_citation"
         ],
-        "title": "Annotation"
+        "title": "Annotation",
+        "description": "A URL citation when using web search."
       },
       "AnnotationURLCitation": {
         "properties": {
@@ -46733,7 +50161,8 @@
           "title",
           "url"
         ],
-        "title": "AnnotationURLCitation"
+        "title": "AnnotationURLCitation",
+        "description": "A URL citation when using web search."
       },
       "AnthropicModelSettings": {
         "properties": {
@@ -47660,6 +51089,62 @@
         "title": "AssistantMessage",
         "description": "A message sent by the LLM in response to user input. Used in the LLM context.\n\nArgs:\n    id (str): The ID of the message\n    date (datetime): The date the message was created in ISO format\n    name (Optional[str]): The name of the sender of the message\n    content (Union[str, List[LettaAssistantMessageContentUnion]]): The message content sent by the agent (can be a string or an array of content parts)"
       },
+      "AssistantMessageListResult": {
+        "properties": {
+          "message_type": {
+            "type": "string",
+            "const": "assistant_message",
+            "title": "Message Type",
+            "default": "assistant_message"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/LettaAssistantMessageContentUnion"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Content",
+            "description": "The message content sent by the assistant (can be a string or an array of content parts)"
+          },
+          "message_id": {
+            "type": "string",
+            "title": "Message Id",
+            "description": "The unique identifier of the message."
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id",
+            "description": "The unique identifier of the agent that owns the message."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "The time the message was created in ISO format."
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "message_id",
+          "created_at"
+        ],
+        "title": "AssistantMessageListResult",
+        "description": "Assistant message list result with agent context.\n\nShape is identical to UpdateAssistantMessage but includes the owning agent_id and message id."
+      },
       "Audio": {
         "properties": {
           "id": {
@@ -47671,7 +51156,8 @@
         "required": [
           "id"
         ],
-        "title": "Audio"
+        "title": "Audio",
+        "description": "Data about a previous audio response from the model.\n[Learn more](https://platform.openai.com/docs/guides/audio)."
       },
       "AuthRequest": {
         "properties": {
@@ -49128,7 +52614,8 @@
           "model",
           "object"
         ],
-        "title": "ChatCompletion"
+        "title": "ChatCompletion",
+        "description": "Represents a chat completion response returned by model, based on the provided input."
       },
       "ChatCompletionAssistantMessageParam": {
         "properties": {
@@ -49215,7 +52702,8 @@
         "required": [
           "role"
         ],
-        "title": "ChatCompletionAssistantMessageParam"
+        "title": "ChatCompletionAssistantMessageParam",
+        "description": "Messages sent by the model in response to user messages."
       },
       "ChatCompletionAudio": {
         "properties": {
@@ -49244,7 +52732,8 @@
           "expires_at",
           "transcript"
         ],
-        "title": "ChatCompletionAudio"
+        "title": "ChatCompletionAudio",
+        "description": "If the audio output modality is requested, this object contains data\nabout the audio response from the model. [Learn more](https://platform.openai.com/docs/guides/audio)."
       },
       "ChatCompletionContentPartImageParam": {
         "properties": {
@@ -49262,7 +52751,8 @@
           "image_url",
           "type"
         ],
-        "title": "ChatCompletionContentPartImageParam"
+        "title": "ChatCompletionContentPartImageParam",
+        "description": "Learn about [image inputs](https://platform.openai.com/docs/guides/vision)."
       },
       "ChatCompletionContentPartInputAudioParam": {
         "properties": {
@@ -49280,7 +52770,8 @@
           "input_audio",
           "type"
         ],
-        "title": "ChatCompletionContentPartInputAudioParam"
+        "title": "ChatCompletionContentPartInputAudioParam",
+        "description": "Learn about [audio inputs](https://platform.openai.com/docs/guides/audio)."
       },
       "ChatCompletionContentPartRefusalParam": {
         "properties": {
@@ -49318,7 +52809,8 @@
           "text",
           "type"
         ],
-        "title": "ChatCompletionContentPartTextParam"
+        "title": "ChatCompletionContentPartTextParam",
+        "description": "Learn about [text inputs](https://platform.openai.com/docs/guides/text-generation)."
       },
       "ChatCompletionDeveloperMessageParam": {
         "properties": {
@@ -49351,7 +52843,8 @@
           "content",
           "role"
         ],
-        "title": "ChatCompletionDeveloperMessageParam"
+        "title": "ChatCompletionDeveloperMessageParam",
+        "description": "Developer-provided instructions that the model should follow, regardless of\nmessages sent by the user. With o1 models and newer, `developer` messages\nreplace the previous `system` messages."
       },
       "ChatCompletionFunctionMessageParam": {
         "properties": {
@@ -49474,7 +52967,8 @@
         "required": [
           "role"
         ],
-        "title": "ChatCompletionMessage"
+        "title": "ChatCompletionMessage",
+        "description": "A chat completion message generated by the model."
       },
       "ChatCompletionMessageCustomToolCall": {
         "properties": {
@@ -49498,7 +52992,8 @@
           "custom",
           "type"
         ],
-        "title": "ChatCompletionMessageCustomToolCall"
+        "title": "ChatCompletionMessageCustomToolCall",
+        "description": "A call to a custom tool created by the model."
       },
       "ChatCompletionMessageCustomToolCallParam": {
         "properties": {
@@ -49521,7 +53016,8 @@
           "custom",
           "type"
         ],
-        "title": "ChatCompletionMessageCustomToolCallParam"
+        "title": "ChatCompletionMessageCustomToolCallParam",
+        "description": "A call to a custom tool created by the model."
       },
       "ChatCompletionMessageFunctionToolCall-Input": {
         "properties": {
@@ -49545,7 +53041,8 @@
           "function",
           "type"
         ],
-        "title": "ChatCompletionMessageFunctionToolCall"
+        "title": "ChatCompletionMessageFunctionToolCall",
+        "description": "A call to a function tool created by the model."
       },
       "ChatCompletionMessageFunctionToolCall-Output": {
         "properties": {
@@ -49569,7 +53066,8 @@
           "function",
           "type"
         ],
-        "title": "ChatCompletionMessageFunctionToolCall"
+        "title": "ChatCompletionMessageFunctionToolCall",
+        "description": "A call to a function tool created by the model."
       },
       "ChatCompletionMessageFunctionToolCallParam": {
         "properties": {
@@ -49592,7 +53090,8 @@
           "function",
           "type"
         ],
-        "title": "ChatCompletionMessageFunctionToolCallParam"
+        "title": "ChatCompletionMessageFunctionToolCallParam",
+        "description": "A call to a function tool created by the model."
       },
       "ChatCompletionRequest": {
         "properties": {
@@ -49793,7 +53292,8 @@
           "content",
           "role"
         ],
-        "title": "ChatCompletionSystemMessageParam"
+        "title": "ChatCompletionSystemMessageParam",
+        "description": "Developer-provided instructions that the model should follow, regardless of\nmessages sent by the user. With o1 models and newer, use `developer` messages\nfor this purpose instead."
       },
       "ChatCompletionTokenLogprob": {
         "properties": {
@@ -49914,7 +53414,8 @@
           "content",
           "role"
         ],
-        "title": "ChatCompletionUserMessageParam"
+        "title": "ChatCompletionUserMessageParam",
+        "description": "Messages sent by an end user, containing prompts or additional context\ninformation."
       },
       "ChildToolRule": {
         "properties": {
@@ -50073,7 +53574,8 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "title": "ChoiceLogprobs"
+        "title": "ChoiceLogprobs",
+        "description": "Log probability information for the choice."
       },
       "CodeInput": {
         "properties": {
@@ -50101,6 +53603,232 @@
           "code"
         ],
         "title": "CodeInput"
+      },
+      "CompactionSettings-Input": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Model handle to use for summarization (format: provider/model-name)."
+          },
+          "model_settings": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/OpenAIModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AnthropicModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleAIModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleVertexModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AzureModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/XAIModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GroqModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DeepseekModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TogetherModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BedrockModelSettings"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "provider_type",
+                  "mapping": {
+                    "anthropic": "#/components/schemas/AnthropicModelSettings",
+                    "azure": "#/components/schemas/AzureModelSettings",
+                    "bedrock": "#/components/schemas/BedrockModelSettings",
+                    "deepseek": "#/components/schemas/DeepseekModelSettings",
+                    "google_ai": "#/components/schemas/GoogleAIModelSettings",
+                    "google_vertex": "#/components/schemas/GoogleVertexModelSettings",
+                    "groq": "#/components/schemas/GroqModelSettings",
+                    "openai": "#/components/schemas/OpenAIModelSettings",
+                    "together": "#/components/schemas/TogetherModelSettings",
+                    "xai": "#/components/schemas/XAIModelSettings"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Settings",
+            "description": "Optional model settings used to override defaults for the summarizer model."
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt",
+            "description": "The prompt to use for summarization.",
+            "default": "You have been interacting with a human user, and are in the middle of a conversation or a task. Write a summary that will allow you (or another instance of yourself) to resume without distruption, even after the conversation history is replaced with this summary. Your summary should be structured, concise, and actionable (if you are in the middle of a task). Include:\n\n1. Task or conversational overview\nThe user's core request and success criteria you are currently working on.\nAny clarifications or constraints they specified.\nAny details about the topic of messages that originated the current conversation or task.\n\n2. Current State\nWhat has been completed or discussed so far\nFiles created, modified, or analyzed (with paths if relevant)\nResources explored or referenced (with URLs if relevant)\nWhat has been discussed or explored so far with the user\n\n3. Next Steps\nThe next actions or steps you would have taken, if you were to continue the conversation or task.\n\nKeep your summary less than 100 words, do NOT exceed this word limit. Only output the summary, do NOT include anything else in your output."
+          },
+          "prompt_acknowledgement": {
+            "type": "boolean",
+            "title": "Prompt Acknowledgement",
+            "description": "Whether to include an acknowledgement post-prompt (helps prevent non-summary outputs).",
+            "default": false
+          },
+          "clip_chars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clip Chars",
+            "description": "The maximum length of the summary in characters. If none, no clipping is performed.",
+            "default": 2000
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "all",
+              "sliding_window"
+            ],
+            "title": "Mode",
+            "description": "The type of summarization technique use.",
+            "default": "sliding_window"
+          },
+          "sliding_window_percentage": {
+            "type": "number",
+            "title": "Sliding Window Percentage",
+            "description": "The percentage of the context window to keep post-summarization (only used in sliding window mode)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "model"
+        ],
+        "title": "CompactionSettings",
+        "description": "Configuration for conversation compaction / summarization.\n\n``model`` is the only required user-facing field \u2013 it specifies the summarizer\nmodel handle (e.g. ``\"openai/gpt-4o-mini\"``). Per-model settings (temperature,\nmax tokens, etc.) are derived from the default configuration for that handle."
+      },
+      "CompactionSettings-Output": {
+        "properties": {
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Model handle to use for summarization (format: provider/model-name)."
+          },
+          "model_settings": {
+            "anyOf": [
+              {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/OpenAIModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AnthropicModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleAIModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GoogleVertexModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AzureModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/XAIModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GroqModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DeepseekModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/TogetherModelSettings"
+                  },
+                  {
+                    "$ref": "#/components/schemas/BedrockModelSettings"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "provider_type",
+                  "mapping": {
+                    "anthropic": "#/components/schemas/AnthropicModelSettings",
+                    "azure": "#/components/schemas/AzureModelSettings",
+                    "bedrock": "#/components/schemas/BedrockModelSettings",
+                    "deepseek": "#/components/schemas/DeepseekModelSettings",
+                    "google_ai": "#/components/schemas/GoogleAIModelSettings",
+                    "google_vertex": "#/components/schemas/GoogleVertexModelSettings",
+                    "groq": "#/components/schemas/GroqModelSettings",
+                    "openai": "#/components/schemas/OpenAIModelSettings",
+                    "together": "#/components/schemas/TogetherModelSettings",
+                    "xai": "#/components/schemas/XAIModelSettings"
+                  }
+                }
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Settings",
+            "description": "Optional model settings used to override defaults for the summarizer model."
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt",
+            "description": "The prompt to use for summarization.",
+            "default": "You have been interacting with a human user, and are in the middle of a conversation or a task. Write a summary that will allow you (or another instance of yourself) to resume without distruption, even after the conversation history is replaced with this summary. Your summary should be structured, concise, and actionable (if you are in the middle of a task). Include:\n\n1. Task or conversational overview\nThe user's core request and success criteria you are currently working on.\nAny clarifications or constraints they specified.\nAny details about the topic of messages that originated the current conversation or task.\n\n2. Current State\nWhat has been completed or discussed so far\nFiles created, modified, or analyzed (with paths if relevant)\nResources explored or referenced (with URLs if relevant)\nWhat has been discussed or explored so far with the user\n\n3. Next Steps\nThe next actions or steps you would have taken, if you were to continue the conversation or task.\n\nKeep your summary less than 100 words, do NOT exceed this word limit. Only output the summary, do NOT include anything else in your output."
+          },
+          "prompt_acknowledgement": {
+            "type": "boolean",
+            "title": "Prompt Acknowledgement",
+            "description": "Whether to include an acknowledgement post-prompt (helps prevent non-summary outputs).",
+            "default": false
+          },
+          "clip_chars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Clip Chars",
+            "description": "The maximum length of the summary in characters. If none, no clipping is performed.",
+            "default": 2000
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "all",
+              "sliding_window"
+            ],
+            "title": "Mode",
+            "description": "The type of summarization technique use.",
+            "default": "sliding_window"
+          },
+          "sliding_window_percentage": {
+            "type": "number",
+            "title": "Sliding Window Percentage",
+            "description": "The percentage of the context window to keep post-summarization (only used in sliding window mode)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "model"
+        ],
+        "title": "CompactionSettings",
+        "description": "Configuration for conversation compaction / summarization.\n\n``model`` is the only required user-facing field \u2013 it specifies the summarizer\nmodel handle (e.g. ``\"openai/gpt-4o-mini\"``). Per-model settings (temperature,\nmax tokens, etc.) are derived from the default configuration for that handle."
       },
       "ComparisonOperator": {
         "type": "string",
@@ -50161,7 +53889,8 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "title": "CompletionTokensDetails"
+        "title": "CompletionTokensDetails",
+        "description": "Breakdown of tokens used in a completion."
       },
       "CompletionUsage": {
         "properties": {
@@ -50205,7 +53934,8 @@
           "prompt_tokens",
           "total_tokens"
         ],
-        "title": "CompletionUsage"
+        "title": "CompletionUsage",
+        "description": "Usage statistics for the completion request."
       },
       "ConditionalToolRule": {
         "properties": {
@@ -50911,6 +54641,17 @@
             ],
             "title": "Model Settings",
             "description": "The model settings for the agent."
+          },
+          "compaction_settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompactionSettings-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The compaction settings configuration used for compaction."
           },
           "context_window_limit": {
             "anyOf": [
@@ -51711,7 +55452,8 @@
           "input",
           "name"
         ],
-        "title": "Custom"
+        "title": "Custom",
+        "description": "The custom tool that the model called."
       },
       "Custom-Output": {
         "properties": {
@@ -51730,7 +55472,8 @@
           "input",
           "name"
         ],
-        "title": "Custom"
+        "title": "Custom",
+        "description": "The custom tool that the model called."
       },
       "DeepseekModelSettings": {
         "properties": {
@@ -52470,7 +56213,8 @@
           "file",
           "type"
         ],
-        "title": "File"
+        "title": "File",
+        "description": "Learn about [file inputs](https://platform.openai.com/docs/guides/text) for text generation."
       },
       "FileAgentSchema": {
         "properties": {
@@ -53370,7 +57114,8 @@
           "arguments",
           "name"
         ],
-        "title": "Function"
+        "title": "Function",
+        "description": "The function that the model called."
       },
       "FunctionCall-Input": {
         "properties": {
@@ -53388,7 +57133,8 @@
           "arguments",
           "name"
         ],
-        "title": "FunctionCall"
+        "title": "FunctionCall",
+        "description": "Deprecated and replaced by `tool_calls`.\n\nThe name and arguments of a function that should be called, as generated by the model."
       },
       "FunctionCall-Output": {
         "properties": {
@@ -53407,7 +57153,8 @@
           "arguments",
           "name"
         ],
-        "title": "FunctionCall"
+        "title": "FunctionCall",
+        "description": "Deprecated and replaced by `tool_calls`.\n\nThe name and arguments of a function that should be called, as generated by the model."
       },
       "FunctionDefinition": {
         "properties": {
@@ -55380,6 +59127,17 @@
             "title": "Model Settings",
             "description": "The model settings for the agent."
           },
+          "compaction_settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompactionSettings-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The compaction settings configuration used for compaction."
+          },
           "context_window_limit": {
             "anyOf": [
               {
@@ -56389,7 +60147,8 @@
                   "minimal",
                   "low",
                   "medium",
-                  "high"
+                  "high",
+                  "xhigh"
                 ]
               },
               {
@@ -57435,11 +61194,47 @@
             ],
             "title": "Run Ids",
             "description": "The background task run IDs associated with the agent interaction"
+          },
+          "cached_input_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cached Input Tokens",
+            "description": "The number of input tokens served from cache. None if not reported by provider."
+          },
+          "cache_write_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Write Tokens",
+            "description": "The number of input tokens written to cache (Anthropic only). None if not reported by provider."
+          },
+          "reasoning_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Tokens",
+            "description": "The number of reasoning/thinking tokens generated. None if not reported by provider."
           }
         },
         "type": "object",
         "title": "LettaUsageStatistics",
-        "description": "Usage statistics for the agent interaction.\n\nAttributes:\n    completion_tokens (int): The number of tokens generated by the agent.\n    prompt_tokens (int): The number of tokens in the prompt.\n    total_tokens (int): The total number of tokens processed by the agent.\n    step_count (int): The number of steps taken by the agent."
+        "description": "Usage statistics for the agent interaction.\n\nAttributes:\n    completion_tokens (int): The number of tokens generated by the agent.\n    prompt_tokens (int): The number of tokens in the prompt.\n    total_tokens (int): The total number of tokens processed by the agent.\n    step_count (int): The number of steps taken by the agent.\n    cached_input_tokens (Optional[int]): The number of input tokens served from cache. None if not reported.\n    cache_write_tokens (Optional[int]): The number of input tokens written to cache. None if not reported.\n    reasoning_tokens (Optional[int]): The number of reasoning/thinking tokens generated. None if not reported."
       },
       "ListDeploymentEntitiesResponse": {
         "properties": {
@@ -58703,7 +62498,8 @@
                   "minimal",
                   "low",
                   "medium",
-                  "high"
+                  "high",
+                  "xhigh"
                 ]
               },
               {
@@ -59038,7 +62834,8 @@
               "minimal",
               "low",
               "medium",
-              "high"
+              "high",
+              "xhigh"
             ],
             "title": "Reasoning Effort",
             "description": "The reasoning effort to use when generating text reasoning models",
@@ -59739,7 +63536,8 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "title": "PromptTokensDetails"
+        "title": "PromptTokensDetails",
+        "description": "Breakdown of tokens used in the prompt."
       },
       "Provider": {
         "properties": {
@@ -59778,7 +63576,8 @@
               }
             ],
             "title": "Api Key",
-            "description": "API key or secret key used for requests to the provider."
+            "description": "API key or secret key used for requests to the provider.",
+            "deprecated": true
           },
           "base_url": {
             "anyOf": [
@@ -59802,7 +63601,8 @@
               }
             ],
             "title": "Access Key",
-            "description": "Access key used for requests to the provider."
+            "description": "Access key used for requests to the provider.",
+            "deprecated": true
           },
           "region": {
             "anyOf": [
@@ -60382,6 +64182,51 @@
         ],
         "title": "ReasoningMessage",
         "description": "Representation of an agent's internal reasoning.\n\nArgs:\n    id (str): The ID of the message\n    date (datetime): The date the message was created in ISO format\n    name (Optional[str]): The name of the sender of the message\n    source (Literal[\"reasoner_model\", \"non_reasoner_model\"]): Whether the reasoning\n        content was generated natively by a reasoner model or derived via prompting\n    reasoning (str): The internal reasoning of the agent\n    signature (Optional[str]): The model-generated signature of the reasoning step"
+      },
+      "ReasoningMessageListResult": {
+        "properties": {
+          "reasoning": {
+            "type": "string",
+            "title": "Reasoning"
+          },
+          "message_type": {
+            "type": "string",
+            "const": "reasoning_message",
+            "title": "Message Type",
+            "default": "reasoning_message"
+          },
+          "message_id": {
+            "type": "string",
+            "title": "Message Id",
+            "description": "The unique identifier of the message."
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id",
+            "description": "The unique identifier of the agent that owns the message."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "The time the message was created in ISO format."
+          }
+        },
+        "type": "object",
+        "required": [
+          "reasoning",
+          "message_id",
+          "created_at"
+        ],
+        "title": "ReasoningMessageListResult",
+        "description": "Reasoning message list result with agent context.\n\nShape is identical to UpdateReasoningMessage but includes the owning agent_id and message id."
       },
       "RedactedReasoningContent": {
         "properties": {
@@ -62231,7 +66076,20 @@
               }
             ],
             "title": "Completion Tokens Details",
-            "description": "Metadata for the agent."
+            "description": "Detailed completion token breakdown (e.g., reasoning_tokens)."
+          },
+          "prompt_tokens_details": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prompt Tokens Details",
+            "description": "Detailed prompt token breakdown (e.g., cached_tokens, cache_read_tokens, cache_creation_tokens)."
           },
           "stop_reason": {
             "anyOf": [
@@ -62539,10 +66397,12 @@
           "invalid_llm_response",
           "invalid_tool_call",
           "max_steps",
+          "max_tokens_exceeded",
           "no_tool_call",
           "tool_rule",
           "cancelled",
-          "requires_approval"
+          "requires_approval",
+          "context_window_overflow_in_system_prompt"
         ],
         "title": "StopReasonType"
       },
@@ -63009,6 +66869,52 @@
         "title": "SystemMessage",
         "description": "A message generated by the system. Never streamed back on a response, only used for cursor pagination.\n\nArgs:\n    id (str): The ID of the message\n    date (datetime): The date the message was created in ISO format\n    name (Optional[str]): The name of the sender of the message\n    content (str): The message content sent by the system"
       },
+      "SystemMessageListResult": {
+        "properties": {
+          "message_type": {
+            "type": "string",
+            "const": "system_message",
+            "title": "Message Type",
+            "default": "system_message"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content",
+            "description": "The message content sent by the system (can be a string or an array of multi-modal content parts)"
+          },
+          "message_id": {
+            "type": "string",
+            "title": "Message Id",
+            "description": "The unique identifier of the message."
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id",
+            "description": "The unique identifier of the agent that owns the message."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "The time the message was created in ISO format."
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "message_id",
+          "created_at"
+        ],
+        "title": "SystemMessageListResult",
+        "description": "System message list result with agent context.\n\nShape is identical to UpdateSystemMessage but includes the owning agent_id and message id."
+      },
       "TagSchema": {
         "properties": {
           "tag": {
@@ -63363,6 +67269,18 @@
             ],
             "title": "Metadata",
             "description": "A dictionary of additional metadata for the tool."
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id",
+            "description": "The project id of the tool."
           }
         },
         "additionalProperties": false,
@@ -63910,7 +67828,8 @@
                 "type": "null"
               }
             ],
-            "description": "The agent state"
+            "description": "The agent state",
+            "deprecated": true
           },
           "stdout": {
             "anyOf": [
@@ -65036,6 +68955,17 @@
             "title": "Model Settings",
             "description": "The model settings for the agent."
           },
+          "compaction_settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompactionSettings-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The compaction settings configuration used for compaction."
+          },
           "context_window_limit": {
             "anyOf": [
               {
@@ -65451,9 +69381,15 @@
       "UsageStatisticsCompletionTokenDetails": {
         "properties": {
           "reasoning_tokens": {
-            "type": "integer",
-            "title": "Reasoning Tokens",
-            "default": 0
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reasoning Tokens"
           }
         },
         "type": "object",
@@ -65462,9 +69398,37 @@
       "UsageStatisticsPromptTokenDetails": {
         "properties": {
           "cached_tokens": {
-            "type": "integer",
-            "title": "Cached Tokens",
-            "default": 0
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cached Tokens"
+          },
+          "cache_read_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Read Tokens"
+          },
+          "cache_creation_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Creation Tokens"
           }
         },
         "type": "object",
@@ -65680,6 +69644,62 @@
         ],
         "title": "UserMessage",
         "description": "A message sent by the user. Never streamed back on a response, only used for cursor pagination.\n\nArgs:\n    id (str): The ID of the message\n    date (datetime): The date the message was created in ISO format\n    name (Optional[str]): The name of the sender of the message\n    content (Union[str, List[LettaUserMessageContentUnion]]): The message content sent by the user (can be a string or an array of multi-modal content parts)"
+      },
+      "UserMessageListResult": {
+        "properties": {
+          "message_type": {
+            "type": "string",
+            "const": "user_message",
+            "title": "Message Type",
+            "default": "user_message"
+          },
+          "content": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/LettaUserMessageContentUnion"
+                },
+                "type": "array"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Content",
+            "description": "The message content sent by the user (can be a string or an array of multi-modal content parts)"
+          },
+          "message_id": {
+            "type": "string",
+            "title": "Message Id",
+            "description": "The unique identifier of the message."
+          },
+          "agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Id",
+            "description": "The unique identifier of the agent that owns the message."
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At",
+            "description": "The time the message was created in ISO format."
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "message_id",
+          "created_at"
+        ],
+        "title": "UserMessageListResult",
+        "description": "User message list result with agent context.\n\nShape is identical to UpdateUserMessage but includes the owning agent_id and message id."
       },
       "UserUpdate": {
         "properties": {
@@ -66281,6 +70301,17 @@
             ],
             "title": "Model Settings",
             "description": "The model settings for the agent."
+          },
+          "compaction_settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CompactionSettings-Input"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The compaction settings configuration used for compaction."
           },
           "context_window_limit": {
             "anyOf": [
@@ -67085,6 +71116,18 @@
             ],
             "title": "Metadata",
             "description": "A dictionary of additional metadata for the tool."
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id",
+            "description": "The project id of the tool."
           }
         },
         "additionalProperties": false,
@@ -67961,7 +72004,8 @@
           "arguments",
           "name"
         ],
-        "title": "Function"
+        "title": "Function",
+        "description": "The function that the model called."
       },
       "openai__types__chat__chat_completion_message_function_tool_call_param__Function": {
         "properties": {
@@ -67979,7 +72023,8 @@
           "arguments",
           "name"
         ],
-        "title": "Function"
+        "title": "Function",
+        "description": "The function that the model called."
       },
       "LettaMessageUnion": {
         "oneOf": [

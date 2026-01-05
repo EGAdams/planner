@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Scanner Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        receipt-scanner {
+            margin-top: 1.5rem;
+        }
+        .event-log {
+            margin-top: 2rem;
+            border-top: 1px solid #eee;
+            padding-top: 1.5rem;
+        }
+        .event-log h2 {
+            margin-bottom: 1rem;
+            color: #555;
+        }
+        .event-log pre {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            padding: 1rem;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Receipt Scanner Component Test Page</h1>
+        <receipt-scanner></receipt-scanner>
+
+        <div class="event-log">
+            <h2>Component Events Log</h2>
+            <pre id="eventLog"></pre>
+        </div>
+    </div>
+
+    <script type="module" src="./js/event-bus.js"></script>
+    <script type="module" src="./js/components/receipt-scanner.js"></script>
+    <script type="module">
+        import { on } from './js/event-bus.js';
+
+        const eventLog = document.getElementById('eventLog');
+
+        function logEvent(eventName, data) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<strong>[${timestamp}] ${eventName}:</strong> ${JSON.stringify(data, null, 2)}`;
+            eventLog.prepend(logEntry); // Add to top
+        }
+
+        on('receipt:parsed', (data) => logEvent('receipt:parsed', data));
+        on('receipt:saved', (data) => logEvent('receipt:saved', data));
+        on('receipt:error', (data) => logEvent('receipt:error', data));
+        on('receipt:cancelled', () => logEvent('receipt:cancelled', {}));
+    </script>
+</body>
+</html>

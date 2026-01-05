@@ -31,6 +31,7 @@ class SpreadsheetRow:
     date: date
     description: str
     expense_type: str | None
+    category: str | None
     source: str
     ledger_type: str
     amount: Decimal
@@ -76,6 +77,7 @@ def fetch_transactions(cnx) -> List[SpreadsheetRow]:
                     date=record["transaction_date"],
                     description=record["description"],
                     expense_type=record["transaction_type"],
+                    category=None,
                     source="transactions",
                     ledger_type=ledger_type,
                     amount=amount,
@@ -89,11 +91,12 @@ def fetch_transactions(cnx) -> List[SpreadsheetRow]:
 
 def fetch_expenses(cnx) -> List[SpreadsheetRow]:
     query = """
-        SELECT expense_date, description, amount, method
-        FROM expenses
-        WHERE org_id = %s
-          AND expense_date BETWEEN %s AND %s
-        ORDER BY expense_date ASC, id ASC
+        SELECT e.expense_date, e.description, e.amount, e.method, c.name as category_name
+        FROM expenses e
+        LEFT JOIN categories c ON e.category_id = c.id
+        WHERE e.org_id = %s
+          AND e.expense_date BETWEEN %s AND %s
+        ORDER BY e.expense_date ASC, e.id ASC
     """
     rows: List[SpreadsheetRow] = []
 
@@ -102,11 +105,13 @@ def fetch_expenses(cnx) -> List[SpreadsheetRow]:
         for record in cursor.fetchall():
             amount = Decimal(record["amount"])
             payment_method = record["method"] or "OTHER"
+            category_name = record["category_name"]
             rows.append(
                 SpreadsheetRow(
                     date=record["expense_date"],
                     description=record["description"],
                     expense_type=payment_method,
+                    category=category_name,
                     source="expenses",
                     ledger_type="Expense",
                     amount=amount,
@@ -149,6 +154,7 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
             [
                 "Date",
                 "Description",
+                "Expense Category",
                 "Expense Type",
                 "Source",
                 "Ledger Type",
@@ -170,6 +176,7 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
                 [
                     row.date.isoformat(),
                     row.description,
+                    row.category or "",
                     row.expense_type or "",
                     row.source,
                     row.ledger_type,

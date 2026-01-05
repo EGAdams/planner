@@ -1,24 +1,24 @@
 [
     {
-        "title": "start letta server",
-        "action": "cd /home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools && ./start_letta_dec_09_2025.sh",
+        "title": "start letta server only",
+        "action": "bash -c 'cd /home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools && source /home/adamsl/planner/.venv/bin/activate && bash ./start_letta_dec_09_2025.sh'",
         "working_directory": "",
         "open_in_subprocess": false
     },
     {
-        "title": "kill letta server",
+        "title": "pkill letta server",
         "action": "cd /home/adamsl/planner && pkill -f 'letta server' || true",
         "working_directory": "",
         "open_in_subprocess": false
     },
     {
-        "title": "🎤 Start Letta Voice System (All-in-One)",
+        "title": "Start Letta Voice System (All-in-One)",
         "action": "bash /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/start_voice_system.sh",
         "working_directory": "/home/adamsl/planner",
         "open_in_subprocess": true
     },
     {
-        "title": "🔄 Restart Letta Voice System",
+        "title": "Restart Letta Voice System",
         "action": "bash /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/restart_voice_system.sh",
         "working_directory": "/home/adamsl/planner",
         "open_in_subprocess": true
@@ -416,7 +416,7 @@
                             },
                             {
                                 "title": "Create February Spreadsheet",
-                                "action": "echo 'TODO: implement create February spreadsheet workflow'",
+                                "action": "/home/adamsl/planner/.venv/bin/python3 create_february_worksheet.py",
                                 "working_directory": "/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
                                 "open_in_subprocess": false,
                                 "use_expect_library": false
@@ -560,8 +560,8 @@
         ]
     },
     {
-        "title": "Dashboard",
-        "action": "echo 'opening dashboard project...'",
+        "title": "Receipt Scanning Tools",
+        "action": "code /home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools",
         "working_directory": "",
         "open_in_subprocess": false
     },
@@ -572,8 +572,14 @@
         "open_in_subprocess": false
     },
     {
-        "title": "Show this config.json",
-        "action": "cat /home/adamsl/linuxBash/python_menus/smart_menu/config.json",
+        "title": "Edit this menu",
+        "action": "code /home/adamsl/planner/smart_menu/menu_configurations/config.json",
+        "working_directory": "",
+        "open_in_subprocess": false
+    },
+    {
+        "title": "Agent 66 Voice Workspace",
+        "action": "code /home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents",
         "working_directory": "",
         "open_in_subprocess": false
     },

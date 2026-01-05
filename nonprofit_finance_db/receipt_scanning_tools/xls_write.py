@@ -49,11 +49,12 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
     # Column widths
     ws.set_column("A:A", 12)
     ws.set_column("B:B", 42)
-    ws.set_column("C:C", 16)
-    ws.set_column("D:D", 14)
+    ws.set_column("C:C", 28)
+    ws.set_column("D:D", 16)
     ws.set_column("E:E", 14)
-    ws.set_column("F:H", 14)
-    ws.set_column("I:I", 52)
+    ws.set_column("F:F", 14)
+    ws.set_column("G:I", 14)
+    ws.set_column("J:J", 52)
 
     # ----------------------------
     # Title + metadata
@@ -73,6 +74,7 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
     headers = [
         "Date",
         "Description",
+        "Expense Category",
         "Expense Type",
         "Source",
         "Ledger Type",
@@ -101,15 +103,16 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
 
         ws.write_datetime(r, 0, row.date, date_fmt)
         ws.write_string(r, 1, row.description or "", text_fmt)
-        ws.write_string(r, 2, row.expense_type or "", text_fmt)
-        ws.write_string(r, 3, row.source or "", text_fmt)
-        ws.write_string(r, 4, row.ledger_type or "", text_fmt)
+        ws.write_string(r, 2, row.category or "", text_fmt)
+        ws.write_string(r, 3, row.expense_type or "", text_fmt)
+        ws.write_string(r, 4, row.source or "", text_fmt)
+        ws.write_string(r, 5, row.ledger_type or "", text_fmt)
 
-        ws.write_number(r, 5, float(row.amount), money_fmt)
-        ws.write_number(r, 6, float(row.net_change), money_neg_fmt)
-        ws.write_number(r, 7, float(running_total), money_neg_fmt)
+        ws.write_number(r, 6, float(row.amount), money_fmt)
+        ws.write_number(r, 7, float(row.net_change), money_neg_fmt)
+        ws.write_number(r, 8, float(running_total), money_neg_fmt)
 
-        ws.write_string(r, 8, row.notes or "", text_fmt)
+        ws.write_string(r, 9, row.notes or "", text_fmt)
         r += 1
 
     data_last_row = r - 1
@@ -121,16 +124,16 @@ def write_spreadsheet(rows: List[SpreadsheetRow]) -> Path:
             data_last_row,
             len(headers) - 1,
             {
-                "style": "Table Style Medium 9",
+                "style": "Table Style Light 9",
                 "columns": [{"header": h} for h in headers],
             },
         )
 
         ws.conditional_format(
             data_first_row,
-            6,
+            7,
             data_last_row,
-            6,
+            7,
             {
                 "type": "cell",
                 "criteria": "<",

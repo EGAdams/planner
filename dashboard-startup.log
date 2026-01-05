@@ -1,0 +1,19 @@
+
+> admin-dashboard@1.0.0 start
+> node backend/dist/server.js
+
+2026-01-02T21:22:07.236Z ADMIN_HOST from env: undefined
+2026-01-02T21:22:07.311Z Admin dashboard server running on http://127.0.0.1:3000
+2026-01-02T21:22:07.311Z Process management enabled with persistent state
+2026-01-02T21:22:07.319Z Server orchestrator initialized
+Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/letta
+Could not infer run command for agent in /home/adamsl/planner/a2a_communicating_agents/agent_messaging/agents/orchestrator
+2026-01-02T21:22:07.331Z Discovered agent: coder-agent in /home/adamsl/planner/a2a_communicating_agents/coder_agent
+2026-01-02T21:22:07.333Z Discovered agent: dashboard-agent in /home/adamsl/planner/a2a_communicating_agents/dashboard_agent
+2026-01-02T21:22:07.345Z Discovered agent: orchestrator-agent in /home/adamsl/planner/a2a_communicating_agents/orchestrator_agent
+2026-01-02T21:22:07.348Z Discovered agent: tester-agent in /home/adamsl/planner/a2a_communicating_agents/tester_agent
+2026-01-02T21:22:07.352Z Discovered agent: planner-agent in /home/adamsl/planner
+Could not infer run command for agent in /home/adamsl/planner/nonprofit_finance_db/letta_agent/agent_messaging/agents/letta
+Could not infer run command for agent in /home/adamsl/planner/nonprofit_finance_db/letta_agent/agent_messaging/agents/orchestrator
+2026-01-02T21:22:07.807Z Discovered 5 agents
+2026-01-02T21:22:07.807Z Agent discovery complete. Registered agents:

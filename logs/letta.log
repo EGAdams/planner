@@ -6,14 +6,14 @@ Letta.letta.server.global_exception_handler - INFO - Global exception handlers i
 ▶ Server running at: http://localhost:8283
 ▶ View using ADE at: https://app.letta.com/development-servers/local/dashboard
 
-INFO:     Started server process [405]
+INFO:     Started server process [427]
 INFO:     Waiting for application startup.
 Letta.letta.monitoring.event_loop_watchdog - INFO - Watchdog started (timeout: 15.0s)
-Letta.letta.server.rest_api.app - INFO - [Worker 405] Event loop watchdog started
-Letta.letta.server.rest_api.app - INFO - [Worker 405] Checking NLTK data availability...
-Letta.letta.server.rest_api.app - INFO - [Worker 405] NLTK data ready
-Letta.letta.server.rest_api.app - INFO - [Worker 405] Disabled pinecone
-Letta.letta.server.rest_api.app - INFO - [Worker 405] Starting scheduler with leader election
+Letta.letta.server.rest_api.app - INFO - [Worker 427] Event loop watchdog started
+Letta.letta.server.rest_api.app - INFO - [Worker 427] Checking NLTK data availability...
+Letta.letta.server.rest_api.app - INFO - [Worker 427] NLTK data ready
+Letta.letta.server.rest_api.app - INFO - [Worker 427] Disabled pinecone
+Letta.letta.server.rest_api.app - INFO - [Worker 427] Starting scheduler with leader election
 ERROR:    Traceback (most recent call last):
   File "/home/adamsl/planner/.venv/lib/python3.12/site-packages/starlette/routing.py", line 693, in lifespan
     async with self.lifespan_context(app) as maybe_state:

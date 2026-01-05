@@ -52,3 +52,5 @@ logs/dashboard_agent.log
 nonprofit_finance_db/.claude-collective/metrics/collective-metrics.log
 nonprofit_finance_db/receipt_scanning_tools/generated_spreadsheets/*
 nonprofit_finance_db/receipt_scanning_tools/agents/voice_output/*.mp3
+nonprofit_finance_db/tests/*.png
+nonprofit_finance_db/tests/test-screenshots/*.png

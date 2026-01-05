@@ -10,6 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 async function readStdin() {
+  console.log( "/home/adamsl/planner/a2a_communicating_agents/hybrid_letta_agents/agents/node_executables/codex_coder_bridge.mjs");
   return new Promise<string>((resolve, reject) => {
     let data = "";
     process.stdin.setEncoding("utf8");

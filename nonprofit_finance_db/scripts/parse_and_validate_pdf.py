@@ -372,6 +372,49 @@ def _sync_transactions_with_database(transactions: List[Dict[str, Any]],
         return False
 
 
+def _test_database_connection() -> bool:
+    """Test MySQL connection before doing any work."""
+    try:
+        from app.db import get_connection
+        with get_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+        return True
+    except ImportError as exc:
+        print(f"\n{'*' * 60}")
+        print(f"{'*' * 60}")
+        print(f"**{'':^56}**")
+        print(f"**{'ERROR: Cannot import database modules!':^56}**")
+        print(f"**{'':^56}**")
+        print(f"{'*' * 60}")
+        print(f"{'*' * 60}\n")
+        print(f"Import error: {exc}\n")
+        print(f"Make sure you're in the correct directory and virtual environment is activated.")
+        return False
+    except Exception as exc:
+        print(f"\n{'*' * 60}")
+        print(f"{'*' * 60}")
+        print(f"**{'':^56}**")
+        print(f"**{'ERROR: Cannot connect to MySQL database!':^56}**")
+        print(f"**{'':^56}**")
+        print(f"{'*' * 60}")
+        print(f"{'*' * 60}\n")
+        print(f"Database connection failed: {exc}\n")
+        print(f"To fix this issue, try one of the following:\n")
+        print(f"1. Start MySQL service:")
+        print(f"   sudo service mysql start\n")
+        print(f"2. Or if using systemd:")
+        print(f"   sudo systemctl start mysql\n")
+        print(f"3. Check MySQL status:")
+        print(f"   sudo service mysql status\n")
+        print(f"4. Verify MySQL is listening on the correct port:")
+        print(f"   sudo netstat -tlnp | grep 3306\n")
+        print(f"5. Check database configuration in app/config.py\n")
+        print(f"{'*' * 60}\n")
+        return False
+
+
 def parse_and_validate_pdf(pdf_path: str, org_id: int = 1) -> bool:
     """
     Parse a PDF bank statement and validate it against the statement summary.
@@ -384,6 +427,14 @@ def parse_and_validate_pdf(pdf_path: str, org_id: int = 1) -> bool:
         bool: True if validation passed, False otherwise
     """
     try:
+        # Test database connection FIRST before doing any work
+        print(f"> Testing database connection...", flush=True)
+        sys.stdout.flush()
+        if not _test_database_connection():
+            return False
+        print(f"✓ Database connection successful", flush=True)
+        sys.stdout.flush()
+
         # Validate file exists
         if not os.path.exists(pdf_path):
             print(f"✗ ERROR: File not found: {pdf_path}", flush=True)
