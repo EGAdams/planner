@@ -2,6 +2,11 @@ import json
 import urllib.request
 import urllib.error
 
+#
+# This is not used here, it is used by the Letta Server Agents
+# It is listed here for version control convenience.
+#
+
 def rest_executor(command: str, cwd: str = ".", timeout_sec: int = 60) -> dict:
     # Fix common ADE/user formatting like: "command: python3 -c ..."
     cmd = command.strip()
