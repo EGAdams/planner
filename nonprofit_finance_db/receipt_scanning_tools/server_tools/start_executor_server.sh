@@ -1,5 +1,11 @@
 export EXECUTOR_WORKSPACE_ROOT="/home/adamsl/planner/nonprofit_finance_db/receipt_scanning_tools"
-export EXECUTOR_ALLOW_CMDS="python,python3,pytest,git,node,npm"
+export EXECUTOR_ALLOW_CMDS="python,python3,
+                            pytest,git,node,npm,
+                            mkdir,ls,cp,mv,rm,cat,echo,head,tail,
+                            curl,wget,unzip,tar,
+                            pip,pip3,
+                            uvicorn,uvicorn3,
+                            poetry,poetry3,"
 
 pkill -f "uvicorn.*8787" || true
 export EXECUTOR_TOKEN="6c9f1e4b5a2d8f7c0b3e9a4d7f2c1e8"
