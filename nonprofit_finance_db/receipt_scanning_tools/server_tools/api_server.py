@@ -24,11 +24,11 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-# Add app directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add app directory to path (go up to nonprofit_finance_db level)
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 # Add standalone receipt scanner to path
-RECEIPT_SCANNER_BACKEND = Path(__file__).parent / "receipt_scanning_tools" / "receipt_scanner" / "backend"
+RECEIPT_SCANNER_BACKEND = Path(__file__).parent.parent / "receipt_scanner" / "backend"
 sys.path.insert(0, str(RECEIPT_SCANNER_BACKEND))
 
 from app.db import query_all, query_one, execute
